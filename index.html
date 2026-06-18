@@ -60,6 +60,9 @@
  .modal{position:fixed;inset:0;background:rgba(10,20,40,.4);z-index:60;display:flex;align-items:flex-start;justify-content:center}
  .modalbox{background:#fff;margin-top:32px;width:min(960px,95vw);max-height:88vh;display:flex;flex-direction:column;border-radius:10px;overflow:hidden}
  .modalhead{padding:12px 14px;border-bottom:1px solid #e3e8ef;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+ .modal.float{background:transparent;pointer-events:none}
+ .modal.float .modalbox{pointer-events:auto;position:fixed;top:60px;left:60px;width:min(900px,92vw);box-shadow:0 14px 44px rgba(10,20,40,.35);resize:both}
+ .modal.float .modalhead{cursor:move}
  /* ---- dark mode ---- */
  body.dark{background:#0e1420;color:#e6e9ef}
  body.dark .rail,body.dark .card,body.dark .box,body.dark details,body.dark .modalbox{background:#161e2b;border-color:#2a3547}
@@ -90,9 +93,10 @@
    <div class="railhead"><span class="muted">click to add to chart</span>
     <input id="treesearch" placeholder="search code or caption…">
     <div class="railctl">
-     <button id="expall" class="sec">⊕ Expand all</button>
-     <button id="colall" class="sec">⊖ Collapse all</button>
-     <label><input type="checkbox" id="showraw"> show RCFD/RCON variants</label>
+     <button id="drilldn" class="sec" title="expand one more level">▾ level</button>
+     <button id="drillup" class="sec" title="collapse one level">▴ level</button>
+     <button id="expall" class="sec">⊕ all</button><button id="colall" class="sec">⊖ all</button>
+     <label><input type="checkbox" id="showraw"> RCFD/RCON variants</label>
     </div></div>
    <div id="tree"><p class="muted" style="padding:10px">Loading…</p></div>
   </div>
@@ -132,6 +136,7 @@
   <div class="slider" id="sliderwrap" style="display:none">
    <span class="muted">From</span><input type="range" id="r0"><input type="range" id="r1"><span class="muted">to</span>
    <span id="rlbl" class="muted"></span> <button id="rreset" class="sec">Full range</button>
+   <label class="muted" title="rebase each $ series to 100 at the start of the range"><input type="checkbox" id="idx"> index to 100</label>
    <button id="csv" class="sec">Export</button></div>
   <div id="tbl"></div>
 
@@ -145,7 +150,9 @@
  <div class="modalhead"><b>Call-report view</b> — <span id="forment"></span>
   <label style="font-size:12px">From <select id="ffrom"></select></label>
   <label style="font-size:12px">To <select id="fto"></select></label>
+  <button id="fdn" class="sec" title="expand one level">▾</button><button id="fup" class="sec" title="collapse one level">▴</button>
   <button id="fexp" class="sec">⊕</button><button id="fcol" class="sec">⊖</button>
+  <button id="fpop" class="sec" title="float / dock">⧉</button>
   <button id="formexport" class="sec">Export</button> <button id="formclose" class="sec">Close</button></div>
  <div id="formbody" style="overflow:auto;padding:10px 14px"></div></div></div>
 <script type="module">
@@ -245,6 +252,8 @@ async function init(){try{
  document.getElementById('treesearch').addEventListener('input',e=>filterTree(e.target.value));
  document.getElementById('expall').onclick=()=>expandAll(true);
  document.getElementById('colall').onclick=()=>expandAll(false);
+ document.getElementById('drilldn').onclick=()=>drill(1);
+ document.getElementById('drillup').onclick=()=>drill(-1);
  document.getElementById('showraw').onchange=()=>{buildTree();};
  document.getElementById('tabItems').onclick=()=>switchTab(true);
  document.getElementById('tabEnts').onclick=()=>switchTab(false);
@@ -267,11 +276,17 @@ async function init(){try{
  document.getElementById('formclose').onclick=()=>document.getElementById('formmodal').style.display='none';
  document.getElementById('ffrom').onchange=renderForm; document.getElementById('fto').onchange=renderForm;
  document.getElementById('fexp').onclick=()=>expandAll(true,'#formbody'); document.getElementById('fcol').onclick=()=>expandAll(false,'#formbody');
+ document.getElementById('fdn').onclick=()=>drill(1,'#formbody'); document.getElementById('fup').onclick=()=>drill(-1,'#formbody');
+ (function(){const md=document.getElementById('formmodal'),box=md.querySelector('.modalbox'),head=md.querySelector('.modalhead');
+  document.getElementById('fpop').onclick=()=>md.classList.toggle('float');
+  let dx=0,dy=0,drag=false;head.addEventListener('mousedown',e=>{if(!md.classList.contains('float'))return;if(e.target.closest('input,button,select,label'))return;drag=true;dx=e.clientX-box.offsetLeft;dy=e.clientY-box.offsetTop;e.preventDefault();});
+  window.addEventListener('mousemove',e=>{if(!drag)return;box.style.left=(e.clientX-dx)+'px';box.style.top=(e.clientY-dy)+'px';});window.addEventListener('mouseup',()=>{drag=false;});})();
  document.getElementById('formexport').onclick=exportForm;
  document.getElementById('csv').onclick=exportSeries;
  document.getElementById('runsql').onclick=runsql; document.getElementById('sqlcsv').onclick=()=>dl2(sqlC,sqlR,'query');
  document.getElementById('r0').oninput=onSlide; document.getElementById('r1').oninput=onSlide;
  document.getElementById('rreset').onclick=()=>{rangeSel={a:0,b:Qall.length-1};syncSlider();draw();};
+ document.getElementById('idx').onchange=draw;
  document.getElementById('downloads').innerHTML='&#11015; Data: '+PARTS.map(p=>`<a href="${p}" download>${p}</a>`).join(' &middot; ')+' (Python / Power BI / DuckDB)';
  if(HIER)buildTree(); else document.getElementById('tree').innerHTML='<p class="muted" style="padding:10px">hierarchy not found</p>';
  active=[{id:'ALL',label:'ALL'}]; measures=[{code:'COMB2170',label:'Total assets',pct:false}];
@@ -309,17 +324,21 @@ function mkSec(title,cnt){const sec=document.createElement('div');sec.className=
  h.onclick=()=>{const open=rows.style.display!=='none';rows.style.display=open?'none':'block';h.innerHTML=h.innerHTML.replace(open?'▾':'▸',open?'▸':'▾');};
  sec.appendChild(h);sec.appendChild(rows);return {sec,rows};}
 function rowEl(nd,has){const d=document.createElement('div');d.className='trow'+(nd.comb?' comb':'');
- d.dataset.code=nd.code;d.dataset.txt=(nd.code+' '+nd.caption).toLowerCase();
+ d.dataset.code=nd.code;d.dataset.txt=(nd.code+' '+nd.caption).toLowerCase();d.dataset.depth=nd.depth;
  d.style.paddingLeft=(6+(nd.depth-1)*14)+'px';
  const car=`<span class="caret"${has?'':' style="visibility:hidden"'}>▸</span>`;
  d.innerHTML=nd.derived?`${car}${nd.caption}`:`${car}${nd.num?`<span class=num>${nd.num}</span>`:''}${nd.caption}<span class=code>${nd.code}</span>`;
  const lab=nd.derived?short(nd.caption):(nd.caption||nd.code);
  d.querySelector('.caret').onclick=ev=>{ev.stopPropagation();if(has)toggleNode(d);};
  d.onclick=()=>toggleMeasure(nd.code,lab,nd.pct);return d;}
-function nest(flat){const roots=[],stack=[];
- for(const it of flat){const node={...it,children:[]};
-   while(stack.length&&stack[stack.length-1].depth>=node.depth)stack.pop();
-   (stack.length?stack[stack.length-1].children:roots).push(node);stack.push(node);}
+// nest by the item NUMBER (parent of "1.a.1" is "1.a"): robust for matrix schedules
+// like RC-N where ordering is column-major and a depth-stack would mis-parent rows.
+function nest(flat){const ns=flat.map(it=>({...it,children:[]}));
+ const byItem=new Map();for(const n of ns){if(n.num){if(!byItem.has(n.num))byItem.set(n.num,[]);byItem.get(n.num).push(n);}}
+ const first=it=>{const a=byItem.get(it);return a&&a[0];};
+ const ancestor=it=>{const p=String(it).split('.');p.pop();while(p.length){const k=p.join('.');if(byItem.has(k))return k;p.pop();}return null;};
+ const roots=[];
+ for(const n of ns){if(!n.num){roots.push(n);continue;}const a=ancestor(n.num);const par=a&&first(a);(par?par.children:roots).push(n);}
  return roots;}
 function emitSchedule(sch,showRaw){const raw=HIER[sch].filter(r=>REPORT.test(r.mdrm));if(!raw.length)return [];
  const capByBase={};for(const r of raw){const b=r.mdrm.slice(4);if(r.caption&&!capByBase[b])capByBase[b]=r.caption;}
@@ -348,11 +367,15 @@ function buildTree(){const t=document.getElementById('tree');t.innerHTML='';
  const keys=[...FORM_ORDER.filter(k=>HIER[k]),...Object.keys(HIER).filter(k=>SCHED_NAMES[k]&&!FORM_ORDER.includes(k))];
  for(const sch of keys){const flat=emitSchedule(sch,showRaw);if(!flat.length)continue;addSchedule(t,SCHED_NAMES[sch]||sch,nest(flat));}
  treeBuilt=true;markTree();}
-function expandAll(open,root='#tree'){
- document.querySelectorAll(`${root} .schrows`).forEach(r=>r.style.display=open?'block':'none');
- document.querySelectorAll(`${root} .kids`).forEach(k=>k.style.display=open?'block':'none');
- document.querySelectorAll(`${root} .schhead`).forEach(h=>{h.innerHTML=h.innerHTML.replace(open?'▸':'▾',open?'▾':'▸');});
- document.querySelectorAll(`${root} .caret`).forEach(c=>{if(c.style.visibility!=='hidden')c.textContent=open?'▾':'▸';});}
+let lvl={'#tree':0,'#formbody':0};
+function applyLevel(L,root='#tree'){L=Math.max(0,L);lvl[root]=L;
+ document.querySelectorAll(`${root} .schrows`).forEach(r=>r.style.display=L>=1?'block':'none');
+ document.querySelectorAll(`${root} .schhead`).forEach(h=>{const w=L>=1;h.innerHTML=h.innerHTML.replace(w?'▸':'▾',w?'▾':'▸');});
+ document.querySelectorAll(`${root} .trow, ${root} .frow`).forEach(row=>{if(!row._kids)return;const d=+(row.dataset.depth||1),open=d<L;
+   row._kids.style.display=open?'block':'none';const c=row.querySelector('.caret');if(c&&c.style.visibility!=='hidden')c.textContent=open?'▾':'▸';});}
+function maxDepth(root){let m=1;document.querySelectorAll(`${root} .trow, ${root} .frow`).forEach(r=>{const d=+(r.dataset.depth||1);if(d>m)m=d;});return m;}
+function expandAll(open,root='#tree'){applyLevel(open?maxDepth(root)+1:0,root);}
+function drill(step,root='#tree'){applyLevel((lvl[root]||0)+step,root);}
 function filterTree(q){q=q.trim().toLowerCase();
  if(!q){document.querySelectorAll('#tree .trow').forEach(r=>r.style.display='');
    document.querySelectorAll('#tree .schsec').forEach(s=>s.style.display='');expandAll(false);return;}
@@ -428,6 +451,8 @@ function draw(){const host=document.getElementById('panes');
  let html='';
  for(const [unit,arr] of groups){if(!arr.length)continue;
    const w=arr.map(s=>({...s,rows:s.rows.filter(r=>ws.has(r[0]))}));html+=pane(w,unit==='percent',unit,win);}
+ if(document.getElementById('idx')&&document.getElementById('idx').checked){const dol=lastSeries.filter(s=>!s.pct);
+   if(dol.length){const w=dol.map(s=>{const rw=s.rows.filter(r=>ws.has(r[0]));const bb=rw.find(r=>r[1]!=null&&r[1]!==0);const b=bb&&bb[1];return {...s,rows:b?rw.map(([q,v])=>[q,v==null?null:100*v/b]):[]};});html+=pane(w,false,'index',win);}}
  host.innerHTML=html;
  // KPI from primary series (first)
  const prim={...lastSeries[0],rows:lastSeries[0].rows.filter(r=>ws.has(r[0]))};
@@ -451,16 +476,16 @@ function pane(series,pct,unit,win){const W=1080,H=300,pad=64,n=win.length;
  const xi=Object.fromEntries(win.map((q,i)=>[q,i]));
  let mn=Infinity,mx=-Infinity;for(const s of series)for(const r of s.rows){mn=Math.min(mn,r[1]);mx=Math.max(mx,r[1]);}
  if(!isFinite(mn))return '';
- if(!pct&&mn>0)mn=0; const rg=(mx-mn)||1;
+ if(unit==='$ thousands'&&mn>0)mn=0; const rg=(mx-mn)||1;
  const X=i=>pad+i*(W-2*pad)/Math.max(1,n-1),Y=v=>H-pad-(v-mn)/rg*(H-2*pad);
- const f=v=>pct?v.toFixed(2)+'%':fmtUnit(v,false);
+ const f=v=>unit==='percent'?v.toFixed(2)+'%':unit==='index'?v.toFixed(0):fmtUnit(v,false);
  const gC=DK()?'#243044':'#eef2f7',aC=DK()?'#9aa3b2':'#5a6478',tC=DK()?'#e6e9ef':'#14213d';
  const tk=[mn,(mn+mx)/2,mx].map(v=>`<line x1="${pad}" y1="${Y(v)}" x2="${W-pad}" y2="${Y(v)}" stroke="${gC}"></line><text x="8" y="${Y(v)+4}" font-size="11" fill="${aC}">${f(v)}</text>`).join('');
  let paths='';for(const s of series){let p='';s.rows.forEach((r,k)=>{p+=(k?'L':'M')+X(xi[r[0]]).toFixed(1)+' '+Y(r[1]).toFixed(1)+' ';});
    paths+=`<path d="${p}" fill="none" stroke="${s.color}" stroke-width="2"></path>`;}
  const want=Math.min(8,n),ix=[...new Set(Array.from({length:want},(_,k)=>Math.round(k*(n-1)/Math.max(1,want-1))))];
  const lb=ix.map(i=>{const a=i===0?'start':(i===n-1?'end':'middle');return `<text x="${X(i)}" y="${H-pad+18}" font-size="10" fill="${aC}" text-anchor="${a}">${win[i]}</text>`;}).join('');
- const leg=series.map(s=>{const lv=s.rows.length?fmtUnit(s.rows[s.rows.length-1][1],pct):'—';return `<span><span class="sw" style="background:${s.color}"></span> ${s.label} <b>${lv}</b></span>`;}).join('');
+ const leg=series.map(s=>{const lv=(s.rows.length&&s.rows[s.rows.length-1][1]!=null)?f(s.rows[s.rows.length-1][1]):'—';return `<span><span class="sw" style="background:${s.color}"></span> ${s.label} <b>${lv}</b></span>`;}).join('');
  return `<div class="legend">${leg}</div><svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">${tk}${paths}${lb}<text x="14" y="16" font-size="11" fill="${tC}">${unit}</text></svg>`;}
 function exportSeries(){if(!window._exp){alert('Nothing to export.');return;}dl2(window._exp.head,window._exp.body,'series');}
 
@@ -479,7 +504,7 @@ async function renderForm(){const e=window._fe;if(!e)return;const ids=expand(e.i
  const r=(await conn.query(`SELECT quarter_end,mdrm,SUM(value) v FROM t WHERE entity_id IN (${sqlList(ids)}) AND quarter_end IN (${sqlList(cols)}) GROUP BY quarter_end,mdrm`)).toArray();
  const val={};for(const x of r){(val[x.mdrm]=val[x.mdrm]||{})[String(x.quarter_end)]=Number(x.v);}
  const body=document.getElementById('formbody');body.innerHTML='';window._fr=[];window._fcols=colsDesc;
- const hd=document.createElement('div');hd.className='frow';hd.style.cssText='font-weight:700;position:sticky;top:0;background:#fff;z-index:2';
+ const hd=document.createElement('div');hd.className='frow';hd.style.cssText=`font-weight:700;position:sticky;top:0;z-index:2;background:${DK()?'#161e2b':'#fff'}`;
  hd.innerHTML=`<span class="lab">Item</span>`+colsDesc.map(q=>`<span class="vcell">${q.slice(0,7)}</span>`).join('');
  body.appendChild(hd);
  const keys=[...FORM_ORDER.filter(k=>HIER[k]),...Object.keys(HIER).filter(k=>SCHED_NAMES[k]&&!FORM_ORDER.includes(k))];
@@ -490,7 +515,7 @@ async function renderForm(){const e=window._fe;if(!e)return;const ids=expand(e.i
    for(const rr of items)window._fr.push([sch,rr.item||'',rr.mdrm,rr.caption||rr.mdrm,...colsDesc.map(q=>(val[rr.mdrm]&&val[rr.mdrm][q])??'')]);}
  if(!window._fr.length)body.innerHTML='<p class=muted>No data for this entity/range.</p>';}
 function renderFormNodes(container,nodes,colsDesc,val){for(const nd of nodes){const has=nd.children.length>0;
- const d=document.createElement('div');d.className='frow';d.style.paddingLeft=(6+(nd.depth-1)*14)+'px';
+ const d=document.createElement('div');d.className='frow';d.dataset.depth=nd.depth;d.style.paddingLeft=(6+(nd.depth-1)*14)+'px';
  const car=has?`<span class="caret">▸</span>`:`<span class="caret" style="visibility:hidden">▸</span>`;
  const cells=colsDesc.map(q=>{const v=val[nd.code]&&val[nd.code][q];return `<span class="vcell">${v==null?'':Number(v).toLocaleString()}</span>`;}).join('');
  d.innerHTML=`<span class="lab">${car}${nd.num?`<b>${nd.num}</b> `:''}${nd.caption} <span style="color:#9aa3b2;font-size:11px">${nd.code}</span></span>${cells}`;
