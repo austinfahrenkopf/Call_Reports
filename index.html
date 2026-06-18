@@ -1,46 +1,139 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>FFIEC Call Report Explorer — U.S. Commercial Banks</title>
+<title>FFIEC Call Report Dashboard</title>
 <style>
  body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;color:#14213d;background:#fafbfc}
  header{background:#14213d;color:#fff;padding:14px 22px}header h1{margin:0;font-size:18px}header p{margin:4px 0 0;font-size:13px;color:#aeb7c9}
- .wrap{max-width:1100px;margin:18px auto;padding:0 18px}
- .row{display:flex;gap:14px;flex-wrap:wrap;align-items:end;margin-bottom:12px}
+ .wrap{max-width:1180px;margin:16px auto;padding:0 18px}
+ .row{display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin-bottom:10px}
  label{font-size:12px;color:#5a6478;display:block;margin-bottom:3px}
  select,input{font-size:14px;padding:7px;border:1px solid #cdd5e0;border-radius:7px;background:#fff}
- input{min-width:330px}#ent{min-width:480px}button{font-size:14px;padding:8px 14px;border:1px solid #1b7f3b;background:#1b7f3b;color:#fff;border-radius:7px;cursor:pointer}
- button.sec{background:#fff;color:#14213d;border-color:#cdd5e0}#status{font-size:13px;color:#5a6478;margin:8px 0}
+ input{min-width:330px}#ent{min-width:430px}#pname{min-width:170px}
+ button{font-size:14px;padding:8px 13px;border:1px solid #1b7f3b;background:#1b7f3b;color:#fff;border-radius:7px;cursor:pointer}
+ button.sec{background:#fff;color:#14213d;border-color:#cdd5e0}#status{font-size:13px;color:#5a6478;margin:6px 0}
+ .chips{display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 10px}
+ .chip{display:inline-flex;align-items:center;gap:7px;font-size:12px;background:#eef3f8;border:1px solid #d8e0ea;border-radius:14px;padding:4px 10px}
+ .chip b{font-weight:600}.chip .x{cursor:pointer;color:#8a93a3;font-weight:700}
+ .sw{width:10px;height:10px;border-radius:50%;display:inline-block}
+ .cards{display:flex;gap:14px;flex-wrap:wrap;margin:6px 0 14px}
+ .card{flex:1;min-width:150px;background:#fff;border:1px solid #e3e8ef;border-radius:10px;padding:12px 14px}
+ .card .k{font-size:12px;color:#5a6478}.card .v{font-size:22px;font-weight:700;margin-top:4px}
+ .up{color:#1b7f3b}.dn{color:#c0392b}
  table{border-collapse:collapse;width:100%;font-size:13px;margin-top:10px}th,td{border:1px solid #e3e8ef;padding:6px 9px;text-align:right}
  th{background:#f2f5f9}td:first-child,th:first-child{text-align:left}svg{background:#fff;border:1px solid #e3e8ef;border-radius:8px}
- details{margin-top:20px;background:#fff;border:1px solid #e3e8ef;border-radius:8px;padding:12px}
- textarea{width:100%;height:80px;font-family:Consolas,monospace;font-size:13px}.muted{color:#5a6478;font-size:12px}
+ details{margin-top:14px;background:#fff;border:1px solid #e3e8ef;border-radius:8px;padding:12px}
+ textarea{width:100%;height:78px;font-family:Consolas,monospace;font-size:13px}.muted{color:#5a6478;font-size:12px}
+ .box{background:#fff;border:1px solid #e3e8ef;border-radius:8px;padding:12px;margin-bottom:12px}
+ .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;margin:6px 0}
 </style></head><body>
-<header><h1>FFIEC Call Report Explorer</h1>
-<p>U.S. commercial banks (031/041/051) · individual large banks + ALL / type / size-bucket aggregates · 2001&ndash;present · $ thousands</p></header>
+<header><h1>FFIEC Call Report Dashboard</h1>
+<p>U.S. commercial banks (031/041/051) · individual large banks + ALL / type / size buckets + your peer groups · 2001&ndash;present · $ thousands</p></header>
 <div class="wrap">
- <div id="status">Loading data engine…</div><div id="downloads" class="muted" style="margin-bottom:10px"></div>
+ <div id="status">Loading data engine…</div><div id="downloads" class="muted" style="margin-bottom:8px"></div>
+
  <div class="row">
-  <div><label>Entity (type a bank name, RSSD, or ALL / 031 / 051 / SIZE_…)</label><input id="ent" list="entlist" placeholder="e.g. JPMorgan or ALL or SIZE_&lt;1B" autocomplete="off"><datalist id="entlist"></datalist></div>
+  <div><label>Entity (bank name, RSSD, ALL / 031 / 051 / SIZE_… , or ★ peer group)</label><input id="ent" list="entlist" autocomplete="off"><datalist id="entlist"></datalist></div>
+  <div><button id="add" class="sec">+ Add to chart</button> <button id="addpeer" class="sec">+ Add to peer</button></div>
   <div><label>Schedule</label><select id="sched"></select></div>
-  <div><label>Line item (code or description)</label><input id="mdrm" list="mdrmlist" placeholder="e.g. RCFD2170 or total assets" autocomplete="off"><datalist id="mdrmlist"></datalist></div>
-  <div><button id="go" class="sec">Show</button> <button id="csv" class="sec" disabled>Export</button></div>
  </div>
+ <div class="row">
+  <div><label>Line item or ratio</label><input id="mdrm" list="mdrmlist" autocomplete="off"><datalist id="mdrmlist"></datalist></div>
+  <div><label style="font-size:12px;margin-bottom:8px"><input type="checkbox" id="shareAll"> Share-of-ALL column (single level item)</label></div>
+  <div><button id="go">Show</button> <button id="csv" class="sec" disabled>Export</button></div>
+ </div>
+ <div><label>Charted entities (overlay to compare)</label><div id="chips" class="chips"><span class="muted">none — add entities above</span></div></div>
+
+ <details class="box" id="peerbox"><summary><b>Peer-group builder</b> — assemble a custom bucket of banks; it aggregates correctly for levels and ratios</summary>
+  <div class="row" style="margin-top:10px">
+   <div><label>Peer group name</label><input id="pname" placeholder="e.g. My GSIB peers"></div>
+   <div><button id="savepeer">Save peer group</button> <button id="clearpeer" class="sec">Clear members</button></div>
+  </div>
+  <div><label>Members (use “+ Add to peer” above to add the entity box value)</label><div id="pmembers" class="chips"><span class="muted">no members yet</span></div></div>
+  <div><label>Saved peer groups</label><div id="psaved" class="chips"></div></div>
+  <p class="muted">Saved in this browser. Members can be individual banks (best) or segments. Ratios are computed by summing each member’s components, then dividing — a proper asset-weighted peer ratio.</p>
+ </details>
+
+ <div class="cards" id="cards"></div>
+ <div class="legend" id="legend"></div>
  <div id="chart"></div><div id="table"></div>
- <details><summary><b>SQL</b> — table <code>t</code> (entity_id,entity_label,kind,quarter_end,mdrm,value,n_filers,schedule,description)</summary>
-  <textarea id="sql">SELECT quarter_end, value FROM t WHERE entity_id='ALL' AND mdrm='RCFD2170' ORDER BY quarter_end;</textarea>
+
+ <details class="box"><summary><b>SQL</b> — table <code>t</code> (entity_id,entity_label,kind,quarter_end,mdrm,value,n_filers,schedule,description)</summary>
+  <textarea id="sql">SELECT quarter_end, value FROM t WHERE entity_id='ALL' AND mdrm='COMB2170' ORDER BY quarter_end;</textarea>
   <div style="margin-top:8px"><button id="runsql" class="sec">Run</button> <button id="sqlcsv" class="sec">Export result</button></div>
   <div id="sqlout"></div></details>
 </div>
 <script type="module">
 import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.0/+esm';
 const PARTS=['ffiec_call.parquet']; const st=m=>document.getElementById('status').textContent=m;
-let conn,lastC=[],lastR=[],emap=new Map(),mmap=new Map(),sqlC=[],sqlR=[];
-function entId(){const v=document.getElementById('ent').value.trim(); if(emap.has(v))return emap.get(v);
-  if(/^(ALL|031|041|051|SIZE_)/i.test(v)) return v.toUpperCase()==='ALL'?'ALL':v;
-  const m=v.match(/(\d{3,})/); if(m&&emap.has('BANK:'+m[1])) return 'BANK:'+m[1];
-  if(m) return 'BANK:'+m[1]; return null;}
-function mcode(){const v=document.getElementById('mdrm').value.trim(); if(mmap.has(v))return mmap.get(v);
-  const m=v.match(/^([A-Za-z]{4}[A-Za-z0-9]{4})/); return m?m[1].toUpperCase():null;}
+const COLORS=['#1b7f3b','#e07a1f','#2b6cb0','#b83280','#6b46c1','#d69e2e','#0f766e','#be123c'];
+let conn,lbl2id=new Map(),id2lbl=new Map(),mmap=new Map(),sqlC=[],sqlR=[];
+let active=[];           // [{id,label}]  entities overlaid on chart
+let peerMembers=[];      // [{id,label}]  builder members
+let peers={};            // name -> [ids]
+let expC=[],expR=[];     // last export
+// unused-commitment bases (RC-L item 1). CRE bucket is 3816 in old forms, split into
+// F164+F165+6550 in newer forms; only one representation exists per quarter, so summing
+// all (missing=0) gives a continuous total without double-counting.
+const UNUSED=['3814','3815','3816','F164','F165','6550','3817','3818'];
+const DERIV={
+ // ---- RATIOS (percent) ----
+ 'D_LOANSDEP':{type:'ratio',lbl:'Derived: Loans / Deposits (%)',plus:['2122'],minus:[],den:['2200']},
+ 'D_DEPASSETS':{type:'ratio',lbl:'Derived: Deposits / Assets (%)',plus:['2200'],minus:[],den:['2170']},
+ 'D_NONDEP':{type:'ratio',lbl:'Derived: Non-deposit liabilities / Assets (%)',plus:['2948'],minus:['2200'],den:['2170']},
+ 'D_NPL':{type:'ratio',lbl:'Derived: NPL ratio % (30-89 + 90+ + nonaccrual / loans)',plus:['1406','1407','1403'],minus:[],den:['2122']},
+ 'D_NONCUR_PCT':{type:'ratio',lbl:'Derived: Noncurrent loan ratio % (90+ + nonaccrual / loans)',plus:['1407','1403'],minus:[],den:['2122']},
+ 'D_RESLOANS':{type:'ratio',lbl:'Derived: Reserves / Loans (%)',plus:['3123'],minus:[],den:['2122']},
+ 'D_RESNPL':{type:'ratio',lbl:'Derived: Reserve coverage % (reserves / noncurrent loans)',plus:['3123'],minus:[],den:['1407','1403']},
+ 'D_EQASSETS':{type:'ratio',lbl:'Derived: Equity / Assets (%)',plus:['3210'],minus:[],den:['2170']},
+ 'D_UND_LOANS':{type:'ratio',lbl:'Derived: Unused commitments / Loans (%)',plus:UNUSED,minus:[],den:['2122']},
+ 'D_UND_ASSETS':{type:'ratio',lbl:'Derived: Unused commitments / Assets (%)',plus:UNUSED,minus:[],den:['2170']},
+ 'D_UTIL':{type:'ratio',lbl:'Derived: Loan utilization % (loans / (loans + unused))',plus:['2122'],minus:[],den:['2122',...UNUSED]},
+ // ---- SUBTOTALS / GRAND TOTALS ($ thousands) ----
+ 'S_NONCUR':{type:'sum',lbl:'Subtotal: Noncurrent loans $ (90+ past due + nonaccrual)',plus:['1407','1403'],minus:[]},
+ 'S_PASTDUE':{type:'sum',lbl:'Subtotal: Past due + nonaccrual $ (30-89 + 90+ + nonaccrual)',plus:['1406','1407','1403'],minus:[]},
+ 'S_UNUSED':{type:'sum',lbl:'Subtotal: Total unused commitments $ (RC-L item 1)',plus:UNUSED,minus:[]},
+ 'S_EXPOSURE':{type:'sum',lbl:'Subtotal: Total loan exposure $ (loans + unused commitments)',plus:['2122',...UNUSED],minus:[]},
+};
+const DKIND=m=>DERIV[m]?DERIV[m].type:null;
+const isPct=m=>DKIND(m)==='ratio';      // percent display; 'sum' derived show as $
+const fmt=(v,pct)=>v==null?'—':(pct?(+v).toFixed(2)+'%':Number(v).toLocaleString());
+const sqlList=a=>a.map(x=>`'${String(x).replace(/'/g,"''")}'`).join(',');
+
+function loadPeers(){try{peers=JSON.parse(localStorage.getItem('ffiec_peers')||'{}');}catch{peers={};}}
+function savePeers(){localStorage.setItem('ffiec_peers',JSON.stringify(peers));}
+
+function resolveEnt(){const v=document.getElementById('ent').value.trim();
+ if(lbl2id.has(v))return {id:lbl2id.get(v),label:v};
+ if(v.replace(/^★\s*/,'') in peers){const n=v.replace(/^★\s*/,'');return {id:'PEER:'+n,label:'★ '+n};}
+ if(/^(ALL|031|041|051|SIZE_)/i.test(v)){const id=v.toUpperCase()==='ALL'?'ALL':v;return {id,label:id};}
+ const m=v.match(/(\d{3,})/);if(m){const id='BANK:'+m[1];return {id,label:id2lbl.get(id)||id};}return null;}
+function mcode(){const v=document.getElementById('mdrm').value.trim();if(mmap.has(v))return mmap.get(v);
+ const m=v.match(/^([A-Za-z]{4}[A-Za-z0-9]{4}|D_[A-Z]+)/);return m?m[1].toUpperCase():null;}
+
+// expand an entity id to the list of underlying entity_ids that get summed into ONE series
+function expand(id){if(id&&id.startsWith('PEER:')){const n=id.slice(5);return peers[n]||[];}return [id];}
+function coalesce(map,base){return map['COMB'+base]??map['RCFD'+base]??map['RCON'+base];}
+
+// one series (array of [quarter,value]) for an entity id and metric, summing members where needed
+async function seriesFor(id,m){const ids=expand(id);if(!ids.length)return [];
+ const d=DERIV[m];
+ if(d){const bases=[...d.plus,...(d.minus||[]),...(d.den||[])];
+   const codes=[];for(const b of bases)for(const p of['COMB','RCFD','RCON'])codes.push(`${p}${b}`);
+   const r=(await conn.query(`SELECT entity_id,quarter_end,mdrm,value FROM t WHERE entity_id IN (${sqlList(ids)}) AND mdrm IN (${sqlList(codes)})`)).toArray();
+   // per quarter, per entity -> coalesced base values, then aggregate across entities
+   const byqe={};for(const x of r){((byqe[x.quarter_end]=byqe[x.quarter_end]||{})[x.entity_id]=byqe[x.quarter_end][x.entity_id]||{})[x.mdrm]=Number(x.value);}
+   // sum present components (missing=0); track whether any component was present
+   const acc=(mp,arr)=>{let s=0,seen=false;for(const b of arr){const v=coalesce(mp,b);if(v!=null){s+=v;seen=true;}}return [s,seen];};
+   const out=[];for(const q of Object.keys(byqe).sort()){let num=0,den=0,anyN=false,anyD=false;
+     for(const eid of Object.keys(byqe[q])){const mp=byqe[q][eid];
+       const [np,ns]=acc(mp,d.plus);const [nm,ms]=acc(mp,d.minus||[]);num+=np-nm;if(ns||ms)anyN=true;
+       const [dp,ds]=acc(mp,d.den||[]);den+=dp;if(ds)anyD=true;}
+     if(d.type==='sum'){if(anyN)out.push([q,num]);}
+     else {if(anyN&&anyD&&den>0)out.push([q,100*num/den]);}}
+   return out;}
+ const r=(await conn.query(`SELECT quarter_end, SUM(value) v FROM t WHERE entity_id IN (${sqlList(ids)}) AND mdrm='${m}' GROUP BY quarter_end ORDER BY quarter_end`)).toArray();
+ return r.map(x=>[String(x.quarter_end),Number(x.v)]);}
+
 async function init(){try{
  const B=duckdb.getJsDelivrBundles(),b=await duckdb.selectBundle(B);
  const w=await duckdb.createWorker(b.mainWorker);const db=new duckdb.AsyncDuckDB(new duckdb.ConsoleLogger(),w);
@@ -51,49 +144,111 @@ async function init(){try{
  st('Indexing entities…');
  const ents=(await conn.query("SELECT entity_id, any_value(entity_label) lbl, any_value(kind) k FROM t GROUP BY entity_id")).toArray();
  const rank=e=>({all:0,filing_type:1,size_bucket:2,bank:3}[e.k]??9);
- ents.sort((x,y)=>rank(x)-rank(y) || String(x.lbl).localeCompare(String(y.lbl)));
- const dl=document.getElementById('entlist');
- for(const e of ents){emap.set(e.lbl, e.entity_id); const o=document.createElement('option'); o.value=e.lbl; dl.appendChild(o);}
+ ents.sort((x,y)=>rank(x)-rank(y)||String(x.lbl).localeCompare(String(y.lbl)));
+ for(const e of ents){lbl2id.set(e.lbl,e.entity_id);id2lbl.set(e.entity_id,e.lbl);}
+ window._ents=ents; loadPeers(); rebuildEntList();
  document.getElementById('ent').value='ALL';
  const scs=(await conn.query("SELECT DISTINCT schedule FROM t WHERE schedule<>'' ORDER BY schedule")).toArray().map(r=>r.schedule);
  const sc=document.getElementById('sched');{const o=document.createElement('option');o.value='';o.textContent='(all schedules)';sc.appendChild(o);}
  for(const s of scs){const o=document.createElement('option');o.value=s;o.textContent=s;sc.appendChild(o);}
- document.getElementById('ent').addEventListener('change',async()=>{await loadMdrm();await show();});
  sc.onchange=async()=>{await loadMdrm();await show();};
  document.getElementById('mdrm').addEventListener('change',show);
- document.getElementById('go').onclick=show;
- for(const el of [document.getElementById('ent'),document.getElementById('mdrm')]){
+ document.getElementById('go').onclick=show; document.getElementById('shareAll').onchange=show;
+ document.getElementById('add').onclick=()=>{const e=resolveEnt();if(!e)return;if(!active.find(a=>a.id===e.id))active.push(e);renderChips();show();};
+ document.getElementById('addpeer').onclick=()=>{const e=resolveEnt();if(!e)return;if(!peerMembers.find(a=>a.id===e.id))peerMembers.push(e);renderPeerBuilder();document.getElementById('peerbox').open=true;};
+ document.getElementById('savepeer').onclick=savePeer;
+ document.getElementById('clearpeer').onclick=()=>{peerMembers=[];renderPeerBuilder();};
+ for(const el of[document.getElementById('ent'),document.getElementById('mdrm')]){
    el.addEventListener('focus',function(){this.dataset.prev=this.value;this.value='';});
-   el.addEventListener('blur',function(){const me=this;setTimeout(()=>{if(me.value.trim()===''&&me.dataset.prev)me.value=me.dataset.prev;},200);});
+   el.addEventListener('blur',function(){const me=this;setTimeout(()=>{if(me.value.trim()===''&&me.dataset.prev)me.value=me.dataset.prev;},200);});}
+ document.getElementById('ent').addEventListener('change',loadMdrm);
+ document.getElementById('csv').onclick=()=>dl2(expC,expR,'series');
+ document.getElementById('runsql').onclick=runsql;document.getElementById('sqlcsv').onclick=()=>dl2(sqlC,sqlR,'query');
+ document.getElementById('downloads').innerHTML='&#11015; Data: '+PARTS.map(p=>`<a href="${p}" download>${p}</a>`).join(' &middot; ')+' (Python / Power BI / DuckDB)';
+ active=[{id:'ALL',label:'ALL'}]; renderChips(); renderPeerSaved();
+ await loadMdrm();st(`Ready — ${ents.length} entities. Add entities to compare; build peer groups below.`);show();
+}catch(e){st('Load failed: '+e+' — "HTTP 404"=parquet not uploaded; module error=CDN blocked.');}}
+
+function rebuildEntList(){const dl=document.getElementById('entlist');dl.innerHTML='';
+ for(const n in peers){const o=document.createElement('option');o.value='★ '+n;dl.appendChild(o);}
+ for(const e of (window._ents||[])){const o=document.createElement('option');o.value=e.lbl;dl.appendChild(o);}}
+function renderChips(){const c=document.getElementById('chips');if(!active.length){c.innerHTML='<span class="muted">none — add entities above</span>';return;}
+ c.innerHTML=active.map((a,i)=>`<span class="chip"><span class="sw" style="background:${COLORS[i%COLORS.length]}"></span><b>${a.label}</b><span class="x" data-i="${i}">✕</span></span>`).join('');
+ c.querySelectorAll('.x').forEach(x=>x.onclick=()=>{active.splice(+x.dataset.i,1);renderChips();show();});}
+function renderPeerBuilder(){const c=document.getElementById('pmembers');if(!peerMembers.length){c.innerHTML='<span class="muted">no members yet</span>';return;}
+ c.innerHTML=peerMembers.map((a,i)=>`<span class="chip"><b>${a.label}</b><span class="x" data-i="${i}">✕</span></span>`).join('');
+ c.querySelectorAll('.x').forEach(x=>x.onclick=()=>{peerMembers.splice(+x.dataset.i,1);renderPeerBuilder();});}
+function renderPeerSaved(){const c=document.getElementById('psaved');const names=Object.keys(peers);
+ if(!names.length){c.innerHTML='<span class="muted">none saved</span>';return;}
+ c.innerHTML=names.map(n=>`<span class="chip"><b>★ ${n}</b> <span class="muted">(${peers[n].length})</span> <span class="use" data-n="${n}" style="cursor:pointer;color:#1b7f3b;font-weight:700">＋chart</span> <span class="x" data-n="${n}">✕</span></span>`).join('');
+ c.querySelectorAll('.use').forEach(u=>u.onclick=()=>{const id='PEER:'+u.dataset.n;if(!active.find(a=>a.id===id))active.push({id,label:'★ '+u.dataset.n});renderChips();show();});
+ c.querySelectorAll('.x').forEach(x=>x.onclick=()=>{delete peers[x.dataset.n];savePeers();rebuildEntList();renderPeerSaved();});}
+function savePeer(){const n=document.getElementById('pname').value.trim();if(!n){alert('Name the peer group.');return;}
+ if(!peerMembers.length){alert('Add at least one member.');return;}
+ peers[n]=peerMembers.map(m=>m.id);savePeers();rebuildEntList();renderPeerSaved();
+ document.getElementById('pname').value='';peerMembers=[];renderPeerBuilder();
+ st(`Saved peer group "${n}". Find it as "★ ${n}" in the entity box.`);}
+
+async function loadMdrm(){const e=resolveEnt();if(!e)return;const ids=expand(e.id);const sch=document.getElementById('sched').value,w=sch?`AND schedule='${sch}'`:'';
+ const r=(await conn.query(`SELECT mdrm, any_value(description) d FROM t WHERE entity_id IN (${sqlList(ids)}) ${w} GROUP BY mdrm ORDER BY mdrm`)).toArray();
+ const dl=document.getElementById('mdrmlist');dl.innerHTML='';mmap.clear();
+ if(!sch) for(const k in DERIV){mmap.set(DERIV[k].lbl,k);const o=document.createElement('option');o.value=DERIV[k].lbl;dl.appendChild(o);}
+ let def='',first='';
+ for(const x of r){const lab=x.d?`${x.mdrm} — ${x.d}`:x.mdrm;mmap.set(lab,x.mdrm);const o=document.createElement('option');o.value=lab;dl.appendChild(o);
+   if(!first)first=lab;if(x.mdrm==='COMB2170'||x.mdrm==='RCFD2170'||x.mdrm==='RCON2170')def=lab;}
+ if(!document.getElementById('mdrm').value) document.getElementById('mdrm').value=def||first;}
+
+async function show(){try{const m=mcode();if(!active.length||!m){st('Add an entity and pick a line item.');return;}
+ const pct=isPct(m);
+ const series=[];for(const a of active){series.push({label:a.label,id:a.id,rows:await seriesFor(a.id,m)});}
+ const prim=series[0];if(!prim.rows.length){st('No data for the primary entity / metric.');document.getElementById('chart').innerHTML='<p class=muted>No data.</p>';document.getElementById('table').innerHTML='';document.getElementById('cards').innerHTML='';return;}
+ // KPI cards from primary
+ const pv=prim.rows.map(r=>r[1]),pq=prim.rows.map(r=>r[0]);
+ const last=pv[pv.length-1],prev=pv[pv.length-2],yr=pv[pv.length-5];
+ const qoq=prev?100*(last/prev-1):null,yoy=yr?100*(last/yr-1):null;
+ const cls=x=>x==null?'':(x>=0?'up':'dn'),arr=x=>x==null?'—':((x>=0?'▲ ':'▼ ')+Math.abs(x).toFixed(1)+'%');
+ document.getElementById('cards').innerHTML=
+  `<div class=card><div class=k>${prim.label} — latest (${pq[pq.length-1]})</div><div class=v>${fmt(last,pct)}</div></div>`+
+  `<div class=card><div class=k>QoQ</div><div class="v ${cls(qoq)}">${arr(qoq)}</div></div>`+
+  `<div class=card><div class=k>YoY</div><div class="v ${cls(yoy)}">${arr(yoy)}</div></div>`+
+  `<div class=card><div class=k>Entities charted</div><div class=v>${series.length}</div></div>`;
+ chart(series,pct);
+ // table
+ if(series.length===1){
+   let share=null;
+   if(document.getElementById('shareAll').checked && !pct && prim.id!=='ALL'){
+     const a=Object.fromEntries(await seriesFor('ALL',m));share={};for(const[q,v]of prim.rows)if(a[q])share[q]=100*v/a[q];}
+   expC=['quarter_end',pct?'value(%)':'value','QoQ %','YoY %'];if(share)expC.push('share_of_ALL %');
+   expR=prim.rows.map(([q,v],i)=>{const a=i>0&&pv[i-1]?100*(v/pv[i-1]-1):null,y=i>=4&&pv[i-4]?100*(v/pv[i-4]-1):null;
+     const r=[q,pct?+v.toFixed(3):v,a==null?'':a.toFixed(1),y==null?'':y.toFixed(1)];if(share)r.push(share[q]==null?'':share[q].toFixed(2));return r;});
+ } else { // wide comparison: quarter + one col per entity
+   const qset=[...new Set([].concat(...series.map(s=>s.rows.map(r=>r[0]))))].sort();
+   const maps=series.map(s=>Object.fromEntries(s.rows));
+   expC=['quarter_end',...series.map(s=>s.label)];
+   expR=qset.map(q=>[q,...maps.map(mp=>mp[q]==null?'':(pct?+mp[q].toFixed(3):mp[q]))]);
  }
- document.getElementById('csv').onclick=()=>dl2(lastC,lastR,'series');
- document.getElementById('runsql').onclick=runsql; document.getElementById('sqlcsv').onclick=()=>dl2(sqlC,sqlR,'query');
- document.getElementById('downloads').innerHTML='&#11015; Data files: '+PARTS.map(p=>`<a href="${p}" download>${p}</a>`).join(' &middot; ')+' (open in Python / Power BI / DuckDB)';
- await loadMdrm(); st(`Ready — ${ents.length} entities. Type a bank or pick ALL/031/041/051/SIZE_…`); show();
-}catch(e){st('Load failed: '+e+' — "HTTP 404" = parquet not uploaded; module error = CDN blocked.');}}
-async function loadMdrm(){const id=entId();if(!id)return;const sch=document.getElementById('sched').value;const w=sch?`AND schedule='${sch}'`:'';
- const r=(await conn.query(`SELECT mdrm, any_value(description) d FROM t WHERE entity_id='${id}' ${w} GROUP BY mdrm ORDER BY mdrm`)).toArray();
- const dl=document.getElementById('mdrmlist');dl.innerHTML='';mmap.clear();let def='',first='';
- for(const x of r){const lbl=x.d?`${x.mdrm} — ${x.d}`:x.mdrm;mmap.set(lbl,x.mdrm);const o=document.createElement('option');o.value=lbl;dl.appendChild(o);if(!first)first=lbl;if(x.mdrm==='RCFD2170'||x.mdrm==='RCON2170')def=lbl;}
- document.getElementById('mdrm').value=def||first;}
-async function show(){try{const id=entId(),m=mcode();if(!id||!m){st('Pick an entity and a line item.');return;}
- const r=(await conn.query(`SELECT quarter_end,value,n_filers FROM t WHERE entity_id='${id}' AND mdrm='${m}' ORDER BY quarter_end`)).toArray();
- lastC=['quarter_end','value','n_filers'];lastR=r.map(x=>[String(x.quarter_end),Number(x.value),Number(x.n_filers)]);
- if(!lastR.length){st('No data for that selection.');document.getElementById('chart').innerHTML='<p class=muted>No data.</p>';document.getElementById('table').innerHTML='';return;}
- chart(lastR);tbl(lastC,lastR);document.getElementById('csv').disabled=false;
- const lbl=[...emap].find(([l,i])=>i===id); st(`${lbl?lbl[0]:id} · ${m} — ${lastR.length} quarters`);}catch(e){st('Error: '+e);}}
-function chart(rows){const W=1040,H=320,pad=58,xs=rows.map(r=>r[0]),ys=rows.map(r=>r[1]),n=rows.length;
- let sx=0,sy=0,sxx=0,sxy=0;rows.forEach((r,i)=>{sx+=i;sy+=r[1];sxx+=i*i;sxy+=i*r[1];});
- const sl=(n*sxy-sx*sy)/((n*sxx-sx*sx)||1),ic=(sy-sl*sx)/n,t0=ic,t1=ic+sl*(n-1);
- const mn=Math.min(...ys,t0,t1),mx=Math.max(...ys,t0,t1),rg=(mx-mn)||1;
- const X=i=>pad+i*(W-2*pad)/Math.max(1,n-1),Y=v=>H-pad-(v-mn)/rg*(H-2*pad);
- let p='';rows.forEach((r,i)=>{p+=(i?'L':'M')+X(i).toFixed(1)+' '+Y(r[1]).toFixed(1)+' ';});
- const tr=`M ${X(0).toFixed(1)} ${Y(t0).toFixed(1)} L ${X(n-1).toFixed(1)} ${Y(t1).toFixed(1)}`;
- const tk=[mn,(mn+mx)/2,mx].map(v=>`<line x1="${pad}" y1="${Y(v)}" x2="${W-pad}" y2="${Y(v)}" stroke="#eef2f7"></line><text x="6" y="${Y(v)+4}" font-size="11" fill="#5a6478">${(v/1000).toLocaleString(undefined,{maximumFractionDigits:0})}k</text>`).join('');
+ tableRender(expC,expR);document.getElementById('csv').disabled=false;
+ st(`${series.map(s=>s.label).join('  vs  ')} · ${DERIV[m]?DERIV[m].lbl:m}`);
+}catch(e){st('Error: '+e);console.error(e);}}
+
+function chart(series,pct){const W=1100,H=330,pad=62;
+ const qset=[...new Set([].concat(...series.map(s=>s.rows.map(r=>r[0]))))].sort();
+ const xi=Object.fromEntries(qset.map((q,i)=>[q,i])),n=qset.length;
+ let mn=Infinity,mx=-Infinity;for(const s of series)for(const r of s.rows){mn=Math.min(mn,r[1]);mx=Math.max(mx,r[1]);}
+ if(!isFinite(mn)){document.getElementById('chart').innerHTML='<p class=muted>No data.</p>';return;}
+ const rg=(mx-mn)||1;const X=i=>pad+i*(W-2*pad)/Math.max(1,n-1),Y=v=>H-pad-(v-mn)/rg*(H-2*pad);
+ const f=v=>pct?v.toFixed(2)+'%':(v/1000).toLocaleString(undefined,{maximumFractionDigits:0})+'k';
+ const tk=[mn,(mn+mx)/2,mx].map(v=>`<line x1="${pad}" y1="${Y(v)}" x2="${W-pad}" y2="${Y(v)}" stroke="#eef2f7"></line><text x="6" y="${Y(v)+4}" font-size="11" fill="#5a6478">${f(v)}</text>`).join('');
+ let paths='';series.forEach((s,si)=>{let p='';s.rows.forEach((r,k)=>{p+=(k?'L':'M')+X(xi[r[0]]).toFixed(1)+' '+Y(r[1]).toFixed(1)+' ';});
+   paths+=`<path d="${p}" fill="none" stroke="${COLORS[si%COLORS.length]}" stroke-width="2"></path>`;});
  const want=7,ix=[...new Set(Array.from({length:want},(_,k)=>Math.round(k*(n-1)/(want-1))))];
- const lb=ix.map(i=>{const a=i===0?'start':(i===n-1?'end':'middle');return `<text x="${X(i)}" y="${H-pad+18}" font-size="10" fill="#5a6478" text-anchor="${a}">${xs[i]}</text>`;}).join('');
- document.getElementById('chart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">${tk}<path d="${tr}" fill="none" stroke="#e07a1f" stroke-width="2" stroke-dasharray="6 5"></path><path d="${p}" fill="none" stroke="#1b7f3b" stroke-width="2"></path>${lb}<text x="${W/2}" y="16" font-size="12" fill="#14213d" text-anchor="middle">value in $thousands (dashed = trend)</text></svg>`;}
-function tbl(c,rows){let h='<table><tr>'+c.map(x=>`<th>${x}</th>`).join('')+'</tr>';for(const r of rows)h+='<tr>'+r.map((v,i)=>`<td>${i>0?Number(v).toLocaleString():v}</td>`).join('')+'</tr>';document.getElementById('table').innerHTML=h+'</table>';}
+ const lb=ix.map(i=>{const a=i===0?'start':(i===n-1?'end':'middle');return `<text x="${X(i)}" y="${H-pad+18}" font-size="10" fill="#5a6478" text-anchor="${a}">${qset[i]}</text>`;}).join('');
+ document.getElementById('chart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">${tk}${paths}${lb}<text x="${W/2}" y="16" font-size="12" fill="#14213d" text-anchor="middle">${pct?'percent':'value in $thousands'}</text></svg>`;
+ document.getElementById('legend').innerHTML=series.map((s,i)=>`<span><span class="sw" style="background:${COLORS[i%COLORS.length]}"></span> ${s.label}</span>`).join('');}
+
+function tableRender(c,rows){let h='<table><tr>'+c.map(x=>`<th>${x}</th>`).join('')+'</tr>';
+ for(const r of rows)h+='<tr>'+r.map((v,i)=>`<td>${i>=1&&typeof v==='number'?Number(v).toLocaleString():v}</td>`).join('')+'</tr>';
+ document.getElementById('table').innerHTML=h+'</table>';}
 function dl2(c,rows,nm){if(!rows.length){alert('Nothing to export.');return;}const e=v=>{v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
  const lines=[c.join(',')].concat(rows.map(r=>r.map(e).join(',')));const bl=new Blob([lines.join('\n')],{type:'text/csv'});
  const a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download='ffiec_call_'+nm+'.csv';a.click();}
