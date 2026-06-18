@@ -2,134 +2,223 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FFIEC Call Report Dashboard</title>
 <style>
+ *{box-sizing:border-box}
  body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;color:#14213d;background:#fafbfc}
- header{background:#14213d;color:#fff;padding:14px 22px}header h1{margin:0;font-size:18px}header p{margin:4px 0 0;font-size:13px;color:#aeb7c9}
- .wrap{max-width:1180px;margin:16px auto;padding:0 18px}
- .row{display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin-bottom:10px}
+ header{background:#14213d;color:#fff;padding:12px 20px}header h1{margin:0;font-size:17px}header p{margin:3px 0 0;font-size:12px;color:#aeb7c9}
+ .app{display:grid;grid-template-columns:340px 1fr;min-height:calc(100vh - 52px)}
+ .rail{border-right:1px solid #e3e8ef;background:#fff;display:flex;flex-direction:column;max-height:calc(100vh - 52px);position:sticky;top:0}
+ .railhead{padding:10px 12px;border-bottom:1px solid #e3e8ef}
+ .railhead b{font-size:13px}.railhead input{width:100%;margin-top:6px;font-size:13px;padding:7px;border:1px solid #cdd5e0;border-radius:7px}
+ #tree{flex:1;overflow:auto;padding:6px 10px}
+ .main{padding:14px 18px;overflow:auto}
  label{font-size:12px;color:#5a6478;display:block;margin-bottom:3px}
  select,input{font-size:14px;padding:7px;border:1px solid #cdd5e0;border-radius:7px;background:#fff}
- input{min-width:330px}#ent{min-width:430px}#pname{min-width:170px}
- button{font-size:14px;padding:8px 13px;border:1px solid #1b7f3b;background:#1b7f3b;color:#fff;border-radius:7px;cursor:pointer}
- button.sec{background:#fff;color:#14213d;border-color:#cdd5e0}#status{font-size:13px;color:#5a6478;margin:6px 0}
+ input{min-width:300px}#ent{min-width:380px}#pname{min-width:160px}
+ button{font-size:13px;padding:7px 12px;border:1px solid #1b7f3b;background:#1b7f3b;color:#fff;border-radius:7px;cursor:pointer}
+ button.sec{background:#fff;color:#14213d;border-color:#cdd5e0}
+ .row{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:10px}
+ #status{font-size:12px;color:#5a6478;margin:6px 0}.muted{color:#5a6478;font-size:12px}
  .chips{display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 10px}
  .chip{display:inline-flex;align-items:center;gap:7px;font-size:12px;background:#eef3f8;border:1px solid #d8e0ea;border-radius:14px;padding:4px 10px}
  .chip b{font-weight:600}.chip .x{cursor:pointer;color:#8a93a3;font-weight:700}
  .sw{width:10px;height:10px;border-radius:50%;display:inline-block}
- .cards{display:flex;gap:14px;flex-wrap:wrap;margin:6px 0 14px}
- .card{flex:1;min-width:150px;background:#fff;border:1px solid #e3e8ef;border-radius:10px;padding:12px 14px}
- .card .k{font-size:12px;color:#5a6478}.card .v{font-size:22px;font-weight:700;margin-top:4px}
+ .cards{display:flex;gap:12px;flex-wrap:wrap;margin:6px 0 12px}
+ .card{flex:1;min-width:140px;background:#fff;border:1px solid #e3e8ef;border-radius:10px;padding:10px 13px}
+ .card .k{font-size:11px;color:#5a6478}.card .v{font-size:20px;font-weight:700;margin-top:3px}
  .up{color:#1b7f3b}.dn{color:#c0392b}
  table{border-collapse:collapse;width:100%;font-size:13px;margin-top:10px}th,td{border:1px solid #e3e8ef;padding:6px 9px;text-align:right}
- th{background:#f2f5f9}td:first-child,th:first-child{text-align:left}svg{background:#fff;border:1px solid #e3e8ef;border-radius:8px}
+ th{background:#f2f5f9}td:first-child,th:first-child{text-align:left}
+ svg{background:#fff;border:1px solid #e3e8ef;border-radius:8px;display:block}
  details{margin-top:14px;background:#fff;border:1px solid #e3e8ef;border-radius:8px;padding:12px}
- textarea{width:100%;height:78px;font-family:Consolas,monospace;font-size:13px}.muted{color:#5a6478;font-size:12px}
+ textarea{width:100%;height:70px;font-family:Consolas,monospace;font-size:13px}
  .box{background:#fff;border:1px solid #e3e8ef;border-radius:8px;padding:12px;margin-bottom:12px}
- .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;margin:6px 0}
-</style></head><body>
-<header><h1>FFIEC Call Report Dashboard</h1>
-<p>U.S. commercial banks (031/041/051) · individual large banks + ALL / type / size buckets + your peer groups · 2001&ndash;present · $ thousands</p></header>
-<div class="wrap">
- <div id="status">Loading data engine…</div><div id="downloads" class="muted" style="margin-bottom:8px"></div>
-
- <div class="row">
-  <div><label>Entity (bank name, RSSD, ALL / 031 / 051 / SIZE_… , or ★ peer group)</label><input id="ent" list="entlist" autocomplete="off"><datalist id="entlist"></datalist></div>
-  <div><button id="add" class="sec">+ Add to chart</button> <button id="addpeer" class="sec">+ Add to peer</button></div>
-  <div><label>Schedule</label><select id="sched"></select></div>
- </div>
- <div class="row">
-  <div><label>Line item or ratio</label><input id="mdrm" list="mdrmlist" autocomplete="off"><datalist id="mdrmlist"></datalist></div>
-  <div><label style="font-size:12px;margin-bottom:8px"><input type="checkbox" id="shareAll"> Share-of-ALL column (single level item)</label></div>
-  <div><button id="go">Show</button> <button id="csv" class="sec" disabled>Export</button></div>
- </div>
- <div><label>Charted entities (overlay to compare)</label><div id="chips" class="chips"><span class="muted">none — add entities above</span></div></div>
-
- <details class="box" id="peerbox"><summary><b>Peer-group builder</b> — assemble a custom bucket of banks; it aggregates correctly for levels and ratios</summary>
-  <div class="row" style="margin-top:10px">
-   <div><label>Peer group name</label><input id="pname" placeholder="e.g. My GSIB peers"></div>
-   <div><button id="savepeer">Save peer group</button> <button id="clearpeer" class="sec">Clear members</button></div>
+ .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;margin:6px 0 2px}
+ .schhead{font-weight:700;color:#14213d;margin:8px 0 3px;cursor:pointer;font-size:12px}
+ .schhead .cnt{color:#9aa3b2;font-weight:400}
+ .trow{padding:3px 6px;border-radius:5px;cursor:pointer;font-size:12px;line-height:1.3}
+ .trow:hover{background:#eef3f8}.trow .code{color:#9aa3b2;font-size:10px;margin-left:5px}
+ .trow.comb{color:#1b7f3b}.trow .num{color:#5a6478;margin-right:5px}.trow.on{background:#dcefe2}
+ .caret{cursor:pointer;color:#5a6478;display:inline-block;width:13px;text-align:center;font-size:10px}
+ .railctl{margin-top:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:11px}
+ .railctl button{padding:3px 8px}
+ .railtabs{display:flex;gap:4px;align-items:center;padding:8px 10px;border-bottom:1px solid #e3e8ef;background:#f7f9fb}
+ .tab{background:#fff;color:#14213d;border:1px solid #cdd5e0;padding:4px 12px;border-radius:7px;font-size:12px}
+ .tab.on{background:#14213d;color:#fff;border-color:#14213d}
+ #panelItems,#panelEnts{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+ #entlistpanel{flex:1;overflow:auto;padding:4px 8px}
+ .erow{display:flex;justify-content:space-between;gap:8px;padding:4px 6px;border-radius:5px;cursor:pointer;font-size:12px;border-bottom:1px solid #f3f5f8}
+ .erow:hover{background:#eef3f8}.erow .en{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .erow .ev{color:#5a6478;font-variant-numeric:tabular-nums}.erow .pp{color:#1b7f3b;font-weight:700;cursor:pointer}
+ .erow.agg{font-weight:600}
+ .app.popped{grid-template-columns:1fr}
+ .rail.floating{position:fixed;top:70px;left:24px;width:380px;max-height:82vh;z-index:80;border:1px solid #cdd5e0;border-radius:10px;box-shadow:0 14px 44px rgba(10,20,40,.32);resize:both}
+ .rail.floating .railhead{cursor:move;background:#f2f5f9;border-radius:10px 10px 0 0}
+ .slider{display:flex;align-items:center;gap:10px;margin:8px 0}.slider input{min-width:120px;flex:1}
+ .frow{display:flex;gap:10px;padding:2px 6px;font-size:13px;border-bottom:1px solid #f3f5f8}
+ .frow .lab{flex:1;min-width:280px}.frow .val{font-variant-numeric:tabular-nums}
+ .vcell{width:92px;flex:none;text-align:right;font-variant-numeric:tabular-nums;color:#14213d}
+ .modal{position:fixed;inset:0;background:rgba(10,20,40,.4);z-index:60;display:flex;align-items:flex-start;justify-content:center}
+ .modalbox{background:#fff;margin-top:32px;width:min(960px,95vw);max-height:88vh;display:flex;flex-direction:column;border-radius:10px;overflow:hidden}
+ .modalhead{padding:12px 14px;border-bottom:1px solid #e3e8ef;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+ /* ---- dark mode ---- */
+ body.dark{background:#0e1420;color:#e6e9ef}
+ body.dark .rail,body.dark .card,body.dark .box,body.dark details,body.dark .modalbox{background:#161e2b;border-color:#2a3547}
+ body.dark .railtabs{background:#121a26;border-color:#2a3547}
+ body.dark .railhead,body.dark .modalhead{border-color:#2a3547}
+ body.dark .rail{border-right-color:#2a3547}
+ body.dark select,body.dark input,body.dark textarea{background:#1b2433;color:#e6e9ef;border-color:#2a3547}
+ body.dark button.sec{background:#1b2433;color:#e6e9ef;border-color:#2a3547}
+ body.dark .tab{background:#1b2433;color:#e6e9ef;border-color:#2a3547}body.dark .tab.on{background:#1b7f3b;color:#fff;border-color:#1b7f3b}
+ body.dark .muted,body.dark label,body.dark .card .k,body.dark .schhead .cnt,body.dark .trow .code,body.dark .trow .num,body.dark .caret{color:#9aa3b2}
+ body.dark .schhead,body.dark .card .v,body.dark .frow .val,body.dark .vcell,body.dark td:first-child{color:#e6e9ef}
+ body.dark th{background:#1b2433;border-color:#2a3547}body.dark td{border-color:#2a3547}
+ body.dark .chip{background:#1b2433;border-color:#2a3547}
+ body.dark .trow:hover,body.dark .erow:hover{background:#1f2a3a}body.dark .trow.on{background:#16361f}
+ body.dark .erow{border-color:#222c3b}body.dark .frow{border-color:#222c3b}
+ body.dark svg{background:#0f1825;border-color:#2a3547}
+ body.dark .up{color:#3fb950}body.dark .dn{color:#f85149}
+ body.dark a{color:#6cb6ff}
+ #theme{float:right;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);padding:4px 10px;font-size:12px}
+</style></head><body class="dark">
+<header><button id="theme">☀ Light</button><h1>FFIEC Call Report Dashboard</h1>
+<p>U.S. commercial banks (031/041/051) · banks + ALL / type / size buckets + peer groups · 2001&ndash;present · $ thousands</p></header>
+<div class="app">
+ <div class="rail">
+  <div class="railtabs"><button id="tabItems" class="tab on">Line items</button><button id="tabEnts" class="tab">Entities</button>
+   <button id="popout" class="sec" style="margin-left:auto;padding:2px 8px">⧉ Pop out</button></div>
+  <div id="panelItems">
+   <div class="railhead"><span class="muted">click to add to chart</span>
+    <input id="treesearch" placeholder="search code or caption…">
+    <div class="railctl">
+     <button id="expall" class="sec">⊕ Expand all</button>
+     <button id="colall" class="sec">⊖ Collapse all</button>
+     <label><input type="checkbox" id="showraw"> show RCFD/RCON variants</label>
+    </div></div>
+   <div id="tree"><p class="muted" style="padding:10px">Loading…</p></div>
   </div>
-  <div><label>Members (use “+ Add to peer” above to add the entity box value)</label><div id="pmembers" class="chips"><span class="muted">no members yet</span></div></div>
-  <div><label>Saved peer groups</label><div id="psaved" class="chips"></div></div>
-  <p class="muted">Saved in this browser. Members can be individual banks (best) or segments. Ratios are computed by summing each member’s components, then dividing — a proper asset-weighted peer ratio.</p>
- </details>
+  <div id="panelEnts" style="display:none">
+   <div class="railhead"><span class="muted">click to chart · ＋peer to bucket</span>
+    <input id="entsearch" placeholder="search bank / RSSD…">
+    <div class="railctl">Show
+     <select id="entfilter"><option value="all">All</option><option value="bank">Individual banks</option><option value="agg">Aggregates</option><option value="peer">Peer groups</option></select>
+     Sort
+     <select id="entsort"><option value="assets">Total assets</option><option value="deposits">Total deposits</option><option value="loans">Total loans</option><option value="equity">Total equity</option><option value="current">Current measure</option><option value="name">Name A–Z</option><option value="rssd">RSSD</option></select>
+     <label><input type="checkbox" id="entdesc" checked> high→low</label>
+    </div></div>
+   <div id="entlistpanel"><p class="muted" style="padding:10px">…</p></div>
+  </div>
+ </div>
+ <div class="main">
+  <div id="status">Loading data engine…</div><div id="downloads" class="muted" style="margin-bottom:8px"></div>
+  <div class="row">
+   <div><label>Entity (bank name, RSSD, ALL / 031 / 051 / SIZE_… , or ★ peer group)</label>
+    <input id="ent" list="entlist" autocomplete="off"><datalist id="entlist"></datalist></div>
+   <div><button id="add" class="sec">+ Add to chart</button> <button id="addpeer" class="sec">+ Add to peer</button>
+    <button id="formbtn" class="sec">📄 Call-report view</button></div>
+  </div>
+  <div><label>Entities (overlay to compare)</label><div id="chips" class="chips"><span class="muted">none</span></div></div>
+  <div><label>Measures (click items in the left rail; ✕ to remove)</label><div id="mchips" class="chips"><span class="muted">none</span></div></div>
 
- <div class="cards" id="cards"></div>
- <div class="legend" id="legend"></div>
- <div id="chart"></div><div id="table"></div>
+  <details class="box" id="peerbox"><summary><b>Peer-group builder</b> — custom bucket of banks; aggregates correctly for levels &amp; ratios</summary>
+   <div class="row" style="margin-top:10px">
+    <div><label>Peer group name</label><input id="pname" placeholder="e.g. My GSIB peers"></div>
+    <div><button id="savepeer">Save peer group</button> <button id="clearpeer" class="sec">Clear members</button></div></div>
+   <div><label>Members (use “+ Add to peer”)</label><div id="pmembers" class="chips"><span class="muted">none</span></div></div>
+   <div><label>Saved peer groups</label><div id="psaved" class="chips"></div></div>
+  </details>
 
- <details class="box"><summary><b>SQL</b> — table <code>t</code> (entity_id,entity_label,kind,quarter_end,mdrm,value,n_filers,schedule,description)</summary>
-  <textarea id="sql">SELECT quarter_end, value FROM t WHERE entity_id='ALL' AND mdrm='COMB2170' ORDER BY quarter_end;</textarea>
-  <div style="margin-top:8px"><button id="runsql" class="sec">Run</button> <button id="sqlcsv" class="sec">Export result</button></div>
-  <div id="sqlout"></div></details>
+  <div class="cards" id="cards"></div>
+  <div id="panes"><p class="muted">Pick an entity, then click a line item on the left.</p></div>
+  <div class="slider" id="sliderwrap" style="display:none">
+   <span class="muted">From</span><input type="range" id="r0"><input type="range" id="r1"><span class="muted">to</span>
+   <span id="rlbl" class="muted"></span> <button id="rreset" class="sec">Full range</button>
+   <button id="csv" class="sec">Export</button></div>
+  <div id="tbl"></div>
+
+  <details class="box"><summary><b>SQL</b> — table <code>t</code></summary>
+   <textarea id="sql">SELECT quarter_end, value FROM t WHERE entity_id='ALL' AND mdrm='COMB2170' ORDER BY quarter_end;</textarea>
+   <div style="margin-top:8px"><button id="runsql" class="sec">Run</button> <button id="sqlcsv" class="sec">Export result</button></div>
+   <div id="sqlout"></div></details>
+ </div>
 </div>
+<div id="formmodal" class="modal" style="display:none"><div class="modalbox">
+ <div class="modalhead"><b>Call-report view</b> — <span id="forment"></span>
+  <label style="font-size:12px">From <select id="ffrom"></select></label>
+  <label style="font-size:12px">To <select id="fto"></select></label>
+  <button id="fexp" class="sec">⊕</button><button id="fcol" class="sec">⊖</button>
+  <button id="formexport" class="sec">Export</button> <button id="formclose" class="sec">Close</button></div>
+ <div id="formbody" style="overflow:auto;padding:10px 14px"></div></div></div>
 <script type="module">
 import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.0/+esm';
 const PARTS=['ffiec_call.parquet']; const st=m=>document.getElementById('status').textContent=m;
 const COLORS=['#1b7f3b','#e07a1f','#2b6cb0','#b83280','#6b46c1','#d69e2e','#0f766e','#be123c'];
-let conn,lbl2id=new Map(),id2lbl=new Map(),mmap=new Map(),sqlC=[],sqlR=[];
-let active=[];           // [{id,label}]  entities overlaid on chart
-let peerMembers=[];      // [{id,label}]  builder members
-let peers={};            // name -> [ids]
-let expC=[],expR=[];     // last export
-// unused-commitment bases (RC-L item 1). CRE bucket is 3816 in old forms, split into
-// F164+F165+6550 in newer forms; only one representation exists per quarter, so summing
-// all (missing=0) gives a continuous total without double-counting.
+const DK=()=>document.body.classList.contains('dark');
+const SCHED_NAMES={'RI':'RI — Income Statement','RIA':'RI-A — Changes in Equity Capital','RIBI':'RI-B I — Charge-offs & Recoveries','RIBII':'RI-B II — Changes in Allowances','RIC':'RI-C — Disaggregated Allowances','RICI':'RI-C I — Disaggregated Allowances','RICII':'RI-C II — Past-Due Disaggregated','RID':'RI-D — Income from Foreign Offices','RIE':'RI-E — Explanations','RC':'RC — Balance Sheet','RCA':'RC-A — Cash & Balances','RCB':'RC-B — Securities','RCCI':'RC-C I — Loans & Leases','RCCII':'RC-C II — Loans to Small Business/Farm','RCD':'RC-D — Trading Assets & Liabilities','RCE':'RC-E — Deposits','RCEI':'RC-E I — Deposits (Domestic)','RCEII':'RC-E II — Deposits (Foreign)','RCF':'RC-F — Other Assets','RCG':'RC-G — Other Liabilities','RCH':'RC-H — Domestic-Office Items','RCI':'RC-I — IBF Assets & Liabilities','RCK':'RC-K — Quarterly Averages','RCL':'RC-L — Derivatives & Off-Balance-Sheet','RCM':'RC-M — Memoranda','RCN':'RC-N — Past Due & Nonaccrual','RCO':'RC-O — Deposit Insurance Assessments','RCP':'RC-P — Mortgage Banking','RCQ':'RC-Q — Fair-Value Measurements','RCR':'RC-R — Regulatory Capital','RCRI':'RC-R I — Capital Components & Ratios','RCRIA':'RC-R I-A — Capital','RCRIB':'RC-R I-B — Capital','RCRII':'RC-R II — Risk-Weighted Assets','RCS':'RC-S — Servicing & Securitization','RCT':'RC-T — Fiduciary & Related Services','RCV':'RC-V — Variable-Interest Entities','SU':'SU — Supplemental (051)'};
+const FORM_ORDER=['RI','RIA','RIBI','RIBII','RIC','RICI','RICII','RID','RIE','RC','RCA','RCB','RCCI','RCCII','RCD','RCE','RCEI','RCEII','RCF','RCG','RCH','RCI','RCK','RCL','RCM','RCN','RCO','RCP','RCQ','RCR','RCRI','RCRIA','RCRIB','RCRII','RCS','RCT','RCV','SU'];
 const UNUSED=['3814','3815','3816','F164','F165','6550','3817','3818'];
+const LIQ=['0081','0071','1754','1773','B987','B989'];
 const DERIV={
- // ---- RATIOS (percent) ----
- 'D_LOANSDEP':{type:'ratio',lbl:'Derived: Loans / Deposits (%)',plus:['2122'],minus:[],den:['2200']},
- 'D_DEPASSETS':{type:'ratio',lbl:'Derived: Deposits / Assets (%)',plus:['2200'],minus:[],den:['2170']},
- 'D_NONDEP':{type:'ratio',lbl:'Derived: Non-deposit liabilities / Assets (%)',plus:['2948'],minus:['2200'],den:['2170']},
- 'D_NPL':{type:'ratio',lbl:'Derived: NPL ratio % (30-89 + 90+ + nonaccrual / loans)',plus:['1406','1407','1403'],minus:[],den:['2122']},
- 'D_NONCUR_PCT':{type:'ratio',lbl:'Derived: Noncurrent loan ratio % (90+ + nonaccrual / loans)',plus:['1407','1403'],minus:[],den:['2122']},
- 'D_RESLOANS':{type:'ratio',lbl:'Derived: Reserves / Loans (%)',plus:['3123'],minus:[],den:['2122']},
- 'D_RESNPL':{type:'ratio',lbl:'Derived: Reserve coverage % (reserves / noncurrent loans)',plus:['3123'],minus:[],den:['1407','1403']},
- 'D_EQASSETS':{type:'ratio',lbl:'Derived: Equity / Assets (%)',plus:['3210'],minus:[],den:['2170']},
- 'D_UND_LOANS':{type:'ratio',lbl:'Derived: Unused commitments / Loans (%)',plus:UNUSED,minus:[],den:['2122']},
- 'D_UND_ASSETS':{type:'ratio',lbl:'Derived: Unused commitments / Assets (%)',plus:UNUSED,minus:[],den:['2170']},
- 'D_UTIL':{type:'ratio',lbl:'Derived: Loan utilization % (loans / (loans + unused))',plus:['2122'],minus:[],den:['2122',...UNUSED]},
- // ---- SUBTOTALS / GRAND TOTALS ($ thousands) ----
- 'S_NONCUR':{type:'sum',lbl:'Subtotal: Noncurrent loans $ (90+ past due + nonaccrual)',plus:['1407','1403'],minus:[]},
- 'S_PASTDUE':{type:'sum',lbl:'Subtotal: Past due + nonaccrual $ (30-89 + 90+ + nonaccrual)',plus:['1406','1407','1403'],minus:[]},
- 'S_UNUSED':{type:'sum',lbl:'Subtotal: Total unused commitments $ (RC-L item 1)',plus:UNUSED,minus:[]},
- 'S_EXPOSURE':{type:'sum',lbl:'Subtotal: Total loan exposure $ (loans + unused commitments)',plus:['2122',...UNUSED],minus:[]},
+ 'S_CASH':{type:'sum',lbl:'Liquidity ▸ Cash & balances due $ (0081+0071)',plus:['0081','0071']},
+ 'S_LIQ':{type:'sum',lbl:'Liquidity ▸ Liquid assets $ (cash+securities+ff sold)',plus:LIQ},
+ 'D_LIQ_ASSETS':{type:'ratio',lbl:'Liquidity ▸ Liquid assets / Assets (%)',plus:LIQ,den:['2170']},
+ 'D_SEC_ASSETS':{type:'ratio',lbl:'Liquidity ▸ Securities / Assets (%)',plus:['1754','1773'],den:['2170']},
+ 'D_LOANSDEP':{type:'ratio',lbl:'Liquidity ▸ Loans / Deposits (%)',plus:['2122'],den:['2200']},
+ 'D_DEPASSETS':{type:'ratio',lbl:'Funding ▸ Deposits / Assets (%)',plus:['2200'],den:['2170']},
+ 'S_BORROW':{type:'sum',lbl:'Funding ▸ Borrowings $ (fed funds purch+repos+other)',plus:['3353','3190']},
+ 'D_BORROW_ASSETS':{type:'ratio',lbl:'Funding ▸ Borrowings / Assets (%)',plus:['3353','3190'],den:['2170']},
+ 'D_NONDEP':{type:'ratio',lbl:'Funding ▸ Non-deposit liabilities / Assets (%)',plus:['2948'],minus:['2200'],den:['2170']},
+ 'D_BROKERED':{type:'ratio',lbl:'Funding ▸ Brokered deposits / Deposits (%)',plus:['2365'],den:['2200']},
+ 'D_NPL':{type:'ratio',lbl:'Credit ▸ NPL ratio % (30-89+90++nonaccrual / loans)',plus:['1406','1407','1403'],den:['2122']},
+ 'D_NONCUR_PCT':{type:'ratio',lbl:'Credit ▸ Noncurrent loan ratio % (90++nonaccrual / loans)',plus:['1407','1403'],den:['2122']},
+ 'D_RESLOANS':{type:'ratio',lbl:'Credit ▸ Reserves / Loans (%)',plus:['3123'],den:['2122']},
+ 'D_RESNPL':{type:'ratio',lbl:'Credit ▸ Reserve coverage % (reserves / noncurrent)',plus:['3123'],den:['1407','1403']},
+ 'D_NCO_LOANS':{type:'ratio',lbl:'Credit ▸ Net charge-off rate % YTD ((4635-4605)/loans)',plus:['4635'],minus:['4605'],den:['2122']},
+ 'D_PROV_LOANS':{type:'ratio',lbl:'Credit ▸ Provisions / Loans % YTD (4230/loans)',plus:['4230'],den:['2122']},
+ 'D_EQASSETS':{type:'ratio',lbl:'Capital ▸ Equity / Assets (%)',plus:['3210'],den:['2170']},
+ 'D_ROA':{type:'ratio',lbl:'Earnings ▸ Return on assets % YTD (net income/assets)',plus:['4340'],den:['2170']},
+ 'D_ROE':{type:'ratio',lbl:'Earnings ▸ Return on equity % YTD (net income/equity)',plus:['4340'],den:['3210']},
+ 'D_UND_LOANS':{type:'ratio',lbl:'Undrawn ▸ Unused commitments / Loans (%)',plus:UNUSED,den:['2122']},
+ 'D_UND_ASSETS':{type:'ratio',lbl:'Undrawn ▸ Unused commitments / Assets (%)',plus:UNUSED,den:['2170']},
+ 'D_UTIL':{type:'ratio',lbl:'Undrawn ▸ Loan utilization % (loans/(loans+unused))',plus:['2122'],den:['2122',...UNUSED]},
+ 'S_NONCUR':{type:'sum',lbl:'Subtotal ▸ Noncurrent loans $ (90++nonaccrual)',plus:['1407','1403']},
+ 'S_PASTDUE':{type:'sum',lbl:'Subtotal ▸ Past due + nonaccrual $ (RC-N item 9)',plus:['1406','1407','1403']},
+ 'S_NCO':{type:'sum',lbl:'Subtotal ▸ Net charge-offs $ YTD (charge-offs-recoveries)',plus:['4635'],minus:['4605']},
+ 'S_UNUSED':{type:'sum',lbl:'Subtotal ▸ Total unused commitments $ (RC-L item 1)',plus:UNUSED},
+ 'S_EXPOSURE':{type:'sum',lbl:'Subtotal ▸ Total loan exposure $ (loans+unused)',plus:['2122',...UNUSED]},
 };
 const DKIND=m=>DERIV[m]?DERIV[m].type:null;
-const isPct=m=>DKIND(m)==='ratio';      // percent display; 'sum' derived show as $
-const fmt=(v,pct)=>v==null?'—':(pct?(+v).toFixed(2)+'%':Number(v).toLocaleString());
+const isPct=m=>DKIND(m)==='ratio';
+const short=lbl=>{const i=lbl.indexOf('▸');return (i>=0?lbl.slice(i+1):lbl).replace(/\s*\(.*\)\s*$/,'').trim();};
 const sqlList=a=>a.map(x=>`'${String(x).replace(/'/g,"''")}'`).join(',');
+const fmtUnit=(v,pct)=>v==null?'—':pct?(+v).toFixed(2)+'%':(Math.abs(v)>=1e9?(v/1e6).toLocaleString(undefined,{maximumFractionDigits:0})+' B':Math.abs(v)>=1e6?(v/1e3).toLocaleString(undefined,{maximumFractionDigits:0})+' M':Number(v).toLocaleString()+' k');
+
+let conn,lbl2id=new Map(),id2lbl=new Map(),HIER=null,treeBuilt=false,sqlC=[],sqlR=[];
+let active=[], measures=[], peerMembers=[], peers={};
+let lastSeries=[], Qall=[], rangeSel={a:0,b:0};
 
 function loadPeers(){try{peers=JSON.parse(localStorage.getItem('ffiec_peers')||'{}');}catch{peers={};}}
 function savePeers(){localStorage.setItem('ffiec_peers',JSON.stringify(peers));}
-
 function resolveEnt(){const v=document.getElementById('ent').value.trim();
  if(lbl2id.has(v))return {id:lbl2id.get(v),label:v};
  if(v.replace(/^★\s*/,'') in peers){const n=v.replace(/^★\s*/,'');return {id:'PEER:'+n,label:'★ '+n};}
  if(/^(ALL|031|041|051|SIZE_)/i.test(v)){const id=v.toUpperCase()==='ALL'?'ALL':v;return {id,label:id};}
  const m=v.match(/(\d{3,})/);if(m){const id='BANK:'+m[1];return {id,label:id2lbl.get(id)||id};}return null;}
-function mcode(){const v=document.getElementById('mdrm').value.trim();if(mmap.has(v))return mmap.get(v);
- const m=v.match(/^([A-Za-z]{4}[A-Za-z0-9]{4}|D_[A-Z]+)/);return m?m[1].toUpperCase():null;}
-
-// expand an entity id to the list of underlying entity_ids that get summed into ONE series
 function expand(id){if(id&&id.startsWith('PEER:')){const n=id.slice(5);return peers[n]||[];}return [id];}
 function coalesce(map,base){return map['COMB'+base]??map['RCFD'+base]??map['RCON'+base];}
 
-// one series (array of [quarter,value]) for an entity id and metric, summing members where needed
 async function seriesFor(id,m){const ids=expand(id);if(!ids.length)return [];
- const d=DERIV[m];
+ let d=DERIV[m];
+ if(!d && m && m.startsWith('COMB')) d={type:'sum',plus:[m.slice(4)],minus:[],den:[]};
  if(d){const bases=[...d.plus,...(d.minus||[]),...(d.den||[])];
    const codes=[];for(const b of bases)for(const p of['COMB','RCFD','RCON'])codes.push(`${p}${b}`);
    const r=(await conn.query(`SELECT entity_id,quarter_end,mdrm,value FROM t WHERE entity_id IN (${sqlList(ids)}) AND mdrm IN (${sqlList(codes)})`)).toArray();
-   // per quarter, per entity -> coalesced base values, then aggregate across entities
    const byqe={};for(const x of r){((byqe[x.quarter_end]=byqe[x.quarter_end]||{})[x.entity_id]=byqe[x.quarter_end][x.entity_id]||{})[x.mdrm]=Number(x.value);}
-   // sum present components (missing=0); track whether any component was present
    const acc=(mp,arr)=>{let s=0,seen=false;for(const b of arr){const v=coalesce(mp,b);if(v!=null){s+=v;seen=true;}}return [s,seen];};
    const out=[];for(const q of Object.keys(byqe).sort()){let num=0,den=0,anyN=false,anyD=false;
      for(const eid of Object.keys(byqe[q])){const mp=byqe[q][eid];
        const [np,ns]=acc(mp,d.plus);const [nm,ms]=acc(mp,d.minus||[]);num+=np-nm;if(ns||ms)anyN=true;
        const [dp,ds]=acc(mp,d.den||[]);den+=dp;if(ds)anyD=true;}
-     if(d.type==='sum'){if(anyN)out.push([q,num]);}
-     else {if(anyN&&anyD&&den>0)out.push([q,100*num/den]);}}
+     if(d.type==='sum'){if(anyN)out.push([q,num]);}else{if(anyN&&anyD&&den>0)out.push([q,100*num/den]);}}
    return out;}
  const r=(await conn.query(`SELECT quarter_end, SUM(value) v FROM t WHERE entity_id IN (${sqlList(ids)}) AND mdrm='${m}' GROUP BY quarter_end ORDER BY quarter_end`)).toArray();
  return r.map(x=>[String(x.quarter_end),Number(x.v)]);}
@@ -148,113 +237,275 @@ async function init(){try{
  for(const e of ents){lbl2id.set(e.lbl,e.entity_id);id2lbl.set(e.entity_id,e.lbl);}
  window._ents=ents; loadPeers(); rebuildEntList();
  document.getElementById('ent').value='ALL';
- const scs=(await conn.query("SELECT DISTINCT schedule FROM t WHERE schedule<>'' ORDER BY schedule")).toArray().map(r=>r.schedule);
- const sc=document.getElementById('sched');{const o=document.createElement('option');o.value='';o.textContent='(all schedules)';sc.appendChild(o);}
- for(const s of scs){const o=document.createElement('option');o.value=s;o.textContent=s;sc.appendChild(o);}
- sc.onchange=async()=>{await loadMdrm();await show();};
- document.getElementById('mdrm').addEventListener('change',show);
- document.getElementById('go').onclick=show; document.getElementById('shareAll').onchange=show;
- document.getElementById('add').onclick=()=>{const e=resolveEnt();if(!e)return;if(!active.find(a=>a.id===e.id))active.push(e);renderChips();show();};
+ try{const hr=await fetch(new URL('ffiec_call_hierarchy.json',location.href).href);if(hr.ok)HIER=await hr.json();}catch(e){}
+ document.getElementById('add').onclick=()=>{const e=resolveEnt();if(!e)return;if(!active.find(a=>a.id===e.id))active.push(e);renderChips();recompute();};
  document.getElementById('addpeer').onclick=()=>{const e=resolveEnt();if(!e)return;if(!peerMembers.find(a=>a.id===e.id))peerMembers.push(e);renderPeerBuilder();document.getElementById('peerbox').open=true;};
  document.getElementById('savepeer').onclick=savePeer;
  document.getElementById('clearpeer').onclick=()=>{peerMembers=[];renderPeerBuilder();};
- for(const el of[document.getElementById('ent'),document.getElementById('mdrm')]){
-   el.addEventListener('focus',function(){this.dataset.prev=this.value;this.value='';});
-   el.addEventListener('blur',function(){const me=this;setTimeout(()=>{if(me.value.trim()===''&&me.dataset.prev)me.value=me.dataset.prev;},200);});}
- document.getElementById('ent').addEventListener('change',loadMdrm);
- document.getElementById('csv').onclick=()=>dl2(expC,expR,'series');
- document.getElementById('runsql').onclick=runsql;document.getElementById('sqlcsv').onclick=()=>dl2(sqlC,sqlR,'query');
+ document.getElementById('treesearch').addEventListener('input',e=>filterTree(e.target.value));
+ document.getElementById('expall').onclick=()=>expandAll(true);
+ document.getElementById('colall').onclick=()=>expandAll(false);
+ document.getElementById('showraw').onchange=()=>{buildTree();};
+ document.getElementById('tabItems').onclick=()=>switchTab(true);
+ document.getElementById('tabEnts').onclick=()=>switchTab(false);
+ document.getElementById('entsearch').addEventListener('input',renderEntList);
+ document.getElementById('entfilter').onchange=renderEntList;
+ document.getElementById('entsort').onchange=renderEntList;
+ document.getElementById('entdesc').onchange=renderEntList;
+ if(localStorage.getItem('ffiec_theme')==='light')document.body.classList.remove('dark');
+ const setThemeLbl=()=>document.getElementById('theme').textContent=DK()?'☀ Light':'🌙 Dark';setThemeLbl();
+ document.getElementById('theme').onclick=()=>{const d=document.body.classList.toggle('dark');localStorage.setItem('ffiec_theme',d?'dark':'light');setThemeLbl();draw();};
+ (function(){const app=document.querySelector('.app'),rail=document.querySelector('.rail'),head=rail.querySelector('.railtabs');
+  document.getElementById('popout').onclick=(ev)=>{ev.stopPropagation();const f=rail.classList.toggle('floating');app.classList.toggle('popped',f);
+    document.getElementById('popout').textContent=f?'⧈ Dock':'⧉ Pop out';};
+  let dx=0,dy=0,drag=false;
+  head.addEventListener('mousedown',e=>{if(!rail.classList.contains('floating'))return;if(e.target.closest('input,button,label'))return;
+    drag=true;dx=e.clientX-rail.offsetLeft;dy=e.clientY-rail.offsetTop;e.preventDefault();});
+  window.addEventListener('mousemove',e=>{if(!drag)return;rail.style.left=(e.clientX-dx)+'px';rail.style.top=(e.clientY-dy)+'px';});
+  window.addEventListener('mouseup',()=>{drag=false;});})();
+ document.getElementById('formbtn').onclick=openForm;
+ document.getElementById('formclose').onclick=()=>document.getElementById('formmodal').style.display='none';
+ document.getElementById('ffrom').onchange=renderForm; document.getElementById('fto').onchange=renderForm;
+ document.getElementById('fexp').onclick=()=>expandAll(true,'#formbody'); document.getElementById('fcol').onclick=()=>expandAll(false,'#formbody');
+ document.getElementById('formexport').onclick=exportForm;
+ document.getElementById('csv').onclick=exportSeries;
+ document.getElementById('runsql').onclick=runsql; document.getElementById('sqlcsv').onclick=()=>dl2(sqlC,sqlR,'query');
+ document.getElementById('r0').oninput=onSlide; document.getElementById('r1').oninput=onSlide;
+ document.getElementById('rreset').onclick=()=>{rangeSel={a:0,b:Qall.length-1};syncSlider();draw();};
  document.getElementById('downloads').innerHTML='&#11015; Data: '+PARTS.map(p=>`<a href="${p}" download>${p}</a>`).join(' &middot; ')+' (Python / Power BI / DuckDB)';
- active=[{id:'ALL',label:'ALL'}]; renderChips(); renderPeerSaved();
- await loadMdrm();st(`Ready — ${ents.length} entities. Add entities to compare; build peer groups below.`);show();
-}catch(e){st('Load failed: '+e+' — "HTTP 404"=parquet not uploaded; module error=CDN blocked.');}}
+ if(HIER)buildTree(); else document.getElementById('tree').innerHTML='<p class="muted" style="padding:10px">hierarchy not found</p>';
+ active=[{id:'ALL',label:'ALL'}]; measures=[{code:'COMB2170',label:'Total assets',pct:false}];
+ renderChips(); renderMeasures(); renderPeerSaved();
+ st(`Ready — ${ents.length} entities. Click items on the left; add entities to compare.`); recompute();
+}catch(e){st('Load failed: '+e);console.error(e);}}
 
 function rebuildEntList(){const dl=document.getElementById('entlist');dl.innerHTML='';
  for(const n in peers){const o=document.createElement('option');o.value='★ '+n;dl.appendChild(o);}
  for(const e of (window._ents||[])){const o=document.createElement('option');o.value=e.lbl;dl.appendChild(o);}}
-function renderChips(){const c=document.getElementById('chips');if(!active.length){c.innerHTML='<span class="muted">none — add entities above</span>';return;}
+function renderChips(){const c=document.getElementById('chips');if(!active.length){c.innerHTML='<span class="muted">none</span>';return;}
  c.innerHTML=active.map((a,i)=>`<span class="chip"><span class="sw" style="background:${COLORS[i%COLORS.length]}"></span><b>${a.label}</b><span class="x" data-i="${i}">✕</span></span>`).join('');
- c.querySelectorAll('.x').forEach(x=>x.onclick=()=>{active.splice(+x.dataset.i,1);renderChips();show();});}
-function renderPeerBuilder(){const c=document.getElementById('pmembers');if(!peerMembers.length){c.innerHTML='<span class="muted">no members yet</span>';return;}
+ c.querySelectorAll('.x').forEach(x=>x.onclick=()=>{active.splice(+x.dataset.i,1);renderChips();recompute();});}
+function renderMeasures(){const c=document.getElementById('mchips');if(!measures.length){c.innerHTML='<span class="muted">none</span>';return;}
+ c.innerHTML=measures.map((m,i)=>`<span class="chip"><b>${m.label}</b> <span class="muted">${m.pct?'%':'$'}</span><span class="x" data-i="${i}">✕</span></span>`).join('');
+ c.querySelectorAll('.x').forEach(x=>x.onclick=()=>{const code=measures[+x.dataset.i].code;measures.splice(+x.dataset.i,1);markTree();renderMeasures();recompute();});}
+function renderPeerBuilder(){const c=document.getElementById('pmembers');if(!peerMembers.length){c.innerHTML='<span class="muted">none</span>';return;}
  c.innerHTML=peerMembers.map((a,i)=>`<span class="chip"><b>${a.label}</b><span class="x" data-i="${i}">✕</span></span>`).join('');
  c.querySelectorAll('.x').forEach(x=>x.onclick=()=>{peerMembers.splice(+x.dataset.i,1);renderPeerBuilder();});}
 function renderPeerSaved(){const c=document.getElementById('psaved');const names=Object.keys(peers);
  if(!names.length){c.innerHTML='<span class="muted">none saved</span>';return;}
  c.innerHTML=names.map(n=>`<span class="chip"><b>★ ${n}</b> <span class="muted">(${peers[n].length})</span> <span class="use" data-n="${n}" style="cursor:pointer;color:#1b7f3b;font-weight:700">＋chart</span> <span class="x" data-n="${n}">✕</span></span>`).join('');
- c.querySelectorAll('.use').forEach(u=>u.onclick=()=>{const id='PEER:'+u.dataset.n;if(!active.find(a=>a.id===id))active.push({id,label:'★ '+u.dataset.n});renderChips();show();});
+ c.querySelectorAll('.use').forEach(u=>u.onclick=()=>{const id='PEER:'+u.dataset.n;if(!active.find(a=>a.id===id))active.push({id,label:'★ '+u.dataset.n});renderChips();recompute();});
  c.querySelectorAll('.x').forEach(x=>x.onclick=()=>{delete peers[x.dataset.n];savePeers();rebuildEntList();renderPeerSaved();});}
 function savePeer(){const n=document.getElementById('pname').value.trim();if(!n){alert('Name the peer group.');return;}
  if(!peerMembers.length){alert('Add at least one member.');return;}
  peers[n]=peerMembers.map(m=>m.id);savePeers();rebuildEntList();renderPeerSaved();
- document.getElementById('pname').value='';peerMembers=[];renderPeerBuilder();
- st(`Saved peer group "${n}". Find it as "★ ${n}" in the entity box.`);}
+ document.getElementById('pname').value='';peerMembers=[];renderPeerBuilder();st(`Saved peer group "${n}".`);}
 
-async function loadMdrm(){const e=resolveEnt();if(!e)return;const ids=expand(e.id);const sch=document.getElementById('sched').value,w=sch?`AND schedule='${sch}'`:'';
- const r=(await conn.query(`SELECT mdrm, any_value(description) d FROM t WHERE entity_id IN (${sqlList(ids)}) ${w} GROUP BY mdrm ORDER BY mdrm`)).toArray();
- const dl=document.getElementById('mdrmlist');dl.innerHTML='';mmap.clear();
- if(!sch) for(const k in DERIV){mmap.set(DERIV[k].lbl,k);const o=document.createElement('option');o.value=DERIV[k].lbl;dl.appendChild(o);}
- let def='',first='';
- for(const x of r){const lab=x.d?`${x.mdrm} — ${x.d}`:x.mdrm;mmap.set(lab,x.mdrm);const o=document.createElement('option');o.value=lab;dl.appendChild(o);
-   if(!first)first=lab;if(x.mdrm==='COMB2170'||x.mdrm==='RCFD2170'||x.mdrm==='RCON2170')def=lab;}
- if(!document.getElementById('mdrm').value) document.getElementById('mdrm').value=def||first;}
+// ---- tree (persistent rail, collapsible hierarchy, one consolidated row per item) ----
+const REPORT=/^(RCON|RCFD|RCFN|RCFA|RCFW|RCOA|RCOW|RIAD)[A-Z0-9]{4}$/;
+function mkSec(title,cnt){const sec=document.createElement('div');sec.className='schsec';
+ const h=document.createElement('div');h.className='schhead';h.innerHTML=`▸ ${title} ${cnt?`<span class=cnt>(${cnt})</span>`:''}`;
+ const rows=document.createElement('div');rows.className='schrows';rows.style.display='none';
+ h.onclick=()=>{const open=rows.style.display!=='none';rows.style.display=open?'none':'block';h.innerHTML=h.innerHTML.replace(open?'▾':'▸',open?'▸':'▾');};
+ sec.appendChild(h);sec.appendChild(rows);return {sec,rows};}
+function rowEl(nd,has){const d=document.createElement('div');d.className='trow'+(nd.comb?' comb':'');
+ d.dataset.code=nd.code;d.dataset.txt=(nd.code+' '+nd.caption).toLowerCase();
+ d.style.paddingLeft=(6+(nd.depth-1)*14)+'px';
+ const car=`<span class="caret"${has?'':' style="visibility:hidden"'}>▸</span>`;
+ d.innerHTML=nd.derived?`${car}${nd.caption}`:`${car}${nd.num?`<span class=num>${nd.num}</span>`:''}${nd.caption}<span class=code>${nd.code}</span>`;
+ const lab=nd.derived?short(nd.caption):(nd.caption||nd.code);
+ d.querySelector('.caret').onclick=ev=>{ev.stopPropagation();if(has)toggleNode(d);};
+ d.onclick=()=>toggleMeasure(nd.code,lab,nd.pct);return d;}
+function nest(flat){const roots=[],stack=[];
+ for(const it of flat){const node={...it,children:[]};
+   while(stack.length&&stack[stack.length-1].depth>=node.depth)stack.pop();
+   (stack.length?stack[stack.length-1].children:roots).push(node);stack.push(node);}
+ return roots;}
+function emitSchedule(sch,showRaw){const raw=HIER[sch].filter(r=>REPORT.test(r.mdrm));if(!raw.length)return [];
+ const capByBase={};for(const r of raw){const b=r.mdrm.slice(4);if(r.caption&&!capByBase[b])capByBase[b]=r.caption;}
+ const combBases=new Set();for(const r of raw){const p=r.mdrm.slice(0,4);if(p==='RCFD'||p==='RCON')combBases.add(r.mdrm.slice(4));}
+ const out=[],done=new Set();
+ for(const r of raw){const p=r.mdrm.slice(0,4),base=r.mdrm.slice(4),cap=r.caption||capByBase[base]||'';if(!cap)continue;
+   const depth=r.depth||1;
+   if(p==='RCFD'||p==='RCON'){
+     if(!done.has('C'+base)){done.add('C'+base);out.push({code:'COMB'+base,caption:cap,num:r.item||'',depth,comb:true,derived:false,pct:false});}
+     if(showRaw&&!done.has(r.mdrm)){done.add(r.mdrm);out.push({code:r.mdrm,caption:cap+' ['+p.slice(2)+']',num:'',depth:depth+1,comb:false,derived:false,pct:false});}
+   } else if(p==='RCFN'){ if(combBases.has(base))continue;
+     if(!done.has(r.mdrm)){done.add(r.mdrm);out.push({code:r.mdrm,caption:cap,num:r.item||'',depth,comb:false,derived:false,pct:false});}
+   } else { if(!done.has(r.mdrm)){done.add(r.mdrm);out.push({code:r.mdrm,caption:cap,num:r.item||'',depth,comb:false,derived:false,pct:false});} }}
+ return out;}
+function renderNodes(container,nodes){for(const nd of nodes){const has=nd.children.length>0;
+ const row=rowEl(nd,has);container.appendChild(row);
+ if(has){const kids=document.createElement('div');kids.className='kids';kids.style.display='none';
+   renderNodes(kids,nd.children);container.appendChild(kids);row._kids=kids;}}}
+function addSchedule(t,title,nodes){const {sec,rows}=mkSec(title,nodes.length);renderNodes(rows,nodes);t.appendChild(sec);}
+function toggleNode(row){if(!row._kids)return;const open=row._kids.style.display!=='none';
+ row._kids.style.display=open?'none':'block';const c=row.querySelector('.caret');if(c)c.textContent=open?'▸':'▾';}
+function buildTree(){const t=document.getElementById('tree');t.innerHTML='';
+ const showRaw=document.getElementById('showraw').checked;
+ const dnodes=Object.keys(DERIV).map(k=>({code:k,caption:DERIV[k].lbl,num:'',depth:1,comb:false,derived:true,pct:isPct(k),children:[]}));
+ addSchedule(t,'★ Ratios & Subtotals',dnodes);
+ const keys=[...FORM_ORDER.filter(k=>HIER[k]),...Object.keys(HIER).filter(k=>SCHED_NAMES[k]&&!FORM_ORDER.includes(k))];
+ for(const sch of keys){const flat=emitSchedule(sch,showRaw);if(!flat.length)continue;addSchedule(t,SCHED_NAMES[sch]||sch,nest(flat));}
+ treeBuilt=true;markTree();}
+function expandAll(open,root='#tree'){
+ document.querySelectorAll(`${root} .schrows`).forEach(r=>r.style.display=open?'block':'none');
+ document.querySelectorAll(`${root} .kids`).forEach(k=>k.style.display=open?'block':'none');
+ document.querySelectorAll(`${root} .schhead`).forEach(h=>{h.innerHTML=h.innerHTML.replace(open?'▸':'▾',open?'▾':'▸');});
+ document.querySelectorAll(`${root} .caret`).forEach(c=>{if(c.style.visibility!=='hidden')c.textContent=open?'▾':'▸';});}
+function filterTree(q){q=q.trim().toLowerCase();
+ if(!q){document.querySelectorAll('#tree .trow').forEach(r=>r.style.display='');
+   document.querySelectorAll('#tree .schsec').forEach(s=>s.style.display='');expandAll(false);return;}
+ document.querySelectorAll('#tree .kids').forEach(k=>k.style.display='block');
+ document.querySelectorAll('#tree .schsec').forEach(sec=>{const rows=sec.querySelector('.schrows');let any=false;
+   sec.querySelectorAll('.trow').forEach(r=>{const m=r.dataset.txt.includes(q);r.style.display=m?'':'none';if(m)any=true;});
+   rows.style.display=any?'block':'none';sec.style.display=any?'':'none';});}
+function markTree(){const on=new Set(measures.map(m=>m.code));
+ document.querySelectorAll('#tree .trow').forEach(r=>r.classList.toggle('on',on.has(r.dataset.code)));}
+function toggleMeasure(code,label,pct){const i=measures.findIndex(m=>m.code===code);
+ if(i>=0)measures.splice(i,1); else {if(measures.length>=6){alert('Up to 6 measures.');return;}measures.push({code,label,pct:!!pct});}
+ entSortField='__none__';markTree();renderMeasures();recompute();}
 
-async function show(){try{const m=mcode();if(!active.length||!m){st('Add an entity and pick a line item.');return;}
- const pct=isPct(m);
- const series=[];for(const a of active){series.push({label:a.label,id:a.id,rows:await seriesFor(a.id,m)});}
- const prim=series[0];if(!prim.rows.length){st('No data for the primary entity / metric.');document.getElementById('chart').innerHTML='<p class=muted>No data.</p>';document.getElementById('table').innerHTML='';document.getElementById('cards').innerHTML='';return;}
- // KPI cards from primary
- const pv=prim.rows.map(r=>r[1]),pq=prim.rows.map(r=>r[0]);
- const last=pv[pv.length-1],prev=pv[pv.length-2],yr=pv[pv.length-5];
+// ---- entity panel (search / filter / sort) ----
+let entSortVals=new Map(), entSortField='__none__';
+function entCat(k){return k==='bank'?'bank':(k==='all'||k==='filing_type'||k==='size_bucket')?'agg':'other';}
+async function computeSortVals(field){
+ if(field===entSortField)return;
+ entSortVals=new Map();
+ if(field==='name'||field==='rssd'){entSortField=field;return;}
+ const baseMap={assets:'2170',deposits:'2200',loans:'2122',equity:'3210'};
+ let code; if(field==='current'){if(!measures.length){entSortField=field;return;}code=measures[0].code;} else code='COMB'+baseMap[field];
+ let base=null; if(code.startsWith('COMB')||/^(RCFD|RCON)/.test(code))base=code.slice(4);
+ const where=base?`mdrm IN ('COMB${base}','RCFD${base}','RCON${base}')`:`mdrm='${code}'`;
+ try{const r=(await conn.query(`SELECT entity_id, mdrm, value FROM t WHERE ${where} AND quarter_end=(SELECT max(quarter_end) FROM t)`)).toArray();
+   const byid={};for(const x of r){(byid[x.entity_id]=byid[x.entity_id]||{})[x.mdrm]=Number(x.value);}
+   for(const id in byid){const mp=byid[id];const v=base?coalesce(mp,base):mp[code];if(v!=null)entSortVals.set(id,v);}}catch(e){}
+ entSortField=field;}
+async function renderEntList(){const field=document.getElementById('entsort').value;await computeSortVals(field);
+ const desc=document.getElementById('entdesc').checked,filt=document.getElementById('entfilter').value,q=document.getElementById('entsearch').value.trim().toLowerCase();
+ const pool=[];for(const e of (window._ents||[]))pool.push({id:e.entity_id,label:e.lbl,cat:entCat(e.k)});
+ for(const n in peers)pool.push({id:'PEER:'+n,label:'★ '+n,cat:'peer'});
+ const rows=[];for(const p of pool){if(filt!=='all'&&p.cat!==filt)continue;
+   if(q&&!(p.label.toLowerCase().includes(q)||p.id.toLowerCase().includes(q)))continue;
+   let sv;if(field==='name')sv=p.label.toLowerCase();
+   else if(field==='rssd'){const m=p.id.match(/(\d+)/);sv=m?+m[1]:(desc?-Infinity:Infinity);}
+   else sv=entSortVals.has(p.id)?entSortVals.get(p.id):(desc?-Infinity:Infinity);
+   rows.push({...p,sv});}
+ rows.sort((a,b)=>typeof a.sv==='string'?(desc?b.sv.localeCompare(a.sv):a.sv.localeCompare(b.sv)):(desc?b.sv-a.sv:a.sv-b.sv));
+ const cont=document.getElementById('entlistpanel');
+ cont.innerHTML=rows.slice(0,600).map(r=>{const val=(field==='name')?'':(field==='rssd'?(r.id.match(/(\d+)/)?r.id.match(/(\d+)/)[1]:''):(entSortVals.has(r.id)?fmtUnit(entSortVals.get(r.id),false):''));
+   return `<div class="erow${r.cat==='agg'?' agg':''}" data-id="${r.id}" data-label="${r.label.replace(/"/g,'&quot;')}"><span class="en">${r.label}</span><span class="ev">${val}</span> <span class="pp" title="add to peer builder">＋peer</span></div>`;}).join('')||'<p class="muted" style="padding:8px">none match</p>';
+ cont.querySelectorAll('.erow').forEach(el=>{const id=el.dataset.id,label=el.dataset.label;
+   const addChart=()=>{if(!active.find(a=>a.id===id))active.push({id,label});renderChips();recompute();};
+   el.querySelector('.en').onclick=addChart;el.querySelector('.ev').onclick=addChart;
+   el.querySelector('.pp').onclick=ev=>{ev.stopPropagation();if(!peerMembers.find(a=>a.id===id))peerMembers.push({id,label});renderPeerBuilder();document.getElementById('peerbox').open=true;};});}
+function switchTab(items){document.getElementById('panelItems').style.display=items?'flex':'none';
+ document.getElementById('panelEnts').style.display=items?'none':'flex';
+ document.getElementById('tabItems').classList.toggle('on',items);document.getElementById('tabEnts').classList.toggle('on',!items);
+ if(!items)renderEntList();}
+
+// ---- compute + draw ----
+async function recompute(){
+ if(!measures.length||!active.length){lastSeries=[];Qall=[];draw();return;}
+ const out=[];let ci=0;
+ for(const m of measures)for(const e of active){const rows=await seriesFor(e.id,m.code);
+   out.push({label:`${e.label} · ${m.label}`,pct:m.pct,rows,color:COLORS[ci++%COLORS.length]});}
+ lastSeries=out;
+ const qs=new Set();for(const s of out)for(const r of s.rows)qs.add(r[0]);
+ Qall=[...qs].sort(); rangeSel={a:0,b:Math.max(0,Qall.length-1)}; syncSlider(); draw();}
+function syncSlider(){const n=Qall.length;const w=document.getElementById('sliderwrap');
+ if(n<2){w.style.display='none';return;}w.style.display='flex';
+ for(const id of['r0','r1']){const el=document.getElementById(id);el.min=0;el.max=n-1;}
+ document.getElementById('r0').value=rangeSel.a;document.getElementById('r1').value=rangeSel.b;
+ document.getElementById('rlbl').textContent=`${Qall[rangeSel.a]} … ${Qall[rangeSel.b]}`;}
+function onSlide(){let a=+document.getElementById('r0').value,b=+document.getElementById('r1').value;
+ rangeSel={a:Math.min(a,b),b:Math.max(a,b)};
+ document.getElementById('rlbl').textContent=`${Qall[rangeSel.a]} … ${Qall[rangeSel.b]}`;draw();}
+function draw(){const host=document.getElementById('panes');
+ if(!lastSeries.length){host.innerHTML='<p class="muted">Pick an entity, then click a line item on the left.</p>';document.getElementById('cards').innerHTML='';document.getElementById('tbl').innerHTML='';return;}
+ const win=Qall.slice(rangeSel.a,rangeSel.b+1),ws=new Set(win);
+ const groups=[['$ thousands',lastSeries.filter(s=>!s.pct)],['percent',lastSeries.filter(s=>s.pct)]];
+ let html='';
+ for(const [unit,arr] of groups){if(!arr.length)continue;
+   const w=arr.map(s=>({...s,rows:s.rows.filter(r=>ws.has(r[0]))}));html+=pane(w,unit==='percent',unit,win);}
+ host.innerHTML=html;
+ // KPI from primary series (first)
+ const prim={...lastSeries[0],rows:lastSeries[0].rows.filter(r=>ws.has(r[0]))};
+ const v=prim.rows.map(r=>r[1]),last=v[v.length-1],prev=v[v.length-2],yr=v[v.length-5];
  const qoq=prev?100*(last/prev-1):null,yoy=yr?100*(last/yr-1):null;
  const cls=x=>x==null?'':(x>=0?'up':'dn'),arr=x=>x==null?'—':((x>=0?'▲ ':'▼ ')+Math.abs(x).toFixed(1)+'%');
  document.getElementById('cards').innerHTML=
-  `<div class=card><div class=k>${prim.label} — latest (${pq[pq.length-1]})</div><div class=v>${fmt(last,pct)}</div></div>`+
+  `<div class=card><div class=k>${prim.label} — latest${prim.rows.length?` (${prim.rows[prim.rows.length-1][0]})`:''}</div><div class=v>${fmtUnit(last,prim.pct)}</div></div>`+
   `<div class=card><div class=k>QoQ</div><div class="v ${cls(qoq)}">${arr(qoq)}</div></div>`+
   `<div class=card><div class=k>YoY</div><div class="v ${cls(yoy)}">${arr(yoy)}</div></div>`+
-  `<div class=card><div class=k>Entities charted</div><div class=v>${series.length}</div></div>`;
- chart(series,pct);
- // table
- if(series.length===1){
-   let share=null;
-   if(document.getElementById('shareAll').checked && !pct && prim.id!=='ALL'){
-     const a=Object.fromEntries(await seriesFor('ALL',m));share={};for(const[q,v]of prim.rows)if(a[q])share[q]=100*v/a[q];}
-   expC=['quarter_end',pct?'value(%)':'value','QoQ %','YoY %'];if(share)expC.push('share_of_ALL %');
-   expR=prim.rows.map(([q,v],i)=>{const a=i>0&&pv[i-1]?100*(v/pv[i-1]-1):null,y=i>=4&&pv[i-4]?100*(v/pv[i-4]-1):null;
-     const r=[q,pct?+v.toFixed(3):v,a==null?'':a.toFixed(1),y==null?'':y.toFixed(1)];if(share)r.push(share[q]==null?'':share[q].toFixed(2));return r;});
- } else { // wide comparison: quarter + one col per entity
-   const qset=[...new Set([].concat(...series.map(s=>s.rows.map(r=>r[0]))))].sort();
-   const maps=series.map(s=>Object.fromEntries(s.rows));
-   expC=['quarter_end',...series.map(s=>s.label)];
-   expR=qset.map(q=>[q,...maps.map(mp=>mp[q]==null?'':(pct?+mp[q].toFixed(3):mp[q]))]);
- }
- tableRender(expC,expR);document.getElementById('csv').disabled=false;
- st(`${series.map(s=>s.label).join('  vs  ')} · ${DERIV[m]?DERIV[m].lbl:m}`);
-}catch(e){st('Error: '+e);console.error(e);}}
-
-function chart(series,pct){const W=1100,H=330,pad=62;
- const qset=[...new Set([].concat(...series.map(s=>s.rows.map(r=>r[0]))))].sort();
- const xi=Object.fromEntries(qset.map((q,i)=>[q,i])),n=qset.length;
+  `<div class=card><div class=k>Series</div><div class=v>${lastSeries.length}</div></div>`;
+ // table (wide: quarter + each series)
+ const maps=lastSeries.map(s=>Object.fromEntries(s.rows));
+ const head=['quarter_end',...lastSeries.map(s=>s.label)];
+ const body=win.map(q=>[q,...maps.map((mp,i)=>mp[q]==null?'':(lastSeries[i].pct?+mp[q].toFixed(3):mp[q]))]);
+ let h='<table><tr>'+head.map(x=>`<th>${x}</th>`).join('')+'</tr>';
+ for(const r of body)h+='<tr>'+r.map((x,i)=>`<td>${i>=1&&typeof x==='number'?Number(x).toLocaleString():x}</td>`).join('')+'</tr>';
+ document.getElementById('tbl').innerHTML=h+'</table>';
+ window._exp={head,body};}
+function pane(series,pct,unit,win){const W=1080,H=300,pad=64,n=win.length;
+ const xi=Object.fromEntries(win.map((q,i)=>[q,i]));
  let mn=Infinity,mx=-Infinity;for(const s of series)for(const r of s.rows){mn=Math.min(mn,r[1]);mx=Math.max(mx,r[1]);}
- if(!isFinite(mn)){document.getElementById('chart').innerHTML='<p class=muted>No data.</p>';return;}
- const rg=(mx-mn)||1;const X=i=>pad+i*(W-2*pad)/Math.max(1,n-1),Y=v=>H-pad-(v-mn)/rg*(H-2*pad);
- const f=v=>pct?v.toFixed(2)+'%':(v/1000).toLocaleString(undefined,{maximumFractionDigits:0})+'k';
- const tk=[mn,(mn+mx)/2,mx].map(v=>`<line x1="${pad}" y1="${Y(v)}" x2="${W-pad}" y2="${Y(v)}" stroke="#eef2f7"></line><text x="6" y="${Y(v)+4}" font-size="11" fill="#5a6478">${f(v)}</text>`).join('');
- let paths='';series.forEach((s,si)=>{let p='';s.rows.forEach((r,k)=>{p+=(k?'L':'M')+X(xi[r[0]]).toFixed(1)+' '+Y(r[1]).toFixed(1)+' ';});
-   paths+=`<path d="${p}" fill="none" stroke="${COLORS[si%COLORS.length]}" stroke-width="2"></path>`;});
- const want=7,ix=[...new Set(Array.from({length:want},(_,k)=>Math.round(k*(n-1)/(want-1))))];
- const lb=ix.map(i=>{const a=i===0?'start':(i===n-1?'end':'middle');return `<text x="${X(i)}" y="${H-pad+18}" font-size="10" fill="#5a6478" text-anchor="${a}">${qset[i]}</text>`;}).join('');
- document.getElementById('chart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">${tk}${paths}${lb}<text x="${W/2}" y="16" font-size="12" fill="#14213d" text-anchor="middle">${pct?'percent':'value in $thousands'}</text></svg>`;
- document.getElementById('legend').innerHTML=series.map((s,i)=>`<span><span class="sw" style="background:${COLORS[i%COLORS.length]}"></span> ${s.label}</span>`).join('');}
+ if(!isFinite(mn))return '';
+ if(!pct&&mn>0)mn=0; const rg=(mx-mn)||1;
+ const X=i=>pad+i*(W-2*pad)/Math.max(1,n-1),Y=v=>H-pad-(v-mn)/rg*(H-2*pad);
+ const f=v=>pct?v.toFixed(2)+'%':fmtUnit(v,false);
+ const gC=DK()?'#243044':'#eef2f7',aC=DK()?'#9aa3b2':'#5a6478',tC=DK()?'#e6e9ef':'#14213d';
+ const tk=[mn,(mn+mx)/2,mx].map(v=>`<line x1="${pad}" y1="${Y(v)}" x2="${W-pad}" y2="${Y(v)}" stroke="${gC}"></line><text x="8" y="${Y(v)+4}" font-size="11" fill="${aC}">${f(v)}</text>`).join('');
+ let paths='';for(const s of series){let p='';s.rows.forEach((r,k)=>{p+=(k?'L':'M')+X(xi[r[0]]).toFixed(1)+' '+Y(r[1]).toFixed(1)+' ';});
+   paths+=`<path d="${p}" fill="none" stroke="${s.color}" stroke-width="2"></path>`;}
+ const want=Math.min(8,n),ix=[...new Set(Array.from({length:want},(_,k)=>Math.round(k*(n-1)/Math.max(1,want-1))))];
+ const lb=ix.map(i=>{const a=i===0?'start':(i===n-1?'end':'middle');return `<text x="${X(i)}" y="${H-pad+18}" font-size="10" fill="${aC}" text-anchor="${a}">${win[i]}</text>`;}).join('');
+ const leg=series.map(s=>{const lv=s.rows.length?fmtUnit(s.rows[s.rows.length-1][1],pct):'—';return `<span><span class="sw" style="background:${s.color}"></span> ${s.label} <b>${lv}</b></span>`;}).join('');
+ return `<div class="legend">${leg}</div><svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">${tk}${paths}${lb}<text x="14" y="16" font-size="11" fill="${tC}">${unit}</text></svg>`;}
+function exportSeries(){if(!window._exp){alert('Nothing to export.');return;}dl2(window._exp.head,window._exp.body,'series');}
 
-function tableRender(c,rows){let h='<table><tr>'+c.map(x=>`<th>${x}</th>`).join('')+'</tr>';
- for(const r of rows)h+='<tr>'+r.map((v,i)=>`<td>${i>=1&&typeof v==='number'?Number(v).toLocaleString():v}</td>`).join('')+'</tr>';
- document.getElementById('table').innerHTML=h+'</table>';}
+// ---- call-report view (drill-down hierarchy + time-frame columns) ----
+async function openForm(){if(!HIER){alert('Hierarchy file not loaded.');return;}const e=active[0]||resolveEnt();if(!e){alert('Add an entity first.');return;}
+ window._fe=e;document.getElementById('forment').textContent=e.label;const ids=expand(e.id);
+ const qs=(await conn.query(`SELECT DISTINCT quarter_end FROM t WHERE entity_id IN (${sqlList(ids)}) ORDER BY quarter_end`)).toArray().map(r=>String(r.quarter_end));
+ window._fq=qs;const opt=qs.map(q=>`<option>${q}</option>`).join('');
+ const ff=document.getElementById('ffrom'),ft=document.getElementById('fto');ff.innerHTML=opt;ft.innerHTML=opt;
+ if(qs.length){ft.value=qs[qs.length-1];ff.value=qs[Math.max(0,qs.length-4)];}
+ document.getElementById('formmodal').style.display='flex';renderForm();}
+async function renderForm(){const e=window._fe;if(!e)return;const ids=expand(e.id);const fq=window._fq||[];
+ let lo=fq.indexOf(document.getElementById('ffrom').value),hi=fq.indexOf(document.getElementById('fto').value);
+ if(lo<0)lo=0;if(hi<0)hi=fq.length-1;if(lo>hi){const t=lo;lo=hi;hi=t;}
+ let cols=fq.slice(lo,hi+1);if(cols.length>16)cols=cols.slice(cols.length-16);const colsDesc=[...cols].reverse();
+ const r=(await conn.query(`SELECT quarter_end,mdrm,SUM(value) v FROM t WHERE entity_id IN (${sqlList(ids)}) AND quarter_end IN (${sqlList(cols)}) GROUP BY quarter_end,mdrm`)).toArray();
+ const val={};for(const x of r){(val[x.mdrm]=val[x.mdrm]||{})[String(x.quarter_end)]=Number(x.v);}
+ const body=document.getElementById('formbody');body.innerHTML='';window._fr=[];window._fcols=colsDesc;
+ const hd=document.createElement('div');hd.className='frow';hd.style.cssText='font-weight:700;position:sticky;top:0;background:#fff;z-index:2';
+ hd.innerHTML=`<span class="lab">Item</span>`+colsDesc.map(q=>`<span class="vcell">${q.slice(0,7)}</span>`).join('');
+ body.appendChild(hd);
+ const keys=[...FORM_ORDER.filter(k=>HIER[k]),...Object.keys(HIER).filter(k=>SCHED_NAMES[k]&&!FORM_ORDER.includes(k))];
+ for(const sch of keys){const items=HIER[sch].filter(rr=>REPORT.test(rr.mdrm)&&val[rr.mdrm]);if(!items.length)continue;
+   const flat=items.map(rr=>({code:rr.mdrm,caption:rr.caption||rr.mdrm,num:rr.item||'',depth:rr.depth||1}));
+   const {sec,rows}=mkSec(SCHED_NAMES[sch]||sch,items.length);body.appendChild(sec);
+   renderFormNodes(rows,nest(flat),colsDesc,val);
+   for(const rr of items)window._fr.push([sch,rr.item||'',rr.mdrm,rr.caption||rr.mdrm,...colsDesc.map(q=>(val[rr.mdrm]&&val[rr.mdrm][q])??'')]);}
+ if(!window._fr.length)body.innerHTML='<p class=muted>No data for this entity/range.</p>';}
+function renderFormNodes(container,nodes,colsDesc,val){for(const nd of nodes){const has=nd.children.length>0;
+ const d=document.createElement('div');d.className='frow';d.style.paddingLeft=(6+(nd.depth-1)*14)+'px';
+ const car=has?`<span class="caret">▸</span>`:`<span class="caret" style="visibility:hidden">▸</span>`;
+ const cells=colsDesc.map(q=>{const v=val[nd.code]&&val[nd.code][q];return `<span class="vcell">${v==null?'':Number(v).toLocaleString()}</span>`;}).join('');
+ d.innerHTML=`<span class="lab">${car}${nd.num?`<b>${nd.num}</b> `:''}${nd.caption} <span style="color:#9aa3b2;font-size:11px">${nd.code}</span></span>${cells}`;
+ d.querySelector('.caret').onclick=ev=>{ev.stopPropagation();if(has)toggleNode(d);};
+ container.appendChild(d);
+ if(has){const kids=document.createElement('div');kids.className='kids';kids.style.display='none';renderFormNodes(kids,nd.children,colsDesc,val);container.appendChild(kids);d._kids=kids;}}}
+function exportForm(){if(!window._fr||!window._fr.length){alert('Nothing to export.');return;}
+ dl2(['schedule','item','mdrm','caption',...(window._fcols||[])],window._fr,'callreport');}
+
 function dl2(c,rows,nm){if(!rows.length){alert('Nothing to export.');return;}const e=v=>{v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
  const lines=[c.join(',')].concat(rows.map(r=>r.map(e).join(',')));const bl=new Blob([lines.join('\n')],{type:'text/csv'});
  const a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download='ffiec_call_'+nm+'.csv';a.click();}
 async function runsql(){try{const r=(await conn.query(document.getElementById('sql').value)).toArray();
  sqlC=r.length?Object.keys(r[0]):[];sqlR=r.map(x=>sqlC.map(c=>x[c]));
  let h='<table><tr>'+sqlC.map(c=>`<th>${c}</th>`).join('')+'</tr>';for(const x of r.slice(0,500))h+='<tr>'+sqlC.map(c=>`<td>${x[c]}</td>`).join('')+'</tr>';
- document.getElementById('sqlout').innerHTML=h+`</table><p class=muted>${r.length} rows (first 500 shown)</p>`;}catch(e){document.getElementById('sqlout').textContent='SQL error: '+e;}}
+ document.getElementById('sqlout').innerHTML=h+`</table><p class=muted>${r.length} rows (first 500)</p>`;}catch(e){document.getElementById('sqlout').textContent='SQL error: '+e;}}
 init();
 </script></body></html>
