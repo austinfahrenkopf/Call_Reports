@@ -26,20 +26,23 @@
  .sw{width:10px;height:10px;border-radius:50%;display:inline-block}
  .cards{display:flex;gap:12px;flex-wrap:wrap;margin:6px 0 12px}
  .card{flex:1;min-width:140px;background:#fff;border:1px solid #e3e8ef;border-radius:10px;padding:10px 13px}
- .card .k{font-size:11px;color:#5a6478}.card .v{font-size:20px;font-weight:700;margin-top:3px}
- .up{color:#1b7f3b}.dn{color:#c0392b}
+ .card .k{font-size:11px;color:#5a6478}.card .v{font-size:28px;font-weight:700;margin-top:3px}
+ .up{color:#fff;background:#1b7f3b;border-radius:4px;padding:1px 5px;font-size:11px;font-weight:600}.dn{color:#fff;background:#c0392b;border-radius:4px;padding:1px 5px;font-size:11px;font-weight:600}
  table{border-collapse:collapse;width:100%;font-size:13px;margin-top:10px}th,td{border:1px solid #e3e8ef;padding:6px 9px;text-align:right}
- th{background:#f2f5f9}td:first-child,th:first-child{text-align:left}
- svg{background:#fff;border:1px solid #e3e8ef;border-radius:8px;display:block}
+ th{background:#f2f5f9;position:sticky;top:0;z-index:1}td:first-child,th:first-child{text-align:left}tr:nth-child(even) td{background:#f7f9fc}
+ svg{background:#fff;border:1px solid #e3e8ef;border-radius:8px;display:block;overflow:visible}
+ svg circle.pt{cursor:pointer;r:1.5px;fill-opacity:0;stroke-opacity:0;pointer-events:none;transition:r .1s,fill-opacity .1s,stroke-opacity .1s}
+ svg .qband .reveal{opacity:0;transition:opacity .05s;pointer-events:none}svg .qband:hover .reveal{opacity:1}svg .qband .hit{fill:#000;fill-opacity:0;pointer-events:all;cursor:crosshair}
  details{margin-top:14px;background:#fff;border:1px solid #e3e8ef;border-radius:8px;padding:12px}
  textarea{width:100%;height:70px;font-family:Consolas,monospace;font-size:13px}
  .box{background:#fff;border:1px solid #e3e8ef;border-radius:8px;padding:12px;margin-bottom:12px}
  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;margin:6px 0 2px}
  .schhead{font-weight:700;color:#14213d;margin:8px 0 3px;cursor:pointer;font-size:12px}
  .schhead .cnt{color:#9aa3b2;font-weight:400}
- .trow{padding:3px 6px;border-radius:5px;cursor:pointer;font-size:12px;line-height:1.3}
- .trow:hover{background:#eef3f8}.trow .code{color:#9aa3b2;font-size:10px;margin-left:5px}
- .trow.comb{color:#1b7f3b}.trow .num{color:#5a6478;margin-right:5px}.trow.on{background:#dcefe2}
+ .trow{padding:3px 6px;border-radius:5px;cursor:pointer;font-size:12px;line-height:1.3;display:flex;align-items:baseline;gap:4px;white-space:nowrap}
+ .trow:hover{background:#eef3f8}.trow .code{color:#9aa3b2;font-size:10px;flex:none}
+ .trow.comb{color:#1b7f3b}.trow .num{color:#5a6478;flex:none}.trow.on{background:#dcefe2}
+ .trow .cap{overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
  .caret{cursor:pointer;color:#5a6478;display:inline-block;width:13px;text-align:center;font-size:10px}
  .railctl{margin-top:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:11px}
  .railctl button{padding:3px 8px}
@@ -52,21 +55,31 @@
  .erow:hover{background:#eef3f8}.erow .en{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
  .erow .ev{color:#5a6478;font-variant-numeric:tabular-nums}.erow .pp{color:#1b7f3b;font-weight:700;cursor:pointer}
  .erow.agg{font-weight:600}
- .app.popped{grid-template-columns:0 0 1fr}
- .rail.floating{position:fixed;top:70px;left:24px;width:380px;max-height:82vh;z-index:80;border:1px solid #cdd5e0;border-radius:10px;box-shadow:0 14px 44px rgba(10,20,40,.32);resize:both}
- .rail.floating .railhead{cursor:move;background:#f2f5f9;border-radius:10px 10px 0 0}
+ /* popped rail leaves the grid (fixed) + splitter hidden; a single 1fr keeps #main full-width
+    ("0 0 1fr" reflowed #main into a 0px column, collapsing it). */
+ .app.popped{grid-template-columns:1fr}
+ /* fixed height (not max-height) + overflow:hidden so resize:both actually works */
+ .rail.floating{position:fixed;top:70px;left:24px;width:380px;height:82vh;min-width:300px;min-height:240px;z-index:80;border:1px solid #cdd5e0;border-radius:10px;box-shadow:0 14px 44px rgba(10,20,40,.32);resize:both;overflow:hidden}
+ .rail.floating .railtabs{cursor:move}
+ .rail.floating .railhead{background:#f2f5f9;border-radius:10px 10px 0 0}
+ #panelEnts.entfloat{position:fixed;top:90px;right:26px;width:380px;height:70vh;min-width:300px;min-height:240px;z-index:84;background:#fff;border:1px solid #cdd5e0;border-radius:10px;box-shadow:0 14px 44px rgba(10,20,40,.32);resize:both;overflow:hidden}
+ body.dark #panelEnts.entfloat{background:#161e2b;border-color:#2a3547}
+ #panelEnts.entfloat .railhead{cursor:move}
+ #entdetach{float:right;padding:2px 8px;margin-left:6px}
  .slider{display:flex;align-items:center;gap:10px;margin:8px 0}.slider input{min-width:120px;flex:1}
  .frow{display:flex;gap:10px;padding:2px 6px;font-size:13px;border-bottom:1px solid #f3f5f8}
  .frow .lab{flex:1;min-width:280px}.frow .val{font-variant-numeric:tabular-nums}
  .vcell{width:92px;flex:none;text-align:right;font-variant-numeric:tabular-nums;color:#14213d}
+ :root{--border:#ccc;--head:#f7f8fc;--fg2:#64748b}
  .modal{position:fixed;inset:0;background:rgba(10,20,40,.4);z-index:60;display:flex;align-items:flex-start;justify-content:center}
- .modalbox{background:#fff;margin-top:32px;width:min(960px,95vw);max-height:88vh;display:flex;flex-direction:column;border-radius:10px;overflow:hidden}
+ .modalbox{background:#fff;margin-top:32px;width:min(960px,95vw);height:88vh;min-width:480px;min-height:320px;max-width:98vw;display:flex;flex-direction:column;border-radius:10px;overflow:hidden;resize:both}
+ .modalbody{flex:1;overflow:auto}
  .modalhead{padding:12px 14px;border-bottom:1px solid #e3e8ef;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
  .modal.float{background:transparent;pointer-events:none}
  .modal.float .modalbox{pointer-events:auto;position:fixed;top:60px;left:60px;width:min(900px,92vw);box-shadow:0 14px 44px rgba(10,20,40,.35);resize:both}
  .modal.float .modalhead{cursor:move}
  /* ---- dark mode ---- */
- body.dark{background:#0e1420;color:#e6e9ef}
+ body.dark{background:#0e1420;color:#e6e9ef;--border:#2a3547;--head:#1a2638;--fg2:#9aa3b2}
  body.dark .rail,body.dark .card,body.dark .box,body.dark details,body.dark .modalbox{background:#161e2b;border-color:#2a3547}
  body.dark .railtabs{background:#121a26;border-color:#2a3547}
  body.dark .railhead,body.dark .modalhead{border-color:#2a3547}
@@ -76,8 +89,10 @@
  body.dark .tab{background:#1b2433;color:#e6e9ef;border-color:#2a3547}body.dark .tab.on{background:#1b7f3b;color:#fff;border-color:#1b7f3b}
  body.dark .muted,body.dark label,body.dark .card .k,body.dark .schhead .cnt,body.dark .trow .code,body.dark .trow .num,body.dark .caret{color:#9aa3b2}
  body.dark .schhead,body.dark .card .v,body.dark .frow .val,body.dark .vcell,body.dark td:first-child{color:#e6e9ef}
- body.dark th{background:#1b2433;border-color:#2a3547}body.dark td{border-color:#2a3547}
+ body.dark th{background:#1b2433;border-color:#2a3547}body.dark td{border-color:#2a3547}body.dark tr:nth-child(even) td{background:#19253a}body.dark .up{background:#1b5e2e}body.dark .dn{background:#8b1a1a}
  body.dark .chip{background:#1b2433;border-color:#2a3547}
+ .erow.on{background:#dcefe2}
+body.dark .erow.on{background:#16361f}
  body.dark .trow:hover,body.dark .erow:hover{background:#1f2a3a}body.dark .trow.on{background:#16361f}
  body.dark .erow{border-color:#222c3b}body.dark .frow{border-color:#222c3b}
  body.dark svg{background:#0f1825;border-color:#2a3547}
@@ -85,6 +100,14 @@
  body.dark a{color:#6cb6ff}
  #theme{float:right;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);padding:4px 10px;font-size:12px}
  .credit{margin:20px 2px 10px;font-size:11px;color:#9aa3b2}.credit a{color:inherit;text-decoration:underline}
+.fav{cursor:pointer;color:#d69e2e;font-size:11px;flex:none;padding:0 3px;opacity:.4;transition:opacity .1s}.fav.on{opacity:1}.fav:hover{opacity:1}
+.pane-toggle{font-size:11px;padding:3px 8px;margin-bottom:4px}
+.trow.placeholder{opacity:.55;cursor:default;pointer-events:none}
+#charttip{position:fixed;pointer-events:none;z-index:50;background:var(--tip-bg,#1a2535);color:var(--tip-fg,#e6e9ef);border:1px solid #3a4a5e;border-radius:8px;padding:8px 12px;font-size:12px;line-height:1.6;white-space:nowrap;display:none;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+body:not(.dark) #charttip{--tip-bg:#fff;--tip-fg:#14213d;border-color:#cdd5e0;box-shadow:0 4px 16px rgba(0,0,0,.12)}
+#charttip .tip-q{font-weight:700;margin-bottom:4px;color:#9aa3b2;font-size:11px}
+#charttip .tip-row{display:flex;align-items:center;gap:6px}
+#charttip .tip-sw{width:8px;height:8px;border-radius:50%;flex:none}
 </style></head><body class="dark">
 <header><button id="theme">☀ Light</button><h1>FFIEC Call Report Dashboard</h1>
 <p>U.S. commercial banks (031/041/051) · banks + ALL / type / size buckets + peer groups · 2001&ndash;present · $ thousands</p></header>
@@ -96,21 +119,23 @@
    <div class="railhead"><span class="muted">click to add to chart</span>
     <input id="treesearch" placeholder="search code or caption…">
     <div class="railctl">
-     <button id="drilldn" class="sec" title="expand one more level">▾ level</button>
-     <button id="drillup" class="sec" title="collapse one level">▴ level</button>
+     <button id="drilldn" class="sec" title="expand one level in open branches [ ] keys">▼ Drill</button>
+     <button id="drillup" class="sec" title="collapse deepest open level [ ] keys">▲ Drill</button>
      <button id="expall" class="sec">⊕ all</button><button id="colall" class="sec">⊖ all</button>
+     <button id="jumpto" class="sec" title="scroll to active measure in tree">⊙ active</button>
      <label><input type="checkbox" id="showraw"> RCFD/RCON variants</label>
     </div></div>
    <div id="tree"><p class="muted" style="padding:10px">Loading…</p></div>
   </div>
   <div id="panelEnts" style="display:none">
-   <div class="railhead"><span class="muted">click to chart · ＋peer to bucket</span>
+   <div class="railhead"><button id="entdetach" class="sec" title="use Items + Entities at once">⧉ Detach</button><span class="muted">click to chart · ＋peer to bucket</span>
     <input id="entsearch" placeholder="search bank / RSSD…">
     <div class="railctl">Show
      <select id="entfilter"><option value="all">All</option><option value="bank">Individual banks</option><option value="agg">Aggregates</option><option value="peer">Peer groups</option></select>
      Sort
      <select id="entsort"><option value="assets">Total assets</option><option value="deposits">Total deposits</option><option value="loans">Total loans</option><option value="equity">Total equity</option><option value="current">Current measure</option><option value="name">Name A–Z</option><option value="rssd">RSSD</option></select>
      <label><input type="checkbox" id="entdesc" checked> high→low</label>
+     <!-- showmerged: lineage not available for this form --><label title="show predecessor / merged-bank RSSDs in entity list"><input type="checkbox" id="showmerged"> Show merged</label>
     </div></div>
    <div id="entlistpanel"><p class="muted" style="padding:10px">…</p></div>
   </div>
@@ -122,7 +147,7 @@
    <div><label>Entity (bank name, RSSD, ALL / 031 / 051 / SIZE_… , or ★ peer group)</label>
     <input id="ent" list="entlist" autocomplete="off"><datalist id="entlist"></datalist></div>
    <div><button id="add" class="sec">+ Add to chart</button> <button id="addpeer" class="sec">+ Add to peer</button>
-    <button id="formbtn" class="sec">📄 Call-report view</button></div>
+    <button id="formbtn" class="sec">📄 Call-report view</button> <button id="leaguebtn" class="sec">🏆 League table</button> <button id="reportbtn" class="sec" disabled title="Select a single bank to generate a tear-sheet report">📋 Report</button> <button id="exportbtn" class="sec">⬇ Export</button></div>
   </div>
   <div><label>Entities (overlay to compare)</label><div id="chips" class="chips"><span class="muted">none</span></div></div>
   <div><label>Measures (click items in the left rail; ✕ to remove)</label><div id="mchips" class="chips"><span class="muted">none</span></div></div>
@@ -138,8 +163,8 @@
   <div class="cards" id="cards"></div>
   <div id="panes"><p class="muted">Pick an entity, then click a line item on the left.</p></div>
   <div class="slider" id="sliderwrap" style="display:none">
-   <span class="muted">From</span><input type="range" id="r0"><input type="range" id="r1"><span class="muted">to</span>
-   <span id="rlbl" class="muted"></span> <button id="rreset" class="sec">Full range</button>
+   <span class="muted">From</span><input type="range" id="r0"><input type="range" id="r1">
+   <input type="text" id="rfrom" list="qlist" size="10" style="font:inherit;font-size:12px;border:1px solid var(--border,#ccc);border-radius:3px;padding:1px 4px;background:inherit;color:inherit"><span class="muted">to</span><input type="text" id="rto" list="qlist" size="10" style="font:inherit;font-size:12px;border:1px solid var(--border,#ccc);border-radius:3px;padding:1px 4px;background:inherit;color:inherit"><datalist id="qlist"></datalist> <button id="rreset" class="sec">Full range</button>
    <label class="muted" title="rebase each $ series to 100 at the start of the range"><input type="checkbox" id="idx"> index to 100</label>
    <button id="csv" class="sec">Export</button></div>
   <div id="tbl"></div>
@@ -148,7 +173,7 @@
    <textarea id="sql">SELECT quarter_end, value FROM t WHERE entity_id='ALL' AND mdrm='COMB2170' ORDER BY quarter_end;</textarea>
    <div style="margin-top:8px"><button id="runsql" class="sec">Run</button> <button id="sqlcsv" class="sec">Export result</button></div>
    <div id="sqlout"></div></details>
-  <div class="credit">Built by Austin Fahrenkopf &middot; data: public FFIEC filings</div>
+  <div class="credit">Built by Austin Fahrenkopf &middot; data: public FFIEC filings &middot; Built 2026-06-19 19:38</div>
  </div>
 </div>
 <div id="formmodal" class="modal" style="display:none"><div class="modalbox">
@@ -160,6 +185,25 @@
   <button id="fpop" class="sec" title="float / dock">⧉</button>
   <button id="formexport" class="sec">Export</button> <button id="formclose" class="sec">Close</button></div>
  <div id="formbody" style="overflow:auto;padding:10px 14px"></div></div></div>
+<div id="leaguemodal" class="modal" style="display:none"><div class="modalbox">
+ <div class="modalhead"><b>🏆 League table</b>
+  <label style="font-size:12px">Measure <select id="lgmeasure"></select></label>
+  <label style="font-size:12px">Quarter <select id="lgquarter"></select></label>
+  <label style="font-size:12px">Top <select id="lgtopn"><option>25</option><option>50</option><option>100</option><option value="0">All</option></select></label>
+  <button id="lgexport" class="sec">Export</button> <button id="lgclose" class="sec">Close</button></div>
+ <div id="leaguebody" style="flex:1;overflow:auto;padding:10px 14px"><p class="muted">Loading…</p></div></div></div>
+<div id="reportmodal" class="modal" style="display:none"><div class="modalbox" style="width:min(1040px,96vw);height:92vh">
+ <div class="modalhead"><b>📋 Entity Report</b> &nbsp;<span id="rpt-title"></span><span id="rpt-asof" class="muted" style="font-size:11px"></span>
+  <button id="rpt-print" class="sec">🖨 Print / PDF</button> <button id="rptclose" class="sec">Close</button></div>
+ <div id="rptbody" class="modalbody" style="flex:1;overflow:auto;padding:14px 18px"></div></div></div>
+<div id="exportmodal" class="modal" style="display:none"><div class="modalbox" style="width:min(840px,96vw);max-height:92vh">
+ <div class="modalhead"><b>⬇ Export Builder</b>
+  <button id="expbld-setcur" class="sec" title="Copy current chart entity and date range">↺ From chart</button>
+  <button id="expbld-preview" class="sec">👁 Preview</button>
+  <button id="expbld-run" class="sec">⬇ Download CSV</button>
+  <button id="expbld-close" class="sec">Close</button></div>
+ <div id="expbldbody" class="modalbody" style="flex:1;overflow:auto;padding:14px 18px"><p class="muted">Loading…</p></div>
+ <div id="eb-preview-area" style="overflow:auto;max-height:260px;padding:0 18px 10px;font-size:11px"></div></div></div>
 <script type="module">
 import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.0/+esm';
 const PARTS=['ffiec_call.parquet']; const st=m=>document.getElementById('status').textContent=m;
@@ -180,7 +224,7 @@ const DERIV={
  'D_BORROW_ASSETS':{type:'ratio',lbl:'Funding ▸ Borrowings / Assets (%)',plus:['3353','3190'],den:['2170']},
  'D_NONDEP':{type:'ratio',lbl:'Funding ▸ Non-deposit liabilities / Assets (%)',plus:['2948'],minus:['2200'],den:['2170']},
  'D_BROKERED':{type:'ratio',lbl:'Funding ▸ Brokered deposits / Deposits (%)',plus:['2365'],den:['2200']},
- 'D_NPL':{type:'ratio',lbl:'Credit ▸ NPL ratio % (30-89+90++nonaccrual / loans)',plus:['1406','1407','1403'],den:['2122']},
+ 'D_NPL':{type:'ratio',lbl:'Credit ▸ NPL % (Past Due + Non Accrual / loans)',plus:['1406','1407','1403'],den:['2122']},
  'D_NONCUR_PCT':{type:'ratio',lbl:'Credit ▸ Noncurrent loan ratio % (90++nonaccrual / loans)',plus:['1407','1403'],den:['2122']},
  'D_RESLOANS':{type:'ratio',lbl:'Credit ▸ Reserves / Loans (%)',plus:['3123'],den:['2122']},
  'D_RESNPL':{type:'ratio',lbl:'Credit ▸ Reserve coverage % (reserves / noncurrent)',plus:['3123'],den:['1407','1403']},
@@ -194,35 +238,80 @@ const DERIV={
  'D_UTIL':{type:'ratio',lbl:'Undrawn ▸ Loan utilization % (loans/(loans+unused))',plus:['2122'],den:['2122',...UNUSED]},
  'S_NONCUR':{type:'sum',lbl:'Subtotal ▸ Noncurrent loans $ (90++nonaccrual)',plus:['1407','1403']},
  'S_PASTDUE':{type:'sum',lbl:'Subtotal ▸ Past due + nonaccrual $ (RC-N item 9)',plus:['1406','1407','1403']},
+ 'D_NPL_CI':{type:'ratio',lbl:'Loan quality ▸ C&I NPL % (Past Due + Non Accrual / C&I loans)',plus:['1250','1252','1253','1254','1255','1256'],den:['1763','1764']},
+ 'D_NPL_CC':{type:'ratio',lbl:'Loan quality ▸ Credit card NPL % (Past Due + Non Accrual / CC loans)',plus:['B575','B576','B577'],den:['B538']},
+ 'D_NPL_AUTO':{type:'ratio',lbl:'Loan quality ▸ Auto NPL % (Past Due + Non Accrual / auto loans)',plus:['K213','K214','K215'],den:['K137']},
+ 'D_NPL_CONS':{type:'ratio',lbl:'Loan quality ▸ Other consumer NPL % (Past Due + Non Accrual / other consumer)',plus:['B578','B579','B580'],den:['K207']},
+ 'D_NPL_AG':{type:'ratio',lbl:'Loan quality ▸ Agricultural NPL % (Past Due + Non Accrual / ag loans)',plus:['1594','1597','1583'],den:['1590']},
+ 'D_NPL_RES':{type:'ratio',lbl:'Loan quality ▸ 1-4 family RE NPL % (Past Due + Non Accrual / residential loans)',plus:['5398','5399','5400','C236','C237','C229','C238','C239','C230'],den:['1797','5367','5368']},
+ 'D_NPL_CONSTR':{type:'ratio',lbl:'Loan quality ▸ Construction & land NPL % (Past Due + Non Accrual / construction loans)',plus:['F172','F173','F174','F176','F175','F177'],den:['F158','F159']},
+ 'D_NPL_MULTI':{type:'ratio',lbl:'Loan quality ▸ Multifamily RE NPL % (Past Due + Non Accrual / multifamily loans)',plus:['3499','3500','3501'],den:['1460']},
+ 'D_NPL_CRE':{type:'ratio',lbl:'Loan quality ▸ CRE nonfarm nonres NPL % (Past Due + Non Accrual / CRE loans)',plus:['F178','F179','F180','F182','F181','F183'],den:['F160','F161']},
  'S_NCO':{type:'sum',lbl:'Subtotal ▸ Net charge-offs $ YTD (charge-offs-recoveries)',plus:['4635'],minus:['4605']},
  'S_UNUSED':{type:'sum',lbl:'Subtotal ▸ Total unused commitments $ (RC-L item 1)',plus:UNUSED},
  'S_EXPOSURE':{type:'sum',lbl:'Subtotal ▸ Total loan exposure $ (loans+unused)',plus:['2122',...UNUSED]},
+ 'D_NIM':{type:'ratio',lbl:'Earnings ▸ Net interest margin % approx. (NII/assets, annualized)',plus:['4074'],den:['2170'],annualize:true},
+ 'D_EFF':{type:'ratio',lbl:'Earnings ▸ Efficiency ratio % (nonint expense / (NII+nonint income))',plus:['4093'],den:['4074','4079']},
 };
 const DKIND=m=>DERIV[m]?DERIV[m].type:null;
 const isPct=m=>DKIND(m)==='ratio';
+// HIGH-2: RC-R capital ratio codes are PERCENTAGES (not $ amounts) — summing across entities is meaningless.
+const PCTC=new Set(['RCFA7204','RCFA7205','RCFA7206','RCFAH036','RCFAP793',
+'RCFD7204','RCFD7205','RCFD7206','RCFD7273','RCFD7274','RCFD7275',
+'RCFW7205','RCFW7206','RCFWP793',
+'RCOA7204','RCOA7205','RCOA7206','RCOAH036','RCOAP793',
+'RCON7204','RCON7205','RCON7206','RCON7273','RCON7274','RCON7275',
+'RCOW7205','RCOW7206','RCOWP793']);
 const short=lbl=>{const i=lbl.indexOf('▸');return (i>=0?lbl.slice(i+1):lbl).replace(/\s*\(.*\)\s*$/,'').trim();};
 const sqlList=a=>a.map(x=>`'${String(x).replace(/'/g,"''")}'`).join(',');
+// MEDIUM-2: date-based quarter helpers — quarter strings are "YYYY-MM-DD" (end-of-quarter).
+function prevQtr(q){if(!q)return null;const m=q.slice(5,7);return m==='03'?`${+q.slice(0,4)-1}-12-31`:m==='06'?`${q.slice(0,4)}-03-31`:m==='09'?`${q.slice(0,4)}-06-30`:`${q.slice(0,4)}-09-30`;}
+function yoyQtr(q){return q?`${+q.slice(0,4)-1}${q.slice(4)}`:null;}
 const fmtUnit=(v,pct)=>v==null?'—':pct?(+v).toFixed(2)+'%':(Math.abs(v)>=1e9?(v/1e6).toLocaleString(undefined,{maximumFractionDigits:0})+' B':Math.abs(v)>=1e6?(v/1e3).toLocaleString(undefined,{maximumFractionDigits:0})+' M':Number(v).toLocaleString()+' k');
 
-let conn,lbl2id=new Map(),id2lbl=new Map(),HIER=null,treeBuilt=false,sqlC=[],sqlR=[];
+let conn,lbl2id=new Map(),id2lbl=new Map(),HIER=null,treeBuilt=false,sqlC=[],sqlR=[],ALLQ=[];
+const _seriesCache=new Map();
 let active=[], measures=[], peerMembers=[], peers={};
 let lastSeries=[], Qall=[], rangeSel={a:0,b:0};
 
 function loadPeers(){try{peers=JSON.parse(localStorage.getItem('ffiec_peers')||'{}');}catch{peers={};}}
 function savePeers(){localStorage.setItem('ffiec_peers',JSON.stringify(peers));}
+function stateToHash(){
+  const params=new URLSearchParams();
+  if(active.length)params.set('e',active.map(a=>a.id).join(','));
+  if(measures.length)params.set('m',measures.map(m=>m.code).join(','));
+  if(Qall.length){params.set('q0',Qall[rangeSel.a]||'');params.set('q1',Qall[rangeSel.b]||'');}
+  history.replaceState(null,'','#'+params.toString());}
+function hashToState(){
+  if(!location.hash||location.hash==='#')return false;
+  try{const p=new URLSearchParams(location.hash.slice(1));
+    const eStr=p.get('e');if(eStr){active=eStr.split(',').filter(Boolean).map(id=>({id,label:id2lbl.get(id)||id}));}
+    const mStr=p.get('m');if(mStr){measures=[];for(const code of mStr.split(',').filter(Boolean)){
+      const d=DERIV[code];const lbl=d?d.lbl:code;const pct=isPct(code);
+      if(measures.length<6)measures.push({code,label:lbl,pct:!!pct});}}
+    const q0=p.get('q0'),q1=p.get('q1');
+    if(q0&&q1&&Qall.length){const a=Qall.indexOf(q0),b=Qall.indexOf(q1);
+      if(a>=0&&b>=0)rangeSel={a:Math.min(a,b),b:Math.max(a,b)};}
+    return !!(eStr||mStr);}catch{return false;}}
 function resolveEnt(){const v=document.getElementById('ent').value.trim();
  if(lbl2id.has(v))return {id:lbl2id.get(v),label:v};
  if(v.replace(/^★\s*/,'') in peers){const n=v.replace(/^★\s*/,'');return {id:'PEER:'+n,label:'★ '+n};}
  if(/^(ALL|031|041|051|SIZE_)/i.test(v)){const id=v.toUpperCase()==='ALL'?'ALL':v;return {id,label:id};}
  const m=v.match(/(\d{3,})/);if(m){const id='BANK:'+m[1];return {id,label:id2lbl.get(id)||id};}return null;}
 function expand(id){if(id&&id.startsWith('PEER:')){const n=id.slice(5);return peers[n]||[];}return [id];}
-function coalesce(map,base){return map['COMB'+base]??map['RCFD'+base]??map['RCON'+base];}
+function coalesce(map,base){return map['COMB'+base]??map['RCFD'+base]??map['RCON'+base]??map['RIAD'+base];}
+// HIGH-2: isAggScope covers ALL, charter-type groups, size buckets, and multi-member peer groups.
+const isAggScope=id=>id==='ALL'||id==='031'||id==='041'||id==='051'||id.startsWith('SIZE_')||(id.startsWith('PEER:')&&(peers[id.slice(5)]||[]).length>1);
+const isRawPct=m=>PCTC.has(m)&&!DERIV[m];
 
 async function seriesFor(id,m){const ids=expand(id);if(!ids.length)return [];
+ // HIGH-2: raw capital-ratio codes must not be summed across a multi-entity aggregate.
+ if(isRawPct(m)&&isAggScope(id))return [];
+ const _sk=`${id}::${m}`;if(_seriesCache.has(_sk))return _seriesCache.get(_sk);
  let d=DERIV[m];
  if(!d && m && m.startsWith('COMB')) d={type:'sum',plus:[m.slice(4)],minus:[],den:[]};
  if(d){const bases=[...d.plus,...(d.minus||[]),...(d.den||[])];
-   const codes=[];for(const b of bases)for(const p of['COMB','RCFD','RCON'])codes.push(`${p}${b}`);
+   const codes=[];for(const b of bases)for(const p of['COMB','RCFD','RCON','RIAD'])codes.push(`${p}${b}`);
    const r=(await conn.query(`SELECT entity_id,quarter_end,mdrm,value FROM t WHERE entity_id IN (${sqlList(ids)}) AND mdrm IN (${sqlList(codes)})`)).toArray();
    const byqe={};for(const x of r){((byqe[x.quarter_end]=byqe[x.quarter_end]||{})[x.entity_id]=byqe[x.quarter_end][x.entity_id]||{})[x.mdrm]=Number(x.value);}
    const acc=(mp,arr)=>{let s=0,seen=false;for(const b of arr){const v=coalesce(mp,b);if(v!=null){s+=v;seen=true;}}return [s,seen];};
@@ -231,9 +320,9 @@ async function seriesFor(id,m){const ids=expand(id);if(!ids.length)return [];
        const [np,ns]=acc(mp,d.plus);const [nm,ms]=acc(mp,d.minus||[]);num+=np-nm;if(ns||ms)anyN=true;
        const [dp,ds]=acc(mp,d.den||[]);den+=dp;if(ds)anyD=true;}
      if(d.type==='sum'){if(anyN)out.push([q,num]);}else{if(anyN&&anyD&&den>0)out.push([q,100*num/den]);}}
-   return out;}
+   _seriesCache.set(_sk,out);return out;}
  const r=(await conn.query(`SELECT quarter_end, SUM(value) v FROM t WHERE entity_id IN (${sqlList(ids)}) AND mdrm='${m}' GROUP BY quarter_end ORDER BY quarter_end`)).toArray();
- return r.map(x=>[String(x.quarter_end),Number(x.v)]);}
+ const res=r.map(x=>[String(x.quarter_end),Number(x.v)]);_seriesCache.set(_sk,res);return res;}
 
 async function init(){try{
  const B=duckdb.getJsDelivrBundles(),b=await duckdb.selectBundle(B);
@@ -242,6 +331,7 @@ async function init(){try{
  for(const p of PARTS){const r=await fetch(new URL(p,location.href).href);if(!r.ok)throw new Error(p+' HTTP '+r.status);
    await db.registerFileBuffer(p,new Uint8Array(await r.arrayBuffer()));}
  await conn.query(`CREATE VIEW t AS SELECT * FROM read_parquet([${PARTS.map(p=>`'${p}'`).join(',')}])`);
+ ALLQ=(await conn.query('SELECT DISTINCT quarter_end FROM t ORDER BY quarter_end')).toArray().map(r=>String(r.quarter_end));
  st('Indexing entities…');
  const ents=(await conn.query("SELECT entity_id, any_value(entity_label) lbl, any_value(kind) k FROM t GROUP BY entity_id")).toArray();
  const rank=e=>({all:0,filing_type:1,size_bucket:2,bank:3}[e.k]??9);
@@ -257,8 +347,14 @@ async function init(){try{
  document.getElementById('treesearch').addEventListener('input',e=>filterTree(e.target.value));
  document.getElementById('expall').onclick=()=>expandAll(true);
  document.getElementById('colall').onclick=()=>expandAll(false);
- document.getElementById('drilldn').onclick=()=>drill(1);
- document.getElementById('drillup').onclick=()=>drill(-1);
+ document.getElementById('drilldn').onclick=()=>drillSmart(1);
+ document.getElementById('drillup').onclick=()=>drillSmart(-1);
+ document.getElementById('jumpto').onclick=()=>{
+   const on=document.querySelector('#tree .trow.on');if(!on)return;
+   on.scrollIntoView({block:'nearest',behavior:'smooth'});
+   on.style.outline='2px solid #1b7f3b';setTimeout(()=>on.style.outline='',800);};
+ document.addEventListener('keydown',e=>{if(e.target.closest('input,textarea,select'))return;if(e.key===']'||e.key==='.')  {e.preventDefault();drillSmart(1);}if(e.key==='['||e.key===','){e.preventDefault();drillSmart(-1);}});
+ document.getElementById('showmerged').onchange=renderEntList;
  document.getElementById('showraw').onchange=()=>{buildTree();};
  document.getElementById('tabItems').onclick=()=>switchTab(true);
  document.getElementById('tabEnts').onclick=()=>switchTab(false);
@@ -277,6 +373,21 @@ async function init(){try{
     drag=true;dx=e.clientX-rail.offsetLeft;dy=e.clientY-rail.offsetTop;e.preventDefault();});
   window.addEventListener('mousemove',e=>{if(!drag)return;rail.style.left=(e.clientX-dx)+'px';rail.style.top=(e.clientY-dy)+'px';});
   window.addEventListener('mouseup',()=>{drag=false;});})();
+ document.getElementById('entdetach').onclick=()=>{entFloating?dockEnts():detachEnts();};
+ (function(){const p=document.getElementById('panelEnts'),h=p.querySelector('.railhead');let dx=0,dy=0,drag=false;
+  h.addEventListener('mousedown',e=>{if(!entFloating)return;if(e.target.closest('input,button,select,label'))return;drag=true;dx=e.clientX-p.offsetLeft;dy=e.clientY-p.offsetTop;p.style.right='auto';e.preventDefault();});
+  window.addEventListener('mousemove',e=>{if(!drag)return;p.style.left=(e.clientX-dx)+'px';p.style.top=(e.clientY-dy)+'px';});window.addEventListener('mouseup',()=>{drag=false;});})();
+ document.getElementById('leaguebtn').onclick=openLeague;document.getElementById('lgclose').onclick=()=>document.getElementById('leaguemodal').style.display='none';
+ document.getElementById('lgmeasure').onchange=renderLeague;document.getElementById('lgquarter').onchange=renderLeague;document.getElementById('lgtopn').onchange=renderLeague;
+ document.getElementById('lgexport').onclick=()=>{if(!window._lg)return;dl2(['rank','entity_id','bank',window._lg.meas.label,'QoQ','YoY'],window._lg.rows.map((r,i)=>[i+1,r.eid,r.name,r.v,r.qoq,r.yoy]),'league');};
+ document.getElementById('reportbtn').onclick=()=>{if(active.length===1&&active[0].id.startsWith('BANK:'))openReport(active[0].id);};
+ document.getElementById('rptclose').onclick=()=>{document.getElementById('reportmodal').style.display='none';const p=new URLSearchParams(location.hash.slice(1));p.delete('report');history.replaceState(null,'','#'+p.toString());};
+ document.getElementById('rpt-print').onclick=rptPrint;
+ document.getElementById('exportbtn').onclick=openExportBuilder;
+ document.getElementById('expbld-close').onclick=()=>document.getElementById('exportmodal').style.display='none';
+ document.getElementById('expbld-run').onclick=async()=>{const btn=document.getElementById('expbld-run');btn.textContent='⏳…';btn.disabled=true;try{const rows=await runExport(false);if(!rows||!rows.length){alert('No data for the selected scope.');btn.textContent='⬇ Download CSV';btn.disabled=false;return;}dl2(['quarter_end','entity_id','entity_label','mdrm','value'],rows.map(r=>[r.quarter_end,r.entity_id,r.entity_label,r.mdrm,r.value]),'export');}catch(e){alert('Export error: '+e);}finally{btn.textContent='⬇ Download CSV';btn.disabled=false;}};
+ document.getElementById('expbld-preview').onclick=async()=>{const btn=document.getElementById('expbld-preview');btn.textContent='⏳…';btn.disabled=true;try{const rows=await runExport(true);if(!rows)return;const cols=['quarter_end','entity_id','entity_label','mdrm','value'];let h=`<table><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr>`;for(const r of rows)h+=`<tr>${cols.map(c=>`<td>${r[c]??''}</td>`).join('')}</tr>`;document.getElementById('eb-preview-area').innerHTML=h+`</table><p class="muted">First ${rows.length} rows.</p>`;}catch(e){alert('Preview error: '+e);}finally{btn.textContent='👁 Preview';btn.disabled=false;}};
+ document.getElementById('expbld-setcur').onclick=()=>{if(active.length){_eb.entityId=active[0].id;_eb.entityLbl=active[0].label;}if(Qall.length){_eb.fromQ=Qall[rangeSel.a];_eb.toQ=Qall[rangeSel.b];}renderExportUI();};
  document.getElementById('formbtn').onclick=openForm;
  document.getElementById('formclose').onclick=()=>document.getElementById('formmodal').style.display='none';
  document.getElementById('ffrom').onchange=renderForm; document.getElementById('fto').onchange=renderForm;
@@ -291,6 +402,8 @@ async function init(){try{
  document.getElementById('runsql').onclick=runsql; document.getElementById('sqlcsv').onclick=()=>dl2(sqlC,sqlR,'query');
  document.getElementById('r0').oninput=onSlide; document.getElementById('r1').oninput=onSlide;
  document.getElementById('rreset').onclick=()=>{rangeSel={a:0,b:Qall.length-1};syncSlider();draw();};
+ document.getElementById('rfrom').onchange=()=>{const q=document.getElementById('rfrom').value.trim();const i=Qall.indexOf(q);if(i>=0){rangeSel.a=Math.min(i,rangeSel.b);syncSlider();draw();}};
+ document.getElementById('rto').onchange=()=>{const q=document.getElementById('rto').value.trim();const i=Qall.indexOf(q);if(i>=0){rangeSel.b=Math.max(i,rangeSel.a);syncSlider();draw();}};
  document.getElementById('idx').onchange=draw;
  (function(){const sp=document.getElementById('railsplit');let drag=false;
   sp.addEventListener('mousedown',e=>{drag=true;e.preventDefault();document.body.style.userSelect='none';});
@@ -298,9 +411,13 @@ async function init(){try{
   window.addEventListener('mouseup',()=>{drag=false;document.body.style.userSelect='';});})();
  document.getElementById('downloads').innerHTML='&#11015; Data: '+PARTS.map(p=>`<a href="${p}" download>${p}</a>`).join(' &middot; ')+' (Python / Power BI / DuckDB)';
  if(HIER)buildTree(); else document.getElementById('tree').innerHTML='<p class="muted" style="padding:10px">hierarchy not found</p>';
- active=[{id:'ALL',label:'ALL'}]; measures=[{code:'COMB2170',label:'Total assets',pct:false}];
+ const restored=hashToState();
+ if(!restored){
+   active=[{id:'ALL',label:'ALL'}]; measures=[{code:'COMB2170',label:'Total assets',pct:false}];
+ }
  renderChips(); renderMeasures(); renderPeerSaved();
  st(`Ready — ${ents.length} entities. Click items on the left; add entities to compare.`); recompute();
+ {const _rp=new URLSearchParams(location.hash.slice(1));if(_rp.get('report')==='1'&&active.length===1&&active[0].id.startsWith('BANK:'))openReport(active[0].id);}
 }catch(e){st('Load failed: '+e);console.error(e);}}
 
 function rebuildEntList(){const dl=document.getElementById('entlist');dl.innerHTML='';
@@ -308,7 +425,11 @@ function rebuildEntList(){const dl=document.getElementById('entlist');dl.innerHT
  for(const e of (window._ents||[])){const o=document.createElement('option');o.value=e.lbl;dl.appendChild(o);}}
 function renderChips(){const c=document.getElementById('chips');if(!active.length){c.innerHTML='<span class="muted">none</span>';return;}
  c.innerHTML=active.map((a,i)=>`<span class="chip"><span class="sw" style="background:${COLORS[i%COLORS.length]}"></span><b>${a.label}</b><span class="x" data-i="${i}">✕</span></span>`).join('');
- c.querySelectorAll('.x').forEach(x=>x.onclick=()=>{active.splice(+x.dataset.i,1);renderChips();recompute();});}
+ c.querySelectorAll('.x').forEach(x=>x.onclick=()=>{active.splice(+x.dataset.i,1);renderChips();recompute();});
+ // keep entity-list highlights in sync
+ const ep=document.getElementById('panelEnts');
+ if(ep&&ep.style.display!=='none')renderEntList();
+ const rb=document.getElementById('reportbtn');if(rb)rb.disabled=!(active.length===1&&active[0].id.startsWith('BANK:'));}
 function renderMeasures(){const c=document.getElementById('mchips');if(!measures.length){c.innerHTML='<span class="muted">none</span>';return;}
  c.innerHTML=measures.map((m,i)=>`<span class="chip"><b>${m.label}</b> <span class="muted">${m.pct?'%':'$'}</span><span class="x" data-i="${i}">✕</span></span>`).join('');
  c.querySelectorAll('.x').forEach(x=>x.onclick=()=>{const code=measures[+x.dataset.i].code;measures.splice(+x.dataset.i,1);markTree();renderMeasures();recompute();});}
@@ -322,9 +443,27 @@ function renderPeerSaved(){const c=document.getElementById('psaved');const names
  c.querySelectorAll('.x').forEach(x=>x.onclick=()=>{delete peers[x.dataset.n];savePeers();rebuildEntList();renderPeerSaved();});}
 function savePeer(){const n=document.getElementById('pname').value.trim();if(!n){alert('Name the peer group.');return;}
  if(!peerMembers.length){alert('Add at least one member.');return;}
+ const prefix=`PEER:${n}::`;for(const k of _seriesCache.keys())if(k.startsWith(prefix))_seriesCache.delete(k);
  peers[n]=peerMembers.map(m=>m.id);savePeers();rebuildEntList();renderPeerSaved();
  document.getElementById('pname').value='';peerMembers=[];renderPeerBuilder();st(`Saved peer group "${n}".`);}
 
+function loadFavs(){try{return new Set(JSON.parse(localStorage.getItem('ffiec_call_favs')||'[]'));}catch{return new Set();}}
+function saveFavs(s){localStorage.setItem('ffiec_call_favs',JSON.stringify([...s]));}
+function buildFavShelf(){
+  const favs=loadFavs();if(!favs.size)return null;
+  const nodes=[...favs].map(code=>{
+    const row=document.querySelector(`#tree .trow[data-code="${CSS.escape(code)}"]`);
+    const cap=row?row.querySelector('.cap')?.textContent||code:code;
+    return {code,caption:cap,num:'',depth:1,comb:false,derived:false,pct:false,children:[]};});
+  return nodes;}
+function renderFavShelf(){
+  const old=document.getElementById('favshelf');if(old)old.remove();
+  const nodes=buildFavShelf();if(!nodes||!nodes.length)return;
+  const t=document.getElementById('tree');
+  const {sec,rows}=mkSec('★ Favorites',nodes.length);sec.id='favshelf';
+  renderNodes(rows,nodes);rows.style.display='block';
+  sec.querySelector('.schhead').innerHTML=sec.querySelector('.schhead').innerHTML.replace('▸','▾');
+  t.insertBefore(sec,t.firstChild);}
 // ---- tree (persistent rail, collapsible hierarchy, one consolidated row per item) ----
 const REPORT=/^(RCON|RCFD|RCFN|RCFA|RCFW|RCOA|RCOW|RIAD)[A-Z0-9]{4}$/;
 function mkSec(title,cnt){const sec=document.createElement('div');sec.className='schsec';
@@ -332,14 +471,27 @@ function mkSec(title,cnt){const sec=document.createElement('div');sec.className=
  const rows=document.createElement('div');rows.className='schrows';rows.style.display='none';
  h.onclick=()=>{const open=rows.style.display!=='none';rows.style.display=open?'none':'block';h.innerHTML=h.innerHTML.replace(open?'▾':'▸',open?'▸':'▾');};
  sec.appendChild(h);sec.appendChild(rows);return {sec,rows};}
-function rowEl(nd,has){const d=document.createElement('div');d.className='trow'+(nd.comb?' comb':'');
+function rowEl(nd,has,dispCap){
+ if(nd.placeholder){
+   const p=document.createElement('div');p.className='trow placeholder';
+   p.style.cssText=`padding-left:${6+(nd.depth-1)*14}px`;
+   p.innerHTML=`<span class="caret" style="visibility:hidden">▸</span>`+
+     (nd.num?`<span class="num">${nd.num}</span>`:'') +
+     `<span class="cap" style="color:#9aa3b2;font-style:italic">(empty)</span>`;
+   return p;}
+ const d=document.createElement('div');d.className='trow'+(nd.comb?' comb':'');
  d.dataset.code=nd.code;d.dataset.txt=(nd.code+' '+nd.caption).toLowerCase();d.dataset.depth=nd.depth;
  d.style.paddingLeft=(6+(nd.depth-1)*14)+'px';
  const car=`<span class="caret"${has?'':' style="visibility:hidden"'}>▸</span>`;
- d.innerHTML=nd.derived?`${car}${nd.caption}`:`${car}${nd.num?`<span class=num>${nd.num}</span>`:''}${nd.caption}<span class=code>${nd.code}</span>`;
+ const cap=`<span class="cap" title="${String(nd.caption||'').replace(/"/g,'&quot;')}">${dispCap||nd.caption||''}</span>`;
+ d.innerHTML=nd.derived?`${car}${cap}`:`${car}${nd.num?`<span class=num>${nd.num}</span>`:''}${cap}<span class=code>${nd.code}</span>`;
  const lab=nd.derived?short(nd.caption):(nd.caption||nd.code);
  d.querySelector('.caret').onclick=ev=>{ev.stopPropagation();if(has)toggleNode(d);};
- d.onclick=()=>toggleMeasure(nd.code,lab,nd.pct);return d;}
+ d.onclick=()=>toggleMeasure(nd.code,lab,nd.pct);
+ if(!nd.derived){const fstar=document.createElement('span');fstar.className='fav'+(loadFavs().has(nd.code)?' on':'');fstar.textContent='★';fstar.title='Add to favorites';
+   fstar.onclick=ev=>{ev.stopPropagation();const f=loadFavs();if(f.has(nd.code)){f.delete(nd.code);fstar.classList.remove('on');}else{f.add(nd.code);fstar.classList.add('on');}saveFavs(f);renderFavShelf();};
+   const caret=d.querySelector('.caret');if(caret)caret.after(fstar);else d.prepend(fstar);}
+ return d;}
 // nest by the item NUMBER (parent of "1.a.1" is "1.a"): robust for matrix schedules
 // like RC-N where ordering is column-major and a depth-stack would mis-parent rows.
 function nest(flat){const ns=flat.map(it=>({...it,children:[]}));
@@ -349,7 +501,11 @@ function nest(flat){const ns=flat.map(it=>({...it,children:[]}));
  const roots=[];
  for(const n of ns){if(!n.num){roots.push(n);continue;}const a=ancestor(n.num);const par=a&&first(a);(par?par.children:roots).push(n);}
  return roots;}
-function emitSchedule(sch,showRaw){const raw=HIER[sch].filter(r=>REPORT.test(r.mdrm));if(!raw.length)return [];
+function emitSchedule(sch,showRaw){const allRows=HIER[sch];
+ const raw=allRows.filter(r=>REPORT.test(r.mdrm));
+ // emit placeholder rows for hierarchy entries with item numbers but no valid MDRM
+ const placeholders=[];for(const r of allRows){if(!REPORT.test(r.mdrm)&&r.item){placeholders.push({code:'EMPTY:'+r.item,caption:'(empty)',num:r.item||'',depth:r.depth||1,comb:false,derived:false,pct:false,placeholder:true});}}
+ if(!raw.length)return placeholders;
  const capByBase={};for(const r of raw){const b=r.mdrm.slice(4);if(r.caption&&!capByBase[b])capByBase[b]=r.caption;}
  const combBases=new Set();for(const r of raw){const p=r.mdrm.slice(0,4);if(p==='RCFD'||p==='RCON')combBases.add(r.mdrm.slice(4));}
  const out=[],done=new Set();
@@ -361,12 +517,37 @@ function emitSchedule(sch,showRaw){const raw=HIER[sch].filter(r=>REPORT.test(r.m
    } else if(p==='RCFN'){ if(combBases.has(base))continue;
      if(!done.has(r.mdrm)){done.add(r.mdrm);out.push({code:r.mdrm,caption:cap,num:r.item||'',depth,comb:false,derived:false,pct:false});}
    } else { if(!done.has(r.mdrm)){done.add(r.mdrm);out.push({code:r.mdrm,caption:cap,num:r.item||'',depth,comb:false,derived:false,pct:false});} }}
- return out;}
-function renderNodes(container,nodes){for(const nd of nodes){const has=nd.children.length>0;
- const row=rowEl(nd,has);container.appendChild(row);
+ return [...out,...placeholders];}
+function secPrefix(nodes){
+ const caps=[];function walk(ns){for(const n of ns){if(!n.header&&!n.derived&&!n.placeholder){if(!n.children.length)caps.push(n.caption||'');else walk(n.children);}}}
+ walk(nodes);if(caps.length<3)return '';
+ let pre=caps[0];for(const s of caps.slice(1)){while(pre&&!s.startsWith(pre))pre=pre.slice(0,-1);}
+ const mm=pre.match(/^(.*\w)\s*/);pre=mm?mm[1]+' ':pre;if(pre.length<12)return '';
+ return caps.filter(c=>c.startsWith(pre)).length/caps.length>=0.7?pre:'';}
+function nodeChildPfx(children){
+ const caps=children.filter(c=>!c.placeholder).map(c=>c.caption||'');
+ if(caps.length<2)return '';
+ let pre=caps[0];for(const s of caps.slice(1)){while(pre&&!s.startsWith(pre))pre=pre.slice(0,-1);}
+ const mm=pre.match(/^(.*\w)\s*/);pre=mm?mm[1]+' ':pre;
+ return pre.length>=12?pre:'';}
+function renderNodes(container,nodes,pfx,pfx2){if(!pfx)pfx='';if(!pfx2)pfx2='';
+ // Matrix rows: items sharing item# with long common prefix get "… stripped" display
+ const disp=new Map(),grp={};
+ for(const n of nodes) if(!n.header&&n.num){(grp[n.num]=grp[n.num]||[]).push(n);}
+ for(const num in grp){const g=grp[num];if(g.length<2)continue;
+   let pre=g[0].caption||'';
+   for(const n of g){const c=n.caption||'';while(pre&&!c.startsWith(pre))pre=pre.slice(0,-1);}
+   const mm=pre.match(/^.*[ :\-–]/);const bp=mm?mm[0]:'';
+   if(bp.length>=18)for(const n of g){const c=n.caption||'';if(c.startsWith(bp))disp.set(n,'… '+c.slice(bp.length).replace(/^[\s:\-–]+/,''));}}
+ for(const nd of nodes){const has=nd.children.length>0;
+   let dc=disp.get(nd);
+   if(!dc){const cap=nd.caption||'';
+     if(pfx2&&cap.toUpperCase().startsWith(pfx2.toUpperCase())){const tail=cap.slice(pfx2.length).replace(/^[\s:\-–]+/,'');dc='… '+(tail||'(total)');}
+     else if(pfx&&cap.toUpperCase().startsWith(pfx.toUpperCase()))dc=cap.slice(pfx.length).replace(/^[\s:\-–]+/,'');}
+   const row=rowEl(nd,has,dc);container.appendChild(row);
  if(has){const kids=document.createElement('div');kids.className='kids';kids.style.display='none';
-   renderNodes(kids,nd.children);container.appendChild(kids);row._kids=kids;}}}
-function addSchedule(t,title,nodes){const {sec,rows}=mkSec(title,nodes.length);renderNodes(rows,nodes);t.appendChild(sec);}
+   const kp=nodeChildPfx(nd.children);renderNodes(kids,nd.children,pfx,kp);container.appendChild(kids);row._kids=kids;}}}
+function addSchedule(t,title,nodes){const pfx=secPrefix(nodes);const {sec,rows}=mkSec(title,nodes.length);renderNodes(rows,nodes,pfx);t.appendChild(sec);}
 function toggleNode(row){if(!row._kids)return;const open=row._kids.style.display!=='none';
  row._kids.style.display=open?'none':'block';const c=row.querySelector('.caret');if(c)c.textContent=open?'▸':'▾';}
 function buildTree(){const t=document.getElementById('tree');t.innerHTML='';
@@ -375,7 +556,7 @@ function buildTree(){const t=document.getElementById('tree');t.innerHTML='';
  addSchedule(t,'★ Ratios & Subtotals',dnodes);
  const keys=[...FORM_ORDER.filter(k=>HIER[k]),...Object.keys(HIER).filter(k=>SCHED_NAMES[k]&&!FORM_ORDER.includes(k))];
  for(const sch of keys){const flat=emitSchedule(sch,showRaw);if(!flat.length)continue;addSchedule(t,SCHED_NAMES[sch]||sch,nest(flat));}
- treeBuilt=true;markTree();}
+ treeBuilt=true;markTree();renderFavShelf();}
 let lvl={'#tree':0,'#formbody':0};
 function applyLevel(L,root='#tree'){L=Math.max(0,L);lvl[root]=L;
  document.querySelectorAll(`${root} .schrows`).forEach(r=>r.style.display=L>=1?'block':'none');
@@ -385,6 +566,33 @@ function applyLevel(L,root='#tree'){L=Math.max(0,L);lvl[root]=L;
 function maxDepth(root){let m=1;document.querySelectorAll(`${root} .trow, ${root} .frow`).forEach(r=>{const d=+(r.dataset.depth||1);if(d>m)m=d;});return m;}
 function expandAll(open,root='#tree'){applyLevel(open?maxDepth(root)+1:0,root);}
 function drill(step,root='#tree'){applyLevel((lvl[root]||0)+step,root);}
+function drillSmart(step,root='#tree'){
+  if(step>0){
+    const openRows=[];
+    document.querySelectorAll(`${root} .trow,${root} .frow`).forEach(r=>{
+      if(r._kids&&r._kids.style.display==='block')openRows.push(r);});
+    if(!openRows.length){
+      document.querySelectorAll(`${root} .schrows`).forEach(r=>r.style.display='block');
+      document.querySelectorAll(`${root} .schhead`).forEach(h=>{h.innerHTML=h.innerHTML.replace('▸','▾');});
+      return;}
+    openRows.forEach(row=>{
+      Array.from(row._kids.children).forEach(el=>{
+        if((el.classList.contains('trow')||el.classList.contains('frow'))&&el._kids){
+          el._kids.style.display='block';
+          const c=el.querySelector('.caret');
+          if(c&&c.style.visibility!=='hidden')c.textContent='▾';}});});
+  } else {
+    let maxD=0;
+    document.querySelectorAll(`${root} .trow,${root} .frow`).forEach(r=>{
+      if(r._kids&&r._kids.style.display==='block'){const d=+(r.dataset.depth||1);if(d>maxD)maxD=d;}});
+    if(!maxD){
+      document.querySelectorAll(`${root} .schrows`).forEach(r=>r.style.display='none');
+      document.querySelectorAll(`${root} .schhead`).forEach(h=>{h.innerHTML=h.innerHTML.replace('▾','▸');});
+      return;}
+    document.querySelectorAll(`${root} .trow,${root} .frow`).forEach(r=>{
+      if(!r._kids||r._kids.style.display==='none')return;
+      if(+(r.dataset.depth||1)===maxD){r._kids.style.display='none';
+        const c=r.querySelector('.caret');if(c&&c.style.visibility!=='hidden')c.textContent='▸';}});}}
 function filterTree(q){q=q.trim().toLowerCase();
  if(!q){document.querySelectorAll('#tree .trow').forEach(r=>r.style.display='');
    document.querySelectorAll('#tree .schsec').forEach(s=>s.style.display='');expandAll(false);return;}
@@ -408,6 +616,12 @@ async function computeSortVals(field){
  const baseMap={assets:'2170',deposits:'2200',loans:'2122',equity:'3210'};
  let code; if(field==='current'){if(!measures.length){entSortField=field;return;}code=measures[0].code;} else code='COMB'+baseMap[field];
  let base=null; if(code.startsWith('COMB')||/^(RCFD|RCON)/.test(code))base=code.slice(4);
+ // LOW-1: derived code (D_* ratio/subtotal) — use perFilerValues for sort instead of raw query
+ if(!base&&field==='current'){
+   try{const latR=(await conn.query('SELECT max(quarter_end) q FROM t')).toArray();const latQ=latR.length?String(latR[0].q):null;
+     if(latQ){const vals=await perFilerValues(code,[latQ]);const cur=vals[latQ]||new Map();
+       for(const[id,v]of cur)entSortVals.set(id,v);}}catch(e){}
+   entSortField=field;return;}
  const where=base?`mdrm IN ('COMB${base}','RCFD${base}','RCON${base}')`:`mdrm='${code}'`;
  try{const r=(await conn.query(`SELECT entity_id, mdrm, value FROM t WHERE ${where} AND quarter_end=(SELECT max(quarter_end) FROM t)`)).toArray();
    const byid={};for(const x of r){(byid[x.entity_id]=byid[x.entity_id]||{})[x.mdrm]=Number(x.value);}
@@ -415,6 +629,7 @@ async function computeSortVals(field){
  entSortField=field;}
 async function renderEntList(){const field=document.getElementById('entsort').value;await computeSortVals(field);
  const desc=document.getElementById('entdesc').checked,filt=document.getElementById('entfilter').value,q=document.getElementById('entsearch').value.trim().toLowerCase();
+ // showmerged: lineage not available for FFIEC 031 — toggle has no visible effect
  const pool=[];for(const e of (window._ents||[]))pool.push({id:e.entity_id,label:e.lbl,cat:entCat(e.k)});
  for(const n in peers)pool.push({id:'PEER:'+n,label:'★ '+n,cat:'peer'});
  const rows=[];for(const p of pool){if(filt!=='all'&&p.cat!==filt)continue;
@@ -426,54 +641,84 @@ async function renderEntList(){const field=document.getElementById('entsort').va
  rows.sort((a,b)=>typeof a.sv==='string'?(desc?b.sv.localeCompare(a.sv):a.sv.localeCompare(b.sv)):(desc?b.sv-a.sv:a.sv-b.sv));
  const cont=document.getElementById('entlistpanel');
  cont.innerHTML=rows.slice(0,600).map(r=>{const val=(field==='name')?'':(field==='rssd'?(r.id.match(/(\d+)/)?r.id.match(/(\d+)/)[1]:''):(entSortVals.has(r.id)?fmtUnit(entSortVals.get(r.id),false):''));
-   return `<div class="erow${r.cat==='agg'?' agg':''}" data-id="${r.id}" data-label="${r.label.replace(/"/g,'&quot;')}"><span class="en">${r.label}</span><span class="ev">${val}</span> <span class="pp" title="add to peer builder">＋peer</span></div>`;}).join('')||'<p class="muted" style="padding:8px">none match</p>';
+   const isOn=active.some(a=>a.id===r.id);
+   return `<div class="erow${r.cat==='agg'?' agg':''}${isOn?' on':''}" data-id="${r.id}" data-label="${r.label.replace(/"/g,'&quot;')}"><span class="en">${r.label}</span><span class="ev">${val}</span> <span class="pp" title="add to peer builder">＋peer</span><span class="rpt" title="Open entity report">📋</span></div>`;}).join('')||'<p class="muted" style="padding:8px">none match</p>';
  cont.querySelectorAll('.erow').forEach(el=>{const id=el.dataset.id,label=el.dataset.label;
    const addChart=()=>{if(!active.find(a=>a.id===id))active.push({id,label});renderChips();recompute();};
    el.querySelector('.en').onclick=addChart;el.querySelector('.ev').onclick=addChart;
-   el.querySelector('.pp').onclick=ev=>{ev.stopPropagation();if(!peerMembers.find(a=>a.id===id))peerMembers.push({id,label});renderPeerBuilder();document.getElementById('peerbox').open=true;};});}
-function switchTab(items){document.getElementById('panelItems').style.display=items?'flex':'none';
- document.getElementById('panelEnts').style.display=items?'none':'flex';
+   el.querySelector('.pp').onclick=ev=>{ev.stopPropagation();if(!peerMembers.find(a=>a.id===id))peerMembers.push({id,label});renderPeerBuilder();document.getElementById('peerbox').open=true;};
+   el.querySelector('.rpt').onclick=ev=>{ev.stopPropagation();if(id.startsWith('BANK:'))openReport(id);};});}
+let entFloating=false;
+function switchTab(items){
+ if(entFloating&&!items){dockEnts();return;}          // clicking Entities while floating re-docks it
+ document.getElementById('panelItems').style.display=items?'flex':'none';
+ if(!entFloating)document.getElementById('panelEnts').style.display=items?'none':'flex';
  document.getElementById('tabItems').classList.toggle('on',items);document.getElementById('tabEnts').classList.toggle('on',!items);
  if(!items)renderEntList();}
+function detachEnts(){const p=document.getElementById('panelEnts');entFloating=true;p.classList.add('entfloat');p.style.display='flex';
+ document.getElementById('panelItems').style.display='flex';
+ document.getElementById('tabItems').classList.add('on');document.getElementById('tabEnts').classList.remove('on');
+ document.getElementById('entdetach').textContent='⧈ Dock';renderEntList();}
+function dockEnts(){const p=document.getElementById('panelEnts');entFloating=false;p.classList.remove('entfloat');p.style.cssText='';
+ document.getElementById('entdetach').textContent='⧉ Detach';
+ document.getElementById('panelItems').style.display='none';document.getElementById('panelEnts').style.display='flex';
+ document.getElementById('tabItems').classList.remove('on');document.getElementById('tabEnts').classList.add('on');renderEntList();}
 
 // ---- compute + draw ----
 async function recompute(){
  if(!measures.length||!active.length){lastSeries=[];Qall=[];draw();return;}
  const out=[];let ci=0;
- for(const m of measures)for(const e of active){const rows=await seriesFor(e.id,m.code);
-   out.push({label:`${e.label} · ${m.label}`,pct:m.pct,rows,color:COLORS[ci++%COLORS.length]});}
+ for(const m of measures)for(const e of active){const blocked=isRawPct(m.code)&&isAggScope(e.id);
+   const rows=blocked?[]:await seriesFor(e.id,m.code);
+   const label=`${e.label} · ${m.label}`+(blocked?' (n/a — % cell, not summable across entities)':'');
+   out.push({label,pct:m.pct,rows,color:COLORS[ci++%COLORS.length]});}
  lastSeries=out;
  const qs=new Set();for(const s of out)for(const r of s.rows)qs.add(r[0]);
- Qall=[...qs].sort(); rangeSel={a:0,b:Math.max(0,Qall.length-1)}; syncSlider(); draw();}
+ Qall=[...qs].sort(); rangeSel={a:0,b:Math.max(0,Qall.length-1)}; syncSlider(); draw();stateToHash();}
 function syncSlider(){const n=Qall.length;const w=document.getElementById('sliderwrap');
  if(n<2){w.style.display='none';return;}w.style.display='flex';
  for(const id of['r0','r1']){const el=document.getElementById(id);el.min=0;el.max=n-1;}
  document.getElementById('r0').value=rangeSel.a;document.getElementById('r1').value=rangeSel.b;
- document.getElementById('rlbl').textContent=`${Qall[rangeSel.a]} … ${Qall[rangeSel.b]}`;}
+ document.getElementById('rfrom').value=Qall[rangeSel.a];document.getElementById('rto').value=Qall[rangeSel.b];
+ const dl=document.getElementById('qlist');dl.innerHTML=Qall.map(q=>`<option value="${q}">`).join('');}
 function onSlide(){let a=+document.getElementById('r0').value,b=+document.getElementById('r1').value;
  rangeSel={a:Math.min(a,b),b:Math.max(a,b)};
- document.getElementById('rlbl').textContent=`${Qall[rangeSel.a]} … ${Qall[rangeSel.b]}`;draw();}
+ document.getElementById('rfrom').value=Qall[rangeSel.a];document.getElementById('rto').value=Qall[rangeSel.b];draw();}
 function draw(){const host=document.getElementById('panes');
  if(!lastSeries.length){host.innerHTML='<p class="muted">Pick an entity, then click a line item on the left.</p>';document.getElementById('cards').innerHTML='';document.getElementById('tbl').innerHTML='';return;}
  const win=Qall.slice(rangeSel.a,rangeSel.b+1),ws=new Set(win);
  const groups=[['$ thousands',lastSeries.filter(s=>!s.pct)],['percent',lastSeries.filter(s=>s.pct)]];
  let html='';
- for(const [unit,arr] of groups){if(!arr.length)continue;
-   const w=arr.map(s=>({...s,rows:s.rows.filter(r=>ws.has(r[0]))}));html+=pane(w,unit==='percent',unit,win);}
+ let dualAxis=window._dualAxis||false;
+ const hasDol=lastSeries.some(s=>!s.pct),hasPct=lastSeries.some(s=>s.pct);
+ if(hasDol&&hasPct){
+   html+=`<div><button class="sec pane-toggle" id="axistoggle">${dualAxis?'⊞ Split panes':'⊟ Dual axis'}</button></div>`;
+   if(dualAxis){html+=paneDual(lastSeries.filter(s=>!s.pct).map(s=>({...s,rows:s.rows.filter(r=>ws.has(r[0]))})),lastSeries.filter(s=>s.pct).map(s=>({...s,rows:s.rows.filter(r=>ws.has(r[0]))})),win);}
+   else{for(const [unit,arr] of groups){if(!arr.length)continue;const w=arr.map(s=>({...s,rows:s.rows.filter(r=>ws.has(r[0]))}));html+=pane(w,unit==='percent',unit,win);}}}
+ else{for(const [unit,arr] of groups){if(!arr.length)continue;
+   const w=arr.map(s=>({...s,rows:s.rows.filter(r=>ws.has(r[0]))}));html+=pane(w,unit==='percent',unit,win);}}
  if(document.getElementById('idx')&&document.getElementById('idx').checked){const dol=lastSeries.filter(s=>!s.pct);
    if(dol.length){const w=dol.map(s=>{const rw=s.rows.filter(r=>ws.has(r[0]));const bb=rw.find(r=>r[1]!=null&&r[1]!==0);const b=bb&&bb[1];return {...s,rows:b?rw.map(([q,v])=>[q,v==null?null:100*v/b]):[]};});html+=pane(w,false,'index',win);}}
  host.innerHTML=html;
+ const atb=document.getElementById('axistoggle');if(atb)atb.onclick=()=>{window._dualAxis=!window._dualAxis;draw();};
  // KPI from primary series (first)
  const prim={...lastSeries[0],rows:lastSeries[0].rows.filter(r=>ws.has(r[0]))};
- const v=prim.rows.map(r=>r[1]),last=v[v.length-1],prev=v[v.length-2],yr=v[v.length-5];
- const f0=v.length?v[0]:null;
- const qoq=prev?100*(last/prev-1):null,yoy=yr?100*(last/yr-1):null,tot=f0?100*(last/f0-1):null;
+ // MEDIUM-2: date-based QoQ/YoY (not positional — gaps/lineage hand-offs cause mislabeled quarters).
+ const primR=prim.rows,last=primR.length?primR[primR.length-1][1]:null,lastQ=primR.length?primR[primR.length-1][0]:null;
+ const qmapObj=Object.fromEntries(primR.map(r=>[r[0],r[1]]));
+ const pQ=lastQ?prevQtr(lastQ):null,yQ=lastQ?yoyQtr(lastQ):null;
+ const prev=(pQ&&pQ in qmapObj)?qmapObj[pQ]:null,yr=(yQ&&yQ in qmapObj)?qmapObj[yQ]:null;
+ const f0=primR.length?primR[0][1]:null,f0q=primR.length?primR[0][0]:null;
+ // LOW-2: suppress sign-flip % deltas (e.g. loss→profit looks like a decline at -150%).
+ const sameSign=(a,b)=>(a>=0)===(b>=0);
+ const pctChg=(a,b)=>(a!=null&&b!=null&&b!==0&&sameSign(a,b))?100*(a/b-1):null;
+ const qoq=pctChg(last,prev),yoy=pctChg(last,yr),tot=pctChg(last,f0);
  const cls=x=>x==null?'':(x>=0?'up':'dn'),arr=x=>x==null?'—':((x>=0?'▲ ':'▼ ')+Math.abs(x).toFixed(1)+'%');
  document.getElementById('cards').innerHTML=
-  `<div class=card><div class=k>${prim.label} — latest${prim.rows.length?` (${prim.rows[prim.rows.length-1][0]})`:''}</div><div class=v>${fmtUnit(last,prim.pct)}</div></div>`+
-  `<div class=card><div class=k>QoQ</div><div class="v ${cls(qoq)}">${arr(qoq)}</div></div>`+
-  `<div class=card><div class=k>YoY</div><div class="v ${cls(yoy)}">${arr(yoy)}</div></div>`+
-  `<div class=card><div class=k>Total Δ (range${prim.rows.length?' from '+prim.rows[0][0]:''})</div><div class="v ${cls(tot)}">${arr(tot)}</div></div>`+
+  `<div class=card><div class=k>${prim.label} — latest${lastQ?` (${lastQ})`:''}</div><div class=v>${fmtUnit(last,prim.pct)}</div></div>`+
+  `<div class=card><div class=k>QoQ${pQ&&prev!=null?' vs '+pQ:''}</div><div class="v ${cls(qoq)}">${arr(qoq)}</div></div>`+
+  `<div class=card><div class=k>YoY${yQ&&yr!=null?' vs '+yQ:''}</div><div class="v ${cls(yoy)}">${arr(yoy)}</div></div>`+
+  `<div class=card><div class=k>Total Δ (range${f0q?' from '+f0q:''})</div><div class="v ${cls(tot)}">${arr(tot)}</div></div>`+
   `<div class=card><div class=k>Series</div><div class=v>${lastSeries.length}</div></div>`;
  // table (wide: quarter + each series)
  const maps=lastSeries.map(s=>Object.fromEntries(s.rows));
@@ -487,18 +732,133 @@ function pane(series,pct,unit,win){const W=1080,H=300,pad=64,n=win.length;
  const xi=Object.fromEntries(win.map((q,i)=>[q,i]));
  let mn=Infinity,mx=-Infinity;for(const s of series)for(const r of s.rows){mn=Math.min(mn,r[1]);mx=Math.max(mx,r[1]);}
  if(!isFinite(mn))return '';
- if(unit==='$ thousands'&&mn>0)mn=0; const rg=(mx-mn)||1;
+ // Anchor $ and % charts to a zero baseline; index charts keep their own scale.
+ if(unit==='$ thousands'&&mn>0)mn=0;
+ if(unit==='percent'){if(mn>0)mn=0;if(mx<0)mx=0;}
+ if(mn===mx){mx=mn+1;}
+ const rg=(mx-mn)||1;
  const X=i=>pad+i*(W-2*pad)/Math.max(1,n-1),Y=v=>H-pad-(v-mn)/rg*(H-2*pad);
  const f=v=>unit==='percent'?v.toFixed(2)+'%':unit==='index'?v.toFixed(0):fmtUnit(v,false);
  const gC=DK()?'#243044':'#eef2f7',aC=DK()?'#9aa3b2':'#5a6478',tC=DK()?'#e6e9ef':'#14213d';
- const tk=[mn,(mn+mx)/2,mx].map(v=>`<line x1="${pad}" y1="${Y(v)}" x2="${W-pad}" y2="${Y(v)}" stroke="${gC}"></line><text x="8" y="${Y(v)+4}" font-size="11" fill="${aC}">${f(v)}</text>`).join('');
- let paths='';for(const s of series){let p='';s.rows.forEach((r,k)=>{p+=(k?'L':'M')+X(xi[r[0]]).toFixed(1)+' '+Y(r[1]).toFixed(1)+' ';});
-   paths+=`<path d="${p}" fill="none" stroke="${s.color}" stroke-width="2"></path>`;}
+ // gridlines at min / mid / max, with a distinct zero line whenever 0 falls inside the range
+ const ticks=[...new Set([mn,(mn+mx)/2,mx])];
+ let tk=ticks.map(v=>`<line x1="${pad}" y1="${Y(v)}" x2="${W-pad}" y2="${Y(v)}" stroke="${gC}"></line><text x="8" y="${Y(v)+4}" font-size="11" fill="${aC}">${f(v)}</text>`).join('');
+ if(mn<0&&mx>0){const zC=DK()?'#6b7689':'#9aa3b2';tk+=`<line x1="${pad}" y1="${Y(0)}" x2="${W-pad}" y2="${Y(0)}" stroke="${zC}" stroke-width="1.5"></line><text x="8" y="${Y(0)+4}" font-size="11" fill="${zC}">${unit==='percent'?'0%':'0'}</text>`;}
+ const dotC=DK()?'#0f1825':'#fff';
+ const byQ={};   // win-index -> {x, q, items:[{cy,color,label,val}]} for nearest-X hover snapping
+ let areas='',paths='',pts='',slbls='';for(const s of series){let p='',firstCx,lastCx,lastCy;s.rows.forEach((r,k)=>{const cx=X(xi[r[0]]).toFixed(1),cy=Y(r[1]).toFixed(1);if(k===0)firstCx=cx;lastCx=cx;lastCy=cy;p+=(k?'L':'M')+cx+' '+cy+' ';
+   const qi=xi[r[0]];(byQ[qi]=byQ[qi]||{x:+cx,q:r[0],items:[]}).items.push({cy:+cy,color:s.color,label:s.label,val:f(r[1])});
+   pts+=`<circle class="pt" cx="${cx}" cy="${cy}" r="1.5" fill="${s.color}" stroke="${dotC}" stroke-width="1"></circle>`;});
+   if(s.rows.length>1){const by=Y(Math.max(mn,0)).toFixed(1);areas+=`<path d="${p}L${lastCx} ${by} L${firstCx} ${by} Z" fill="${s.color}" fill-opacity="0.12" stroke="none"></path>`;}
+   paths+=`<path d="${p}" fill="none" stroke="${s.color}" stroke-width="2"></path>`;
+   if(lastCx!=null){const pts2=s.label.split(' \xb7 ');const nE=active.length,nM=measures.length;const sl=(nE>1&&nM===1?pts2[0]:(nE===1&&nM>1?short(pts2.slice(1).join(' \xb7 ')):short(s.label))).slice(0,14);slbls+=`<text x="${(+lastCx+5).toFixed(1)}" y="${(+lastCy+4).toFixed(1)}" font-size="9" fill="${s.color}" font-weight="600">${sl}</text>`;}}
+ // Nearest-X hover bands: each quarter owns a full-height transparent rect spanning the midpoints
+ // to its neighbors, so hovering ANYWHERE in that vertical band (any distance, any height) snaps
+ // the marker(s) + tooltip to that quarter. Pure SVG+CSS so it is instant. Multi-series: every
+ // series with a point at the quarter gets its own marker and a line in the shared tooltip.
+ const _bi=Object.keys(byQ).map(Number).sort((a,b)=>a-b); let bands='';
+ _bi.forEach((qi,k)=>{const Q=byQ[qi],xc=Q.x;
+   const left=k===0?0:(byQ[_bi[k-1]].x+xc)/2, right=k===_bi.length-1?W:(xc+byQ[_bi[k+1]].x)/2;
+   let mk=`<line class="reveal" x1="${xc.toFixed(1)}" y1="${pad}" x2="${xc.toFixed(1)}" y2="${H-pad}" stroke="${aC}" stroke-width="1" stroke-dasharray="2 2"></line>`;
+   for(const it of Q.items)mk+=`<circle class="reveal" cx="${xc.toFixed(1)}" cy="${it.cy.toFixed(1)}" r="4" fill="${it.color}" stroke="${dotC}" stroke-width="1.5"></circle>`;
+   bands+=`<g class="qband"><rect class="hit" x="${left.toFixed(1)}" y="0" width="${(right-left).toFixed(1)}" height="${H}"></rect>${mk}</g>`;});
  const want=Math.min(8,n),ix=[...new Set(Array.from({length:want},(_,k)=>Math.round(k*(n-1)/Math.max(1,want-1))))];
  const lb=ix.map(i=>{const a=i===0?'start':(i===n-1?'end':'middle');return `<text x="${X(i)}" y="${H-pad+18}" font-size="10" fill="${aC}" text-anchor="${a}">${win[i]}</text>`;}).join('');
- const leg=series.map(s=>{const lv=(s.rows.length&&s.rows[s.rows.length-1][1]!=null)?f(s.rows[s.rows.length-1][1]):'—';return `<span><span class="sw" style="background:${s.color}"></span> ${s.label} <b>${lv}</b></span>`;}).join('');
- return `<div class="legend">${leg}</div><svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">${tk}${paths}${lb}<text x="14" y="16" font-size="11" fill="${tC}">${unit}</text></svg>`;}
+ return `<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">${tk}${areas}${paths}${pts}${slbls}${lb}<text x="14" y="16" font-size="11" fill="${tC}">${unit}</text>${bands}</svg>`;}
 function exportSeries(){if(!window._exp){alert('Nothing to export.');return;}dl2(window._exp.head,window._exp.body,'series');}
+function paneDual(dol,pct,win){const W=1080,H=300,pad=64,padR=80,n=win.length;const xi=Object.fromEntries(win.map((q,i)=>[q,i]));
+ let mn0=Infinity,mx0=-Infinity;for(const s of dol)for(const r of s.rows){mn0=Math.min(mn0,r[1]);mx0=Math.max(mx0,r[1]);}
+ let mn1=Infinity,mx1=-Infinity;for(const s of pct)for(const r of s.rows){mn1=Math.min(mn1,r[1]);mx1=Math.max(mx1,r[1]);}
+ if(!isFinite(mn0)&&!isFinite(mn1))return '';
+ if(mn0>0)mn0=0;if(mn1>0)mn1=0;if(mn0===mx0)mx0=mn0+1;if(mn1===mx1)mx1=mn1+1;
+ const rg0=(mx0-mn0)||1,rg1=(mx1-mn1)||1;
+ const X=i=>pad+i*(W-pad-padR)/Math.max(1,n-1);
+ const Y0=v=>H-pad-(v-mn0)/rg0*(H-2*pad);const Y1=v=>H-pad-(v-mn1)/rg1*(H-2*pad);
+ const f0=v=>fmtUnit(v,false),f1=v=>(+v).toFixed(2)+'%';
+ const gC=DK()?'#243044':'#eef2f7',aC=DK()?'#9aa3b2':'#5a6478',tC=DK()?'#e6e9ef':'#14213d';
+ const ticks0=[mn0,(mn0+mx0)/2,mx0],ticks1=[mn1,(mn1+mx1)/2,mx1];
+ let tk=ticks0.map(v=>`<line x1="${pad}" y1="${Y0(v)}" x2="${W-padR}" y2="${Y0(v)}" stroke="${gC}"></line><text x="8" y="${Y0(v)+4}" font-size="11" fill="${aC}">${f0(v)}</text>`).join('');
+ tk+=ticks1.map(v=>`<text x="${W-padR+4}" y="${Y1(v)+4}" font-size="11" fill="${aC}">${f1(v)}</text>`).join('');
+ const dotC=DK()?'#0f1825':'#fff';
+ let areas='',paths='',pts='',slbls='';
+ const render=(arr,Yf,fmt)=>{for(const s of arr){let p='',firstCx,lastCx,lastCy;s.rows.forEach((r,k)=>{const cx=X(xi[r[0]]).toFixed(1),cy=Yf(r[1]).toFixed(1);if(k===0)firstCx=cx;lastCx=cx;lastCy=cy;p+=(k?'L':'M')+cx+' '+cy+' ';
+   pts+=`<circle class="pt" cx="${cx}" cy="${cy}" r="1.5" fill="${s.color}" stroke="${dotC}" stroke-width="1"></circle>`;});
+   if(s.rows.length>1){const by=Yf(Math.max(mn0,mn1,0)).toFixed(1);areas+=`<path d="${p}L${lastCx} ${by} L${firstCx} ${by} Z" fill="${s.color}" fill-opacity="0.12" stroke="none"></path>`;}
+   paths+=`<path d="${p}" fill="none" stroke="${s.color}" stroke-width="2"></path>`;
+   if(lastCx!=null){const pts2=s.label.split(' \xb7 ');const nE=active.length,nM=measures.length;const sl=(nE>1&&nM===1?pts2[0]:(nE===1&&nM>1?short(pts2.slice(1).join(' \xb7 ')):short(s.label))).slice(0,14);slbls+=`<text x="${(+lastCx+5).toFixed(1)}" y="${(+lastCy+4).toFixed(1)}" font-size="9" fill="${s.color}" font-weight="600">${sl}</text>`;}}};
+ render(dol,Y0,f0);render(pct,Y1,f1);
+ const want=Math.min(8,n),ix=[...new Set(Array.from({length:want},(_,k)=>Math.round(k*(n-1)/Math.max(1,want-1))))];
+ const lb=ix.map(i=>`<text x="${X(i)}" y="${H-pad+18}" font-size="10" fill="${aC}" text-anchor="${i===0?'start':(i===n-1?'end':'middle')}">${win[i]}</text>`).join('');
+ return `<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg"><text x="14" y="16" font-size="11" fill="${tC}">$ thousands (left) \xb7 % (right)</text>${tk}${areas}${paths}${pts}${slbls}${lb}</svg>`;}
+
+// ---- league / rank table ----
+// Ranks INDIVIDUAL banks (kind='bank'); per-bank values use coalesce(COMB/RCFD/RCON/RIAD) +
+// sum-then-divide ratio logic matching seriesFor(). RIAD income codes (4340,4635,4605,4230)
+// now resolved via COMB generation extended to RIAD in build_segments_call.py (2026-06 fix):
+// D_ROA, D_ROE, D_NCO_LOANS, D_PROV_LOANS, S_NCO all work correctly after that fix.
+const LGMEAS=[
+ {code:'COMB2170',label:'Total assets',pct:false},
+ {code:'COMB2200',label:'Total deposits',pct:false},
+ {code:'COMB2122',label:'Total loans',pct:false},
+ {code:'COMB3210',label:'Total equity',pct:false},
+ {code:'D_DEPASSETS',label:'Deposits / Assets %',pct:true},
+ {code:'D_LOANSDEP',label:'Loans / Deposits %',pct:true},
+ {code:'D_NONCUR_PCT',label:'Noncurrent ratio %',pct:true},
+ {code:'D_RESLOANS',label:'Reserves / Loans %',pct:true},
+ {code:'D_EQASSETS',label:'Equity / Assets %',pct:true},
+ {code:'D_ROA',label:'ROA % YTD',pct:true},
+ {code:'D_ROE',label:'ROE % YTD',pct:true},
+];
+let lgSortField='v',lgSortDir=-1;   // league sort: field v/qoq/yoy, dir 1=asc -1=desc
+async function perFilerValues(measCode, quarters){
+ // map: quarter -> Map(entity_id -> per-bank value) for a COMB/raw code OR a DERIV ratio/sum
+ const out={}; for(const q of quarters) out[q]=new Map();
+ let d=DERIV[measCode]; if(!d&&measCode.startsWith('COMB'))d={type:'sum',plus:[measCode.slice(4)],minus:[],den:[]};
+ if(d){const bases=[...d.plus,...(d.minus||[]),...(d.den||[])];
+   const codes=[];for(const b of bases)for(const p of['COMB','RCFD','RCON','RIAD'])codes.push(p+b);
+   const r=(await conn.query(`SELECT entity_id,quarter_end,mdrm,value FROM t WHERE kind='bank' AND mdrm IN (${sqlList(codes)}) AND quarter_end IN (${sqlList(quarters)})`)).toArray();
+   const byqf={}; for(const x of r){const q=String(x.quarter_end);(byqf[q]=byqf[q]||{});(byqf[q][x.entity_id]=byqf[q][x.entity_id]||{})[x.mdrm]=Number(x.value);}
+   const acc=(mp,arr)=>{let s=0,seen=false;for(const b of arr){const v=coalesce(mp,b);if(v!=null){s+=v;seen=true;}}return [s,seen];};
+   for(const q of quarters){const per=byqf[q]||{};
+     for(const id in per){const mp=per[id];const [np,ns]=acc(mp,d.plus);const [nm,ms]=acc(mp,d.minus||[]);const num=np-nm;const [dp,ds]=acc(mp,d.den||[]);
+       if(d.type==='sum'){if(ns||ms)out[q].set(id,num);}else{if((ns||ms)&&ds&&dp>0)out[q].set(id,100*num/dp);}}}
+ } else {
+   const r=(await conn.query(`SELECT entity_id,quarter_end,SUM(value) v FROM t WHERE kind='bank' AND mdrm='${measCode}' AND quarter_end IN (${sqlList(quarters)}) GROUP BY entity_id,quarter_end`)).toArray();
+   for(const x of r) out[String(x.quarter_end)].set(x.entity_id, Number(x.v));
+ }
+ return out;}
+async function renderLeague(){
+ const meas=LGMEAS[+document.getElementById('lgmeasure').value];
+ const q=document.getElementById('lgquarter').value, topn=+document.getElementById('lgtopn').value;
+ const prevQ=prevQtr(q), yoyQ=yoyQtr(q);
+ const quarters=[q,prevQ,yoyQ].filter(Boolean);
+ document.getElementById('leaguebody').innerHTML='<p class="muted">Computing…</p>';
+ const vals=await perFilerValues(meas.code, quarters); const cur=vals[q]||new Map();
+ const rows=[...cur.entries()].map(([eid,v])=>{const pv=prevQ?vals[prevQ].get(eid):null, yv=yoyQ?vals[yoyQ].get(eid):null;
+   const qoq=meas.pct?(pv!=null?v-pv:null):(pv?100*(v/pv-1):null);
+   const yoy=meas.pct?(yv!=null?v-yv:null):(yv?100*(v/yv-1):null);
+   return {eid,name:id2lbl.get(eid)||eid,v,qoq,yoy};});
+ rows.sort((a,b)=>{const av=a[lgSortField],bv=b[lgSortField];   // nulls always last
+   if(av==null&&bv==null)return 0;if(av==null)return 1;if(bv==null)return -1;return lgSortDir*(av-bv);});
+ const show=topn?rows.slice(0,topn):rows;
+ const fmtV=v=>v==null?'—':(meas.pct?(+v).toFixed(2)+'%':fmtUnit(v,false));
+ const fmtD=x=>x==null?'—':(meas.pct?((x>=0?'+':'')+x.toFixed(2)+' pp'):((x>=0?'▲ ':'▼ ')+Math.abs(x).toFixed(1)+'%'));
+ const cls=x=>x==null?'':(x>=0?'up':'dn');
+ const arr=f=>lgSortField===f?(lgSortDir<0?' ▼':' ▲'):'';
+ let h=`<table><tr><th>#</th><th style="text-align:left">Bank</th>`+
+   `<th class="lgs" data-f="v" style="cursor:pointer" title="click to sort">${meas.label}${arr('v')}</th>`+
+   `<th class="lgs" data-f="qoq" style="cursor:pointer" title="click to sort">QoQ${arr('qoq')}</th>`+
+   `<th class="lgs" data-f="yoy" style="cursor:pointer" title="click to sort">YoY${arr('yoy')}</th></tr>`;
+ show.forEach((r,i)=>{h+=`<tr><td>${i+1}</td><td style="text-align:left">${r.name}</td><td>${fmtV(r.v)}</td><td class="${cls(r.qoq)}">${fmtD(r.qoq)}</td><td class="${cls(r.yoy)}">${fmtD(r.yoy)}</td></tr>`;});
+ h+=`</table><p class="muted">${show.length} of ${rows.length} banks · ${q}${meas.pct?' · QoQ/YoY in percentage points':''} · individual banks ≥ tool-dataset asset threshold · click a column header to sort</p>`;
+ const body=document.getElementById('leaguebody'); body.innerHTML=h; window._lg={meas,q,rows:show};
+ body.querySelectorAll('.lgs').forEach(th=>th.onclick=()=>{const f=th.dataset.f;if(lgSortField===f)lgSortDir*=-1;else{lgSortField=f;lgSortDir=-1;}renderLeague();});}
+async function openLeague(){
+ const msel=document.getElementById('lgmeasure');
+ if(!msel.options.length) msel.innerHTML=LGMEAS.map((m,i)=>`<option value="${i}">${m.label}</option>`).join('');
+ const qsel=document.getElementById('lgquarter');
+ if(!qsel.options.length){qsel.innerHTML=ALLQ.map(q=>`<option>${q}</option>`).join(''); if(ALLQ.length)qsel.value=ALLQ[ALLQ.length-1];}
+ document.getElementById('leaguemodal').style.display='flex'; await renderLeague();}
 
 // ---- call-report view (drill-down hierarchy + time-frame columns) ----
 async function openForm(){if(!HIER){alert('Hierarchy file not loaded.');return;}const e=active[0]||resolveEnt();if(!e){alert('Add an entity first.');return;}
@@ -539,9 +899,225 @@ function exportForm(){if(!window._fr||!window._fr.length){alert('Nothing to expo
 function dl2(c,rows,nm){if(!rows.length){alert('Nothing to export.');return;}const e=v=>{v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
  const lines=[c.join(',')].concat(rows.map(r=>r.map(e).join(',')));const bl=new Blob([lines.join('\n')],{type:'text/csv'});
  const a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download='ffiec_call_'+nm+'.csv';a.click();}
+// ---- entity report (V1) ----
+async function openReport(entityId){
+ if(!entityId||!entityId.startsWith('BANK:'))return;
+ {const p=new URLSearchParams(location.hash.slice(1));p.set('report','1');history.replaceState(null,'','#'+p.toString());}
+ document.getElementById('reportmodal').style.display='';
+ const nm=id2lbl.get(entityId)||entityId;
+ document.getElementById('rpt-title').textContent=nm+' · '+entityId;
+ document.getElementById('rpt-asof').textContent='';
+ document.getElementById('rptbody').innerHTML='<p class="muted" style="padding:20px">Loading…</p>';
+ try{
+  const qtrsRes=(await conn.query(`SELECT DISTINCT quarter_end FROM t WHERE entity_id='${entityId}' ORDER BY quarter_end DESC LIMIT 8`)).toArray();
+  if(!qtrsRes.length){document.getElementById('rptbody').innerHTML='<p class="muted" style="padding:20px">No data for this entity.</p>';return;}
+  const latestQ=qtrsRes[0].quarter_end;
+  document.getElementById('rpt-asof').textContent=' · as of '+latestQ;
+  document.getElementById('rptbody').innerHTML=await buildReport(entityId,nm,latestQ,qtrsRes.map(r=>r.quarter_end).reverse());
+ }catch(e){document.getElementById('rptbody').innerHTML='<p style="color:#c0392b;padding:20px">Report error: '+e+'</p>';}}
+async function buildReport(entityId,nm,latestQ,qtrs){
+ const kpiCodes=['RCFD2170','RCON2170','RCFD2122','RCON2122','RCFD2200','RCON2200',
+  'RCFD3210','RCON3210','RIAD4340','RIAD4074','RIAD4079','RIAD4093',
+  'RIAD4635','RIAD4605','RCFD3123','RCFD1403','RCFD1406','RCFD1407',
+  'RCOAP793','RCFAP793','RCON7274','RCOA7205','RCFA7205','RCON7205'];
+ const qList=qtrs.map(q=>`'${q}'`).join(',');
+ const cList=kpiCodes.map(c=>`'${c}'`).join(',');
+ const data=(await conn.query(`SELECT mdrm,quarter_end,value FROM t WHERE entity_id='${entityId}' AND quarter_end IN (${qList}) AND mdrm IN (${cList})`)).toArray();
+ const V={};for(const r of data)(V[r.mdrm]=V[r.mdrm]||{})[r.quarter_end]=Number(r.value);
+ const getV=(codes,q)=>{for(const c of codes){const v=V[c]?.[q??latestQ];if(v!=null)return v;}return null;};
+ const qnl={'03':1,'06':2,'09':3,'12':4}[String(latestQ).slice(5,7)]||4;
+ const assets=getV(['RCFD2170','RCON2170']);
+ const loans=getV(['RCFD2122','RCON2122']);
+ const dep=getV(['RCFD2200','RCON2200']);
+ const eq=getV(['RCFD3210','RCON3210']);
+ const ni=getV(['RIAD4340']),nii=getV(['RIAD4074']),niinc=getV(['RIAD4079']),niexp=getV(['RIAD4093']);
+ const coff=getV(['RIAD4635']),rec=getV(['RIAD4605']),alll=getV(['RCFD3123']);
+ const npl30=getV(['RCFD1403']),npl90=getV(['RCFD1406']),nona=getV(['RCFD1407']);
+ const npl=(npl30!=null||npl90!=null||nona!=null)?((npl30||0)+(npl90||0)+(nona||0)):null;
+ const noncur=(npl90!=null||nona!=null)?((npl90||0)+(nona||0)):null;
+ // Capital: coalesce without RCOAH036 (confirmed absent from Call parquet)
+ const cet1=getV(['RCOAP793','RCFAP793','RCON7274']);
+ const tier1=getV(['RCOA7205','RCFA7205','RCON7205']);
+ const ann=(n,d)=>n!=null&&d!=null&&d>0?100*n/d*(4/qnl):null;
+ const roa=ann(ni,assets),roe=ann(ni,eq),nim=ann(nii,assets);
+ const eff=(nii!=null&&niinc!=null&&niexp!=null&&(nii+niinc)>0)?100*niexp/(nii+niinc):null;
+ const nplRat=loans&&npl!=null&&loans>0?100*npl/loans:null;
+ const nco=(loans&&coff!=null&&rec!=null)?ann(coff-rec,loans):null;
+ const rescov=noncur&&alll!=null&&noncur>0?100*alll/noncur:null;
+ let assetRank=null,assetCount=null;
+ try{
+  const rk=(await conn.query(`SELECT COUNT(*) n FROM t WHERE mdrm='RCFD2170' AND quarter_end='${latestQ}' AND kind='bank' AND value>=${assets??0}`)).toArray();
+  const ct=(await conn.query(`SELECT COUNT(*) n FROM t WHERE mdrm='RCFD2170' AND quarter_end='${latestQ}' AND kind='bank'`)).toArray();
+  assetRank=Number(rk[0]?.n??0);assetCount=Number(ct[0]?.n??0);
+ }catch{}
+ const prevQ=qtrs.length>=2?qtrs[qtrs.length-2]:null,yoyQ=qtrs.length>=5?qtrs[qtrs.length-5]:null;
+ const pctD=(a,b)=>(a!=null&&b!=null&&b!==0)?100*(a-b)/b:null;
+ const aQoQ=pctD(assets,prevQ?getV(['RCFD2170','RCON2170'],prevQ):null);
+ const aYoY=pctD(assets,yoyQ?getV(['RCFD2170','RCON2170'],yoyQ):null);
+ const lPrev=prevQ?getV(['RCFD2122','RCON2122'],prevQ):null;
+ const nplPrev=prevQ?((getV(['RCFD1403'],prevQ)||0)+(getV(['RCFD1406'],prevQ)||0)+(getV(['RCFD1407'],prevQ)||0)):null;
+ const nplRatPrev=lPrev&&nplPrev!=null&&lPrev>0?100*nplPrev/lPrev:null;
+ const nplQoQ=pctD(nplRat,nplRatPrev);
+ const fA=v=>v==null?'—':v>=1e9?'$'+(v/1e9).toFixed(1)+'T':v>=1e6?'$'+(v/1e6).toFixed(1)+'B':'$'+Math.round(v/1e3)+'M';
+ const fP=v=>v==null?'—':v.toFixed(2)+'%';
+ const fD=v=>v==null?'':v>=0?`<span style="color:#1b7f3b;font-size:10px"> ▲${v.toFixed(1)}%</span>`:`<span style="color:#c0392b;font-size:10px"> ▼${Math.abs(v).toFixed(1)}%</span>`;
+ const pct=assetRank&&assetCount?Math.round((1-assetRank/assetCount)*100):null;
+ const rnk=assetRank?`Rank #${assetRank} of ${assetCount}${pct!=null?' ('+pct+'th %ile)':''}`:null;
+ const eid=entityId.startsWith('BANK:')?entityId.slice(5):entityId;
+ const hdr=`<div style="border:1px solid var(--border,#ccc);border-radius:6px;padding:12px 16px;margin-bottom:14px;background:var(--head,#f7f8fc)"><div style="font-size:18px;font-weight:700">${nm}</div><div class="muted" style="font-size:12px;margin-top:2px">RSSD ${eid} · Commercial Bank · FFIEC 031/041/051</div><div style="font-size:13px;margin-top:6px">As of ${latestQ}${assets!=null?' &nbsp;·&nbsp; Total assets: '+fA(assets):''}${rnk?' &nbsp;·&nbsp; '+rnk:''}</div></div>`;
+ const spk=codes=>sparkline(qtrs.map(q=>[q,getV(codes,q)]),false,COLORS[0]);
+ const kpis=[
+  {lbl:'Total Assets',val:fA(assets),spk:spk(['RCFD2170','RCON2170']),qoq:aQoQ,yoy:aYoY},
+  {lbl:'Total Loans',val:fA(loans),spk:spk(['RCFD2122','RCON2122']),qoq:null,yoy:null},
+  {lbl:'Total Deposits',val:fA(dep),spk:spk(['RCFD2200','RCON2200']),qoq:null,yoy:null},
+  {lbl:'Total Equity',val:fA(eq),spk:null,qoq:null,yoy:null},
+  {lbl:'ROA (ann.)',val:fP(roa),spk:null,qoq:null,yoy:null},
+  {lbl:'ROE (ann.)',val:fP(roe),spk:null,qoq:null,yoy:null},
+  {lbl:'NIM % (approx.)',val:fP(nim),spk:null,qoq:null,yoy:null},
+  {lbl:'Efficiency Ratio',val:fP(eff),spk:null,qoq:null,yoy:null},
+  {lbl:'CET1 Ratio',val:fP(cet1),spk:null,qoq:null,yoy:null},
+  {lbl:'Tier 1 RBC',val:fP(tier1),spk:null,qoq:null,yoy:null},
+  {lbl:'NPL Ratio',val:fP(nplRat),spk:null,qoq:nplQoQ,yoy:null},
+  {lbl:'NCO Rate (ann.)',val:fP(nco),spk:null,qoq:null,yoy:null},
+ ];
+ const cards=kpis.map(k=>`<div style="border:1px solid var(--border,#ccc);border-radius:6px;padding:8px 12px;min-width:130px;display:inline-block;vertical-align:top;margin:4px"><div style="font-size:10px;color:var(--fg2,#666)">${k.lbl}</div><div style="font-size:22px;font-weight:700;line-height:1.2;margin-top:2px">${k.val}</div><div style="min-height:14px">${fD(k.qoq)}${k.yoy!=null?' &nbsp;YoY:'+fD(k.yoy):''}</div>${k.spk||''}</div>`).join('');
+ const kpiSec=`<h3 style="font-size:13px;font-weight:600;margin:0 0 6px">Key Metrics — as of ${latestQ}</h3><div style="margin-bottom:14px">${cards}</div>`;
+ const nar=buildNarrative({nm,latestQ,assets,assetRank,assetCount,aQoQ,aYoY,roa,roe,cet1,eff,nplRat,nplQoQ,rescov,nco,form:'FFIEC Call'});
+ return hdr+kpiSec+`<h3 style="font-size:13px;font-weight:600;margin:14px 0 6px">Summary</h3>`+nar;}
+function sparkline(rows,pct,color){
+ const W=120,H=40;if(!rows||rows.every(r=>r[1]==null))return '';
+ const vals=rows.map(r=>r[1]).filter(v=>v!=null);if(!vals.length)return '';
+ let mn=Math.min(...vals),mx=Math.max(...vals);if(mn===mx){mn-=1;mx+=1;}
+ if(!pct&&mn>0)mn=0;const rg=mx-mn,n=rows.length;
+ const X=i=>4+i*(W-8)/Math.max(1,n-1),Y=v=>H-4-(v-mn)/rg*(H-8);
+ const filtered=rows.filter(r=>r[1]!=null);
+ const pts=filtered.map(r=>`${X(rows.indexOf(r)).toFixed(1)},${Y(r[1]).toFixed(1)}`).join(' ');
+ if(!pts)return '';
+ const lp=filtered[filtered.length-1],li=rows.indexOf(lp);
+ const fill=`4,${H-4} ${pts} ${X(li).toFixed(1)},${H-4}`;
+ return `<svg width="120" height="40" style="display:block;margin-top:4px"><polygon points="${fill}" fill="${color||COLORS[0]}" fill-opacity=".12"/><polyline points="${pts}" fill="none" stroke="${color||COLORS[0]}" stroke-width="1.5"/></svg>`;}
+function buildNarrative(d){
+ const {nm,latestQ,assets,assetRank,assetCount,aQoQ,aYoY,roa,roe,cet1,eff,nplRat,nplQoQ,rescov,nco,form}=d;
+ const fA=v=>v==null?null:v>=1e9?'$'+(v/1e9).toFixed(1)+'T':v>=1e6?'$'+(v/1e6).toFixed(1)+'B':'$'+Math.round(v/1e3)+'M';
+ const fP=v=>v==null?null:v.toFixed(2)+'%';
+ const pct=assetRank&&assetCount?Math.round((1-assetRank/assetCount)*100):null;
+ const grTxt=aYoY!=null?(aYoY>5?` Assets grew ${aYoY.toFixed(1)}% year-over-year.`:aYoY<-5?` Assets contracted ${Math.abs(aYoY).toFixed(1)}% year-over-year.`:' Asset levels were stable year-over-year.'):'';
+ const p1=`${nm} is a commercial bank with ${fA(assets)||'undisclosed assets'} as of ${latestQ}${assetRank?`, ranking #${assetRank} of ${assetCount} ${form||'FFIEC Call'} filers${pct!=null?' ('+pct+'th percentile)':''}`:''}.${grTxt}`;
+ const roaD=roa==null?null:roa<0?'reporting a net loss':roa<0.5?'modestly profitable':roa<1.0?'adequately profitable':roa<1.5?'solidly profitable':'strongly profitable';
+ const cetD=cet1==null?null:cet1<8?'approaching minimum capital thresholds':cet1<10?'meeting minimum requirements':cet1<12?'well-capitalized':'strongly capitalized';
+ const effD=eff==null?null:eff<55?'highly efficient':eff<65?'within the industry norm':eff<75?'moderately inefficient':'carrying an above-average cost structure';
+ const p2p=[];
+ if(roaD&&roa!=null&&roe!=null)p2p.push(`For the period ending ${latestQ}, ${nm} was ${roaD} with an annualized ROA of ${fP(roa)} and ROE of ${fP(roe)}.`);
+ if(cetD)p2p.push(`The CET1 ratio stood at ${fP(cet1)}, indicating the institution is ${cetD}.`);
+ if(effD&&eff!=null)p2p.push(`The efficiency ratio of ${fP(eff)} suggests the institution is ${effD}.`);
+ const p2=p2p.join(' ')||null;
+ const nplD=nplRat==null?null:nplRat<1?'clean credit quality':nplRat<2?'manageable credit stress':nplRat<3?'elevated NPL levels':'significant credit deterioration';
+ const ncoD=nco==null?null:nco<0.25?'minimal charge-off activity':nco<0.5?'modest charge-offs':nco<1.0?'moderate charge-offs':'elevated charge-off rates';
+ const resD=rescov==null?null:rescov<50?'thin reserve coverage':rescov<100?'adequate reserve coverage':'strong reserve coverage';
+ const nplTr=nplQoQ!=null?(nplQoQ>10?' and trending higher.':nplQoQ<-10?' and improving.':'.'):'.'
+ const p3p=[];
+ if(nplD&&nplRat!=null)p3p.push(`${nm} reported a total NPL ratio of ${fP(nplRat)}, indicating ${nplD}${nplTr}`);
+ if(resD&&rescov!=null)p3p.push(`The allowance for loan losses covered ${fP(rescov)} of noncurrent loans, reflecting ${resD}.`);
+ if(ncoD&&nco!=null)p3p.push(`Net charge-offs ran at an annualized rate of ${fP(nco)}, indicating ${ncoD}.`);
+ const p3=p3p.join(' ')||null;
+ return [p1,p2,p3].filter(Boolean).map(p=>`<p style="line-height:1.6;margin:6px 0">${p}</p>`).join('');}
+function rptPrint(){
+ const content=document.getElementById('rptbody').innerHTML;
+ const title=document.getElementById('rpt-title').textContent;
+ const w=window.open('','_blank','width=900,height=700');if(!w)return;
+ w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+title+' Tear Sheet<\/title><style>*{box-sizing:border-box}:root{--border:#ccc;--head:#f7f8fc;--fg2:#555}.muted{color:#555}body{font-family:-apple-system,Segoe UI,sans-serif;font-size:12px;color:#1a202c;margin:24px 32px}svg{display:block}h3{font-size:13px;margin:12px 0 4px}p{margin:6px 0}@media print{body{margin:0}}<\/style><\/head><body>'+content+'<p style="margin-top:32px;font-size:10px;color:#888">Data: public FFIEC\/FRB filings · Generated '+new Date().toISOString().slice(0,10)+'<\/p><script>window.onload=()=>window.print();<\/script><\/body><\/html>');
+ w.document.close();}
+// ---- export builder (V1) ----
+const _eb={entityId:null,entityLbl:'',fromQ:null,toQ:null};
+function callScopeCond(id){
+ if(!id)return null;
+ if(id==='ALL')return "kind='bank'";
+ if(id.startsWith('BANK:'))return `entity_id='${id}' AND kind='bank'`;
+ if(id.startsWith('PEER:')){const ms=(peers[id.slice(5)]||[]);if(!ms.length)return null;return `entity_id IN (${ms.map(x=>`'${x}'`).join(',')}) AND kind='bank'`;}
+ return null;}
+function openExportBuilder(){document.getElementById('exportmodal').style.display='';renderExportUI();}
+async function renderExportUI(){
+ const body=document.getElementById('expbldbody');body.innerHTML='<p class="muted">Loading…</p>';
+ let allQtrs=[];
+ try{
+  const cond=_eb.entityId?callScopeCond(_eb.entityId):"kind='bank'";
+  const res=(await conn.query(`SELECT DISTINCT quarter_end FROM t WHERE ${cond||"kind='bank'"} ORDER BY quarter_end`)).toArray();
+  allQtrs=res.map(r=>r.quarter_end);
+ }catch{}
+ if(allQtrs.length&&!_eb.fromQ)_eb.fromQ=allQtrs[0];
+ if(allQtrs.length&&!_eb.toQ)_eb.toQ=allQtrs[allQtrs.length-1];
+ const inRange=allQtrs.filter(q=>(!_eb.fromQ||q>=_eb.fromQ)&&(!_eb.toQ||q<=_eb.toQ));
+ const selF=allQtrs.map(q=>`<option value="${q}"${q===_eb.fromQ?' selected':''}>${q}</option>`).join('');
+ const selT=allQtrs.map(q=>`<option value="${q}"${q===_eb.toQ?' selected':''}>${q}</option>`).join('');
+ const eSt=_eb.entityId?(_eb.entityId==='ALL'?'All banks':`<b>${_eb.entityLbl||_eb.entityId}</b>`):'<span class="muted">Not set</span>';
+ body.innerHTML=`<div style="border:1px solid var(--border,#ccc);border-radius:6px;padding:10px 14px;margin-bottom:8px"><b>Entity / target</b>
+  <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap">
+   <input id="eb-ent" list="entlist" autocomplete="off" placeholder="bank name, RSSD, or ALL…" style="min-width:280px;font:inherit;font-size:12px;border:1px solid var(--border,#ccc);border-radius:3px;padding:3px 6px;background:inherit;color:inherit">
+   <button id="eb-ent-set" class="sec">Set</button>
+   <span id="eb-ent-status" style="font-size:12px">${eSt}</span>
+  </div></div>
+ <div style="border:1px solid var(--border,#ccc);border-radius:6px;padding:10px 14px;margin-bottom:8px"><b>Scope</b> &nbsp;<span class="muted" style="font-size:11px">All MDRM codes in site parquet</span>
+  <p class="muted" style="font-size:11px;margin:4px 0 0">Exports every code in the deployed site data for the selected entity and date range. Long format: one row per entity-quarter-code.</p></div>
+ <div style="border:1px solid var(--border,#ccc);border-radius:6px;padding:10px 14px;margin-bottom:8px"><b>Date range</b>
+  <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap">
+   <span class="muted">From</span><select id="eb-from" style="font:inherit;font-size:12px">${selF}</select>
+   <span class="muted">to</span><select id="eb-to" style="font:inherit;font-size:12px">${selT}</select>
+   <button id="eb-full" class="sec">Full range</button>
+   <span class="muted" style="font-size:11px" id="eb-qcount">${inRange.length} quarter${inRange.length!==1?'s':''}</span>
+  </div></div>`;
+ document.getElementById('eb-ent-set').onclick=()=>{
+  const v=document.getElementById('eb-ent').value.trim();if(!v)return;
+  let res=null;
+  const cv=v.replace(/^★\s*/,'');
+  if(cv in peers){res={id:'PEER:'+cv,label:'★ '+cv};}
+  else if(/^all$/i.test(v)||v.toUpperCase()==='ALL'){res={id:'ALL',label:'ALL'};}
+  else if(lbl2id.has(v)){res={id:lbl2id.get(v),label:v};}
+  else{const m=v.match(/(\d{3,})/);if(m){const id='BANK:'+m[1];res={id,label:id2lbl.get(id)||id};}}
+  if(res){_eb.entityId=res.id;_eb.entityLbl=res.label;renderExportUI();}
+  else document.getElementById('eb-ent-status').innerHTML='<span style="color:#c0392b">Not recognised</span>';};
+ document.getElementById('eb-from').onchange=()=>{_eb.fromQ=document.getElementById('eb-from').value;
+  const n=allQtrs.filter(q=>q>=_eb.fromQ&&q<=_eb.toQ).length;document.getElementById('eb-qcount').textContent=n+' quarter'+(n!==1?'s':'');};
+ document.getElementById('eb-to').onchange=()=>{_eb.toQ=document.getElementById('eb-to').value;
+  const n=allQtrs.filter(q=>q>=_eb.fromQ&&q<=_eb.toQ).length;document.getElementById('eb-qcount').textContent=n+' quarter'+(n!==1?'s':'');};
+ document.getElementById('eb-full').onclick=()=>{if(allQtrs.length){_eb.fromQ=allQtrs[0];_eb.toQ=allQtrs[allQtrs.length-1];}renderExportUI();};}
+async function runExport(preview=false){
+ if(!_eb.entityId){alert('Set an entity first.');return null;}
+ const ec=callScopeCond(_eb.entityId);if(!ec){alert('Could not resolve entity.');return null;}
+ const df=_eb.fromQ?`AND quarter_end>='${_eb.fromQ}'`:'',dt=_eb.toQ?`AND quarter_end<='${_eb.toQ}'`:'';
+ const sql=`SELECT quarter_end,entity_id,entity_label,mdrm,value FROM t WHERE ${ec} ${df} ${dt} ORDER BY mdrm,entity_id,quarter_end${preview?' LIMIT 50':''}`;
+ return (await conn.query(sql)).toArray();}
 async function runsql(){try{const r=(await conn.query(document.getElementById('sql').value)).toArray();
  sqlC=r.length?Object.keys(r[0]):[];sqlR=r.map(x=>sqlC.map(c=>x[c]));
  let h='<table><tr>'+sqlC.map(c=>`<th>${c}</th>`).join('')+'</tr>';for(const x of r.slice(0,500))h+='<tr>'+sqlC.map(c=>`<td>${x[c]}</td>`).join('')+'</tr>';
  document.getElementById('sqlout').innerHTML=h+`</table><p class=muted>${r.length} rows (first 500)</p>`;}catch(e){document.getElementById('sqlout').textContent='SQL error: '+e;}}
+(function(){
+  const tip=document.createElement('div');tip.id='charttip';document.body.appendChild(tip);
+  function showTip(e,svg){
+    if(!lastSeries.length){tip.style.display='none';return;}
+    const win=Qall.slice(rangeSel.a,rangeSel.b+1);
+    if(!win.length){tip.style.display='none';return;}
+    const br=svg.getBoundingClientRect();
+    const vb=svg.viewBox.baseVal;const pad=64;const svgW=br.width;const W=vb.width;
+    const mx=e.clientX-br.left;
+    const frac=(mx-pad*svgW/W)/((svgW*(W-2*pad))/W);
+    const qi=Math.max(0,Math.min(win.length-1,Math.round(frac*(win.length-1))));
+    const q=win[qi];
+    const qSvgX=pad+qi*(W-2*pad)/Math.max(1,win.length-1);
+    const qScreenX=br.left+qSvgX*(svgW/W);
+    const maps=lastSeries.map(s=>Object.fromEntries(s.rows));
+    let html=`<div class="tip-q">${q}</div>`;
+    for(let i=0;i<lastSeries.length;i++){const s=lastSeries[i];const v=maps[i][q];if(v==null)continue;
+      const fv=s.pct?(+v).toFixed(2)+'%':fmtUnit(v,false);
+      const tpts=s.label.split(' \xb7 ');const nE=active.length,nM=measures.length;const tl=(nE>1&&nM===1?tpts[0]:(nE===1&&nM>1?tpts.slice(1).join(' · '):s.label)).slice(0,40);
+      html+=`<div class="tip-row"><span class="tip-sw" style="background:${s.color}"></span>${tl}: <b>${fv}</b></div>`;}
+    tip.innerHTML=html;tip.style.display='block';
+    let tx=qScreenX+14;if(tx+tip.offsetWidth>window.innerWidth-8)tx=qScreenX-14-tip.offsetWidth;if(tx<8)tx=8;
+    const ty=Math.min(e.clientY-10,window.innerHeight-tip.offsetHeight-8);
+    tip.style.left=tx+'px';tip.style.top=ty+'px';}
+  document.getElementById('panes').addEventListener('mousemove',e=>{
+    const svg=e.target.closest('svg');if(!svg){tip.style.display='none';return;}
+    showTip(e,svg);});
+  document.getElementById('panes').addEventListener('mouseleave',()=>tip.style.display='none');
+})();
 init();
 </script></body></html>

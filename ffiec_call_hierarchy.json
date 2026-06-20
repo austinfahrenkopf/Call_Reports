@@ -689,7 +689,7 @@
 "caption": "Available-for-sale debt securities (from Schedule RC-B; column D)",
 "order": 5,
 "item": "2.b",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFD2130",
@@ -836,7 +836,7 @@
 "caption": "UNDIVIDED PROFITS AND CAPITAL RESERVES",
 "order": 26,
 "item": "26.a",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFD3838",
@@ -857,7 +857,7 @@
 "caption": "LOANS AND LEASES HELD FOR SALE",
 "order": 29,
 "item": "4.a",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFD6724",
@@ -1214,7 +1214,7 @@
 "caption": "FEDERAL FUNDS PURCHASED IN DOMESTIC OFFICES",
 "order": 80,
 "item": "14.a",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCONB995",
@@ -1778,7 +1778,7 @@
 "caption": "Available-for-sale debt securities (from Schedule RC-B; column D)",
 "order": 48,
 "item": "2.b",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFD1778",
@@ -9852,7 +9852,7 @@
 "caption": "FOREIGN EXCHANGE SWAPS",
 "order": 20,
 "item": "12.e",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFD5591",
@@ -22716,7 +22716,7 @@
 "caption": "Available-for-sale debt securities (from Schedule RC-B; column D)",
 "order": 6,
 "item": "2.b",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFD2170",
@@ -22758,7 +22758,7 @@
 "caption": "TOTAL EQUITY CAPITAL",
 "order": 12,
 "item": "27.a",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFD3368",
@@ -25721,7 +25721,7 @@
 "caption": "RISK-WEIGHTED ASSETS (NET OF ALLOWANCES AND OTHER DEDUCTIONS)",
 "order": 7,
 "item": "48.a",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFAA224",
@@ -27468,7 +27468,7 @@
 "caption": "RISK-WEIGHTED ASSETS (NET OF ALLOWANCES AND OTHER DEDUCTIONS)",
 "order": 7,
 "item": "48.a",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFAA224",
@@ -27552,7 +27552,7 @@
 "caption": "LESS: ALL OTHER DEDUCTIONS FROM (ADDITIONS TO) COMMON EQUITY TIER 1 CAPITAL BEFORE THRESHOLD-BASED DEDUCTIONS",
 "order": 19,
 "item": "10.b",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFAP851",
@@ -28191,7 +28191,7 @@
 "caption": "Available-for-sale debt securities (from Schedule RC-B; column D)",
 "order": 3,
 "item": "2.b",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFD2170",
@@ -37358,84 +37358,84 @@
 "caption": "EMPLOYEE BENEFIT-DEFINED CONTRIBUTION - MANAGED ASSETS",
 "order": 7,
 "item": "5.a",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFDB873",
 "caption": "EMPLOYEE BENEFIT-DEFINED CONTRIBUTION - NON-MANAGED ASSETS",
 "order": 8,
 "item": "5.a",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFDB874",
 "caption": "EMPLOYEE BENEFIT-DEFINED CONTRIBUTION - NUMBER OF MANAGED ACCOUNTS",
 "order": 9,
 "item": "5.a",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFDB875",
 "caption": "EMPLOYEE BENEFIT-DEFINED CONTRIBUTION - NUMBER OF NON-MANAGED ACCOUNTS",
 "order": 10,
 "item": "5.a",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFDB876",
 "caption": "EMPLOYEE BENEFIT-DEFINED BENEFIT - MANAGED ASSETS",
 "order": 11,
 "item": "5.b",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFDB877",
-"caption": "EMPLOYEE BENEFIT-DEFINED BENEFIT - NON-MANAGED ASSSETS",
+"caption": "EMPLOYEE BENEFIT-DEFINED BENEFIT - NON-MANAGED ASSETS",
 "order": 12,
 "item": "5.b",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFDB878",
 "caption": "EMPLOYEE BENEFIT-DEFINED BENEFIT - NUMBER OF MANAGED ACCOUNTS",
 "order": 13,
 "item": "5.b",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFDB879",
 "caption": "EMPLOYEE BENEFIT-DEFINED BENEFIT - NUMBER OF NON-MANAGED ACCOUNTS",
 "order": 14,
 "item": "5.b",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFDB880",
 "caption": "OTHER RETIREMENT ACCOUNTS - MANAGED ASSETS",
 "order": 15,
 "item": "5.c",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFDB881",
 "caption": "OTHER RETIREMENT ACCOUNTS - NON-MANAGED ASSETS",
 "order": 16,
 "item": "5.c",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFDB882",
 "caption": "OTHER RETIREMENT ACCOUNTS - NUMBER OF MANAGED ACCOUNTS",
 "order": 17,
 "item": "5.c",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFDB883",
 "caption": "OTHER RETIREMENT ACCOUNTS - NUMBER OF NON-MANAGED ACCOUNTS",
 "order": 18,
 "item": "5.c",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RCFDB884",
@@ -38289,21 +38289,21 @@
 "caption": "EMPLOYEE BENEFIT-DEFINED CONTRIBUTION",
 "order": 140,
 "item": "15.a",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RIADB906",
 "caption": "EMPLOYEE BENEFIT-DEFINED BENEFIT",
 "order": 141,
 "item": "15.b",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RIADB907",
 "caption": "OTHER RETIREMENT ACCOUNTS",
 "order": 142,
 "item": "15.c",
-"depth": 2
+"depth": 1
 },
 {
 "mdrm": "RIADB908",
