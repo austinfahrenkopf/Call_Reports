@@ -1,4 +1,75 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8">
+#!/usr/bin/env python3
+"""
+make_site_call.py  (v3: rail selector + aligned panes + range slider + peer groups)
+Explorer for ffiec_call_tool.parquet.
+
+Layout: persistent left RAIL = searchable item tree (Schedule > item > sub-item, plus
+★ Ratios & Subtotals). Click items to add MEASURES to the chart. Right MAIN = entity
+controls, KPI cards, one or two ALIGNED PANES ($ pane + % pane share the X-axis and the
+range slider), table, call-report view, SQL.
+
+Data logic (unchanged, tested): COMB = coalesce(RCFD,RCON); peer groups sum components
+then divide; derived ratios/subtotals computed live.
+
+Run:  python build_tool_dataset.py -> python build_hierarchy.py --pdf <PDF> -> python make_site_call.py
+"""
+import os, sys, shutil, json
+from datetime import datetime
+import pandas as pd
+BUILD_TS = datetime.now().strftime('%Y-%m-%d %H:%M')
+SRC="ffiec_call_tool.parquet"; SITE="site_call"; MAXROWS=12_000_000
+CREDIT_URL="https://github.com/austinfahrenkopf"   # <-- your GitHub profile (or set a specific repo URL)
+# --html-only: regenerate just index.html from the EXISTING site parquet(s) — fast iteration on
+# the dashboard UI without re-reading/re-splitting the ~60M-row tool dataset. Use after editing the template.
+HTML_ONLY="--html-only" in sys.argv
+os.makedirs(SITE, exist_ok=True)
+if HTML_ONLY:
+    PARTS=sorted(f for f in os.listdir(SITE) if f.endswith(".parquet"))
+    if not PARTS: raise SystemExit("--html-only: no site parquet in "+SITE+" yet; run a full build first.")
+    print("[--html-only] reusing", PARTS)
+    # no-data codes: in hierarchy but absent from all site parquets
+    if os.path.exists("ffiec_call_hierarchy.json"):
+        _hj2=json.load(open("ffiec_call_hierarchy.json",encoding="utf-8"))
+        _dc2=set();[_dc2.add(_it.get("mdrm")) for _its in _hj2.values() for _it in _its];_dc2.discard(None)
+        _spq=pd.concat([pd.read_parquet(os.path.join(SITE,p),columns=["mdrm"]) for p in PARTS],ignore_index=True)
+        NODATA_CODES=sorted(c for c in _dc2 if c and c not in set(_spq["mdrm"].unique()))
+    else: NODATA_CODES=[]
+else:
+    for f in os.listdir(SITE):
+        if f.endswith(".parquet"): os.remove(os.path.join(SITE,f))
+    # Sort entity_id (entity) first: single-entity queries prune to that entity's row groups + better zstd.
+    df=pd.read_parquet(SRC).sort_values(["entity_id","mdrm","quarter_end"])
+    rpq=df.groupby("quarter_end").size().to_dict()
+    groups=[]; cur=[]; cnt=0
+    for q in sorted(rpq):
+        if cnt and cnt+rpq[q]>MAXROWS: groups.append(cur); cur=[]; cnt=0
+        cur.append(q); cnt+=rpq[q]
+    if cur: groups.append(cur)
+    # Perf mirror from Y-9C (Levers 3+6): ZSTD compression (~-21% size) + finer row groups (4x DuckDB pruning)
+    _PQARGS=dict(index=False, compression='zstd', row_group_size=50000)
+    PARTS=[]
+    for i,grp in enumerate(groups):
+        fn="ffiec_call.parquet" if len(groups)==1 else f"ffiec_call_{i:02d}.parquet"
+        df[df["quarter_end"].isin(grp)].to_parquet(os.path.join(SITE,fn), **_PQARGS)
+        PARTS.append(fn)
+    # no-data codes: codes in hierarchy but absent from this panel
+    if os.path.exists("ffiec_call_hierarchy.json"):
+        _hj3=json.load(open("ffiec_call_hierarchy.json",encoding="utf-8"))
+        _dc3=set();[_dc3.add(_it.get("mdrm")) for _its in _hj3.values() for _it in _its];_dc3.discard(None)
+        NODATA_CODES=sorted(c for c in _dc3 if c and c not in set(df["mdrm"].unique()))
+        print(f"NODATA_CODES: {len(NODATA_CODES)} codes in hierarchy but absent from panel")
+    else: NODATA_CODES=[]
+open(os.path.join(SITE,".nojekyll"),"w").close()
+if os.path.exists("ffiec_call_hierarchy.json"):
+    shutil.copy("ffiec_call_hierarchy.json", os.path.join(SITE,"ffiec_call_hierarchy.json"))
+    print("copied ffiec_call_hierarchy.json into site")
+else:
+    print("NOTE: ffiec_call_hierarchy.json not found — run build_hierarchy.py")
+parts_js="["+",".join(f"'{p}'" for p in PARTS)+"]"
+nodata_codes_js=json.dumps(NODATA_CODES)
+print("parts:", [(p, round(os.path.getsize(os.path.join(SITE,p))/1e6,1)) for p in PARTS])
+
+HTML = r"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FFIEC Call Report Dashboard</title>
 <style>
@@ -239,7 +310,7 @@ body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td
    <textarea id="sql">SELECT quarter_end, value FROM t WHERE entity_id='ALL' AND mdrm='COMB2170' ORDER BY quarter_end;</textarea>
    <div style="margin-top:8px"><button id="runsql" class="sec">Run</button> <button id="sqlcsv" class="sec">Export result</button></div>
    <div id="sqlout"></div></details>
-  <div class="credit">Built by Austin Fahrenkopf &middot; data: public FFIEC filings &middot; Built 2026-07-01 15:37</div>
+  <div class="credit">Built by Austin Fahrenkopf &middot; data: public FFIEC filings &middot; Built __BUILD_TS__</div>
  </div>
 </div>
 <div id="formmodal" class="modal" style="display:none"><div class="modalbox">
@@ -293,8 +364,8 @@ body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td
  </table></div></div></div>
 <script type="module">
 import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.0/+esm';
-const PARTS=['ffiec_call.parquet'];
-const EMPTY_CODES=new Set(["RCFDHT65", "TEXT4086", "TEXT6373", "TEXT6980", "TEXT8901", "TEXT8902", "TEXT9116", "TEXTB926", "TEXTB962", "TEXTB963", "TEXTB964", "TEXTC366", "TEXTC367", "TEXTC368", "TEXTC369", "TEXTC370", "TEXTC371", "TEXTC372", "TEXTC373", "TEXTC374", "TEXTC375", "TEXTC437", "TEXTC438", "TEXTC439", "TEXTC440", "TEXTC441", "TEXTC442", "TEXTC443", "TEXTC444", "TEXTC445", "TEXTC446", "TEXTC490", "TEXTC491", "TEXTC492", "TEXTC493", "TEXTC494", "TEXTC495", "TEXTC496", "TEXTC870", "TEXTC871", "TEXTC872", "TEXTC873", "TEXTC874", "TEXTC875", "TEXTC876", "TEXTC877", "TEXTC878", "TEXTC879", "TEXTF657", "TEXTF658", "TEXTFT42", "TEXTFT43", "TEXTFT44", "TEXTFT45"]);
+const PARTS=__PARTS__;
+const EMPTY_CODES=new Set(__NODATA__);
 const st=m=>document.getElementById('status').textContent=m;
 const _pb=document.getElementById('pbar');const pbar=pct=>{if(!_pb)return;_pb.style.width=pct+'%';if(pct>=100){setTimeout(()=>{_pb.style.opacity='0';setTimeout(()=>{_pb.style.display='none';},400);},300);}};
 let _reflineVal=null,_reflineLbl='';
@@ -1898,4 +1969,13 @@ async function runsql(){try{const r=(await conn.query(document.getElementById('s
       if(_linkCharts)_applyLinkedPin(chart._pinnedQ);}});
 })();
 init();
-</script></body></html>
+</script></body></html>"""
+HTML=HTML.replace("__PARTS__", parts_js).replace("__NODATA__", nodata_codes_js).replace("__BUILD_TS__", BUILD_TS).replace("__CREDIT_URL__", CREDIT_URL)
+# Atomic write + completeness check — this file has repeatedly been truncated by non-atomic writes.
+_out=os.path.join(SITE,"index.html"); _tmp=_out+".tmp"
+with open(_tmp,"w",encoding="utf-8") as _f: _f.write(HTML)
+os.replace(_tmp,_out)
+_chk=open(_out,encoding="utf-8").read()
+assert _chk.rstrip().endswith("</html>") and len(_chk)==len(HTML), "index.html write looks truncated — aborting!"
+print(f"wrote {SITE}/index.html ({len(HTML):,} bytes) and {len(PARTS)} parquet part(s)")
+print("Upload site_call/'s index.html + ffiec_call*.parquet + ffiec_call_hierarchy.json")
