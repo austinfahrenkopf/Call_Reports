@@ -121,6 +121,8 @@ HTML = r"""<!doctype html><html lang="en"><head><meta charset="utf-8">
  .chips{display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 10px}
  .chip{display:inline-flex;align-items:center;gap:7px;font-size:13px;background:#eef3f8;border:1px solid #d8e0ea;border-radius:14px;padding:4px 10px}
  .chip b{font-weight:600}.chip .x{cursor:pointer;color:#8a93a3;font-weight:700}
+ .chip .info,.kpi-info{cursor:pointer;color:#2980b9;font-weight:700;font-size:12px;border:1px solid #bcd6ea;border-radius:50%;width:15px;height:15px;line-height:13px;text-align:center;display:inline-block;background:#eaf3fa;flex:none}
+ body.dark .chip .info,body.dark .kpi-info{background:#132535;border-color:#2a4a63;color:#6bb6e8}
  .sw{width:10px;height:10px;border-radius:50%;display:inline-block}
  .cards{display:flex;gap:12px;flex-wrap:wrap;margin:6px 0 12px}
  .card{flex:1;min-width:140px;background:#fff;border:1px solid #e3e8ef;border-radius:10px;padding:10px 13px}
@@ -183,6 +185,17 @@ HTML = r"""<!doctype html><html lang="en"><head><meta charset="utf-8">
  .modal.float{background:transparent;pointer-events:none}
  .modal.float .modalbox{pointer-events:auto;position:fixed;top:60px;left:60px;width:min(900px,92vw);box-shadow:0 14px 44px rgba(10,20,40,.35);resize:both}
  .modal.float .modalhead{cursor:move}
+ /* ---- Ctrl+K command palette ---- */
+ #cmdkmodal{align-items:flex-start;z-index:80}
+ #cmdkbox{background:#fff;margin-top:80px;width:min(560px,92vw);max-height:70vh;border-radius:10px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 14px 44px rgba(10,20,40,.35)}
+ #cmdkinput{border:none;padding:14px 16px;font-size:16px;outline:none;background:inherit;color:inherit;border-bottom:1px solid var(--border,#ccc)}
+ #cmdkresults{overflow:auto;padding:6px 0}
+ .cmdk-grp{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted,#9aa3b2);padding:8px 16px 4px}
+ .cmdk-row{padding:6px 16px;font-size:14px;cursor:pointer;display:flex;gap:8px;align-items:baseline}
+ .cmdk-row .cmdk-sub{color:var(--muted,#9aa3b2);font-size:12px}
+ .cmdk-row.sel,.cmdk-row:hover{background:var(--head,#f7f8fc)}
+ body.dark #cmdkbox{background:#161e2b;border:1px solid #2a3547}
+ body.dark #cmdkinput{border-color:#2a3547}
  /* ---- dark mode ---- */
  body.dark{background:#0e1420;color:#e6e9ef;--border:#2a3547;--head:#1a2638;--fg2:#9aa3b2;--fg:#e6e9ef;--bg2:#1b2433;--bg:#161e2b;--muted:#9aa3b2}
  body.dark .rail,body.dark .card,body.dark .box,body.dark details,body.dark .modalbox{background:#161e2b;border-color:#2a3547}
@@ -240,11 +253,21 @@ body.dark #lbl-overlay{background:#0f1825;border-color:#2a3547}
 #formulatip{position:fixed;pointer-events:none;z-index:55;background:var(--tip-bg,#1a2535);color:var(--tip-fg,#e6e9ef);border:1px solid #3a4a5e;border-radius:6px;padding:7px 11px;font-size:13px;line-height:1.5;display:none;box-shadow:0 3px 12px rgba(0,0,0,.35);max-width:320px;white-space:normal}
 #formulatip .ftip-lbl{font-weight:600;color:#9aa3b2;font-size:12px;letter-spacing:.3px;text-transform:uppercase;margin-bottom:3px}
 body:not(.dark) #formulatip{--tip-bg:#fff;--tip-fg:#14213d;border-color:#cdd5e0;box-shadow:0 3px 12px rgba(0,0,0,.12)}
+#whytip{position:fixed;z-index:9998;background:var(--tip-bg,#1a2535);color:var(--tip-fg,#e6e9ef);border:1px solid #3a4a5e;border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.55;display:none;box-shadow:0 6px 20px rgba(0,0,0,.4);max-width:min(420px,92vw);white-space:normal}
+body:not(.dark) #whytip{--tip-bg:#fff;--tip-fg:#14213d;border-color:#cdd5e0;box-shadow:0 6px 20px rgba(0,0,0,.16)}
+#whytip .wt-title{font-weight:700;font-size:13px;margin-bottom:6px}
+#whytip .wt-formula{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;background:var(--head,#eef2f7);border-radius:5px;padding:6px 8px;margin-bottom:8px;word-break:break-word}
+#whytip .wt-row{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:2px 0;border-bottom:1px dotted var(--border,#e3e8ef)}
+#whytip .wt-row .wt-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#2980b9;flex:none}
+#whytip .wt-row .wt-cap{color:var(--fg2,#5a6478);flex:1;margin:0 8px;text-align:left}
+#whytip .wt-row .wt-val{font-weight:600;flex:none}
+#whytip .wt-note{margin-top:8px;font-size:11.5px;color:var(--fg2,#8a93a3)}
+#whytip .wt-close{position:absolute;top:6px;right:8px;cursor:pointer;color:var(--fg2,#8a93a3);font-weight:700;font-size:14px}
 body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td{background:#0f2f1c!important}.lgon-row .lglink{font-weight:600}
 #pbar{position:fixed;top:0;left:0;height:3px;width:0%;background:var(--accent,#1b7f3b);transition:width .3s ease,opacity .4s ease;z-index:10000;pointer-events:none}
 @media print{body{background:#fff!important;color:#000!important}.rail,.railsplit,#pbar,button,.modal,#charttip,header .buttons{display:none!important}.main{margin:0!important;padding:0!important}svg{break-inside:avoid;max-width:100%!important}body.dark{background:#fff!important;color:#000!important}.cards{flex-wrap:wrap!important}h1,h2{color:#000!important}}
 </style></head><body class="dark">
-<div id="pbar"></div><div id="formulatip" style="display:none"></div>
+<div id="pbar"></div><div id="formulatip" style="display:none"></div><div id="whytip" style="display:none"></div>
 <header><button id="theme">☀ Light</button><h1>FFIEC Call Report Dashboard</h1>
 <p>U.S. commercial banks (031/041/051) · banks + ALL / type / size buckets + peer groups · 1976 Q1&ndash;present · $ thousands<span id="datacur"></span></p></header>
 <div class="app">
@@ -401,6 +424,7 @@ SELECT quarter_end, value FROM t WHERE entity_id='ALL' AND mdrm='COMB2170' ORDER
   <label style="font-size:13px">Top <select id="lgtopn"><option>25</option><option>50</option><option>100</option><option value="0">All</option></select></label>
   <label style="font-size:13px" title="Bucketed by combined total assets (COMB2170), not any single filing variant.">Size <select id="lgbucket"><option value="">All</option><option value="1">≥$1T</option><option value="0.1">$100B–$1T</option><option value="0.01">$10B–$100B</option><option value="0.001">$1B–$10B</option><option value="0.0001">$100M–$1B</option><option value="-">&lt;$100M</option></select></label>
   <button id="lgexport" class="sec">Export</button> <button id="lgclose" class="sec">Close</button></div>
+ <p class="muted" style="font-size:12px;padding:2px 14px 0">League lists individual banks only — size buckets are groups used to filter which banks appear, not aggregate rows; values shown are always per-bank.</p>
  <div id="leaguebody" style="flex:1;overflow:auto;padding:10px 14px"><p class="muted">Loading…</p></div></div></div>
 <div id="reportmodal" class="modal" style="display:none"><div class="modalbox" style="width:min(1040px,96vw);height:92vh">
  <div class="modalhead"><b>📋 Entity Report</b> &nbsp;<span id="rpt-title"></span><span id="rpt-asof" class="muted" style="font-size:13px"></span>
@@ -426,12 +450,17 @@ SELECT quarter_end, value FROM t WHERE entity_id='ALL' AND mdrm='COMB2170' ORDER
   <tr><td style="padding:3px 10px;font-family:monospace">I / E</td><td>Switch to Items / Entities tab</td></tr>
   <tr><td style="padding:3px 10px;font-family:monospace">L</td><td>Open League table</td></tr>
   <tr><td style="padding:3px 10px;font-family:monospace">R</td><td>Open entity report (single bank active)</td></tr>
+  <tr><td style="padding:3px 10px;font-family:monospace">Ctrl+K</td><td>Command palette — search measures, entities, views</td></tr>
   <tr><td style="padding:3px 10px;font-family:monospace">?</td><td>This help</td></tr>
  </table></div></div></div>
+<div id="cmdkmodal" class="modal" style="display:none"><div id="cmdkbox">
+ <input id="cmdkinput" placeholder="Search measures, entities, views…" autocomplete="off">
+ <div id="cmdkresults"></div></div></div>
 <script type="module">
 import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.0/+esm';
 const PARTS=__PARTS__, OLD_PARTS=__OLD_PARTS__;
 const EMPTY_CODES=new Set(__NODATA__);
+const BUILD_TS='__BUILD_TS__';
 const st=m=>document.getElementById('status').textContent=m;
 const _pb=document.getElementById('pbar');const pbar=pct=>{if(!_pb)return;_pb.style.width=pct+'%';if(pct>=100){setTimeout(()=>{_pb.style.opacity='0';setTimeout(()=>{_pb.style.display='none';},400);},300);}};
 let _reflineVal=null,_reflineLbl='';
@@ -462,11 +491,11 @@ const DERIV={
  'D_NONCUR_PCT':{type:'ratio',lbl:'Credit ▸ Noncurrent loan ratio % (90++nonaccrual / loans)',plus:['1407','1403'],den:['2122']},
  'D_RESLOANS':{type:'ratio',lbl:'Credit ▸ Reserves / Loans (%)',plus:['3123'],den:['2122']},
  'D_RESNPL':{type:'ratio',lbl:'Credit ▸ Reserve coverage % (reserves / noncurrent)',plus:['3123'],den:['1407','1403']},
- 'D_NCO_LOANS':{type:'ratio',lbl:'Credit ▸ Net charge-off rate % YTD ((4635-4605)/loans)',plus:['4635'],minus:['4605'],den:['2122']},
+ 'D_NCO_LOANS':{type:'ratio',lbl:'Credit ▸ NCO rate % (annualized, (charge-offs−recoveries)/loans)',plus:['4635'],minus:['4605'],den:['2122'],annualize:true},
  'D_PROV_LOANS':{type:'ratio',lbl:'Credit ▸ Provisions / Loans % YTD (4230/loans)',plus:['4230'],den:['2122']},
  'D_EQASSETS':{type:'ratio',lbl:'Capital ▸ Equity / Assets (%)',plus:['3210'],den:['2170']},
- 'D_ROA':{type:'ratio',lbl:'Earnings ▸ Return on assets % YTD (net income/assets)',plus:['4340'],den:['2170']},
- 'D_ROE':{type:'ratio',lbl:'Earnings ▸ Return on equity % YTD (net income/equity)',plus:['4340'],den:['3210']},
+ 'D_ROA':{type:'ratio',lbl:'Earnings ▸ Return on assets % (annualized, NI/assets)',plus:['4340'],den:['2170'],annualize:true},
+ 'D_ROE':{type:'ratio',lbl:'Earnings ▸ Return on equity % (annualized, NI/equity)',plus:['4340'],den:['3210'],annualize:true},
  'D_UND_LOANS':{type:'ratio',lbl:'Undrawn ▸ Unused commitments / Loans (%)',plus:UNUSED,den:['2122']},
  'D_UND_ASSETS':{type:'ratio',lbl:'Undrawn ▸ Unused commitments / Assets (%)',plus:UNUSED,den:['2170']},
  'D_UTIL':{type:'ratio',lbl:'Undrawn ▸ Loan utilization % (loans/(loans+unused))',plus:['2122'],den:['2122',...UNUSED]},
@@ -553,6 +582,76 @@ const SUB_AGG_DESCS={
 const _fullCap=new Map();
 function _walkFC(nodes,parts,sch){for(const nd of nodes){if(!nd.placeholder&&!nd.derived&&!nd.header&&nd.code&&!/^(H:|SEC:|SUB:|EMPTY:)/.test(nd.code)){const cap=nd.caption||'';const anc=parts.filter(Boolean);_fullCap.set(nd.code,anc.length?anc.join(' — ')+' — '+cap:cap);}if(nd.header&&nd.code){const _sn=sch&&SCHED_NAMES[sch]?SCHED_NAMES[sch]:(parts.length?parts[0]:'');const _si=_sn.indexOf(' — ');const _sk=_si>=0?_sn.slice(0,_si):_sn;const _agg=sch?SUB_AGG_DESCS[sch]||'':'';const _cnt=(function c(n){let k=0;for(const x of(n.children||[])){if(x.header)k+=c(x);else if(x.code&&!x.placeholder&&!/^(H:|SEC:|SUB:|EMPTY:)/.test(x.code))k++;}return k;})(nd);if(_cnt>0){const _rl=_agg?_sk+' '+_agg+': '+(nd.caption||''):_sk?_sk+' '+(nd.caption||''):(nd.caption||'');_fullCap.set('SUB:'+nd.code,_rl);if(!/^(H:|SEC:|EMPTY:)/.test(nd.code)&&!_fullCap.has(nd.code))_fullCap.set(nd.code,_rl);}}if(nd.children&&nd.children.length)_walkFC(nd.children,nd.header?[...parts,nd.caption||'']:parts,sch);}}
 function fullCap(code){return _fullCap.get(code)||'';}
+// ---- "Why this number?" — measure-chip formula disclosure (read-only; derives text from existing DERIV/DYN/USERCALC defs) ----
+// Builds {title, formula, terms:[{code,cap}], note} for any non-plain measure code. Returns null for plain codes
+// (caller should skip the info icon in that case). Never re-derives math — only describes what seriesFor()/perFilerValues() already compute.
+function whyDescribe(code,label){
+ const d=DERIV[code]||DYN[code]||USERCALC[code];
+ if(!d)return null;
+ const cap=c=>fullCap(c)||c;
+ if(d.type==='ratio'){
+  const numTxt=d.minus&&d.minus.length?`(Σ${d.plus.join('+')} − Σ${d.minus.join('+')})`:`Σ(${d.plus.join('+')})`;
+  const formula=`${numTxt} ÷ Σ(${d.den.join('+')}) × 100${d.annualize?' × (4/N)':''}`;
+  const terms=[...d.plus.map(c=>({code:c,cap:cap(c),role:'numerator +'})),...(d.minus||[]).map(c=>({code:c,cap:cap(c),role:'numerator −'})),...d.den.map(c=>({code:c,cap:cap(c),role:'denominator'}))];
+  return {title:label||d.lbl||code,formula,terms,note:d.annualize?'Annualized: value × (4 / quarter-number-in-year), consistent with the "ann." KPI convention.':null};
+ }
+ if(d.type==='sum'){
+  const formula=`Σ(${d.plus.join(' + ')})`;
+  const terms=d.plus.map(c=>({code:c,cap:cap(c),role:'component'}));
+  return {title:label||d.lbl||code,formula,terms,note:null};
+ }
+ if(d.type==='hybrid_ratio'||d.type==='hybrid_sum'){
+  const reportedCodes=d.parts.map(p=>p.reported);
+  const formula=d.type==='hybrid_ratio'?`Σ(${reportedCodes.join('+')}) ÷ Σ(${(d.den||[]).join('+')}) × 100`:`Σ(${reportedCodes.join(' + ')})`;
+  const terms=d.parts.map(p=>({code:p.reported,cap:cap(p.reported),role:'reported total (era-dependent)'}));
+  if(d.den)for(const c of d.den)terms.push({code:c,cap:cap(c),role:'denominator'});
+  const note='Reconstruction note: for quarters where the reported total (e.g. '+reportedCodes.join('/')+') was not collected (roughly 2001-Q1–2016-Q4 for RC-N item 9), the value is instead SUMMED from that row\'s per-loan-book leaf codes ('+d.parts.map(p=>p.components.length+' codes for '+p.reported).join('; ')+'). Validated against the post-gap overlap (2017-Q1 onward) at ~0.25/0.15/0.80% mean error for the three item-9 rows; known caveat: consumer auto/other leaf codes (COMBK213-K218) were not collected before 2011-Q1, causing a further ~4% understatement for 2001–2010 in the affected rows.';
+  return {title:label||d.lbl||code,formula,terms,note};
+ }
+ if(d.type==='expr'){
+  const formula=d.ast?_astToStr(d.ast,d.vars||{}):'(user-defined formula)';
+  const terms=Object.values(d.vars||{}).map(c=>({code:c,cap:cap(c),role:'component'}));
+  return {title:label||d.lbl||code,formula,terms,note:'User-defined Sigma Calc formula (session-only unless saved/loaded via the formula builder).'};
+ }
+ return null;
+}
+// Renders a parsed Sigma Calc AST ({t:'op'|'num'|'var',...}) back to plain-math text — display-only, never re-evaluates.
+// varMap resolves single-letter aliases (A,B,…) to their real MDRM code so the formula reads with real codes.
+function _astToStr(n,varMap){
+ if(!n)return '?';
+ if(n.t==='num')return String(n.v);
+ if(n.t==='var')return (varMap&&varMap[n.v])||n.v;
+ if(n.t==='op'){const sym={'+':' + ','-':' − ','*':' × ','/':' ÷ '}[n.v]||n.v;return `(${_astToStr(n.L,varMap)}${sym}${_astToStr(n.R,varMap)})`;}
+ return '?';
+}
+function whyPopoverHTML(desc){
+ const rows=desc.terms.map(t=>`<div class="wt-row"><span class="wt-code">${_esc(t.code)}</span><span class="wt-cap">${_esc(t.cap)}${t.role?' <i style="opacity:.6">('+_esc(t.role)+')</i>':''}</span></div>`).join('');
+ return `<span class="wt-close" id="wt-x">✕</span><div class="wt-title">${_esc(desc.title)}</div><div class="wt-formula">${_esc(desc.formula)}</div>${rows}${desc.note?`<div class="wt-note">${_esc(desc.note)}</div>`:''}`;
+}
+function whyPopoverHTMLKpi(info){
+ const rows=info.terms.map(t=>`<div class="wt-row"><span class="wt-code">${_esc(t.code)}</span><span class="wt-cap">${_esc(t.cap)}</span><span class="wt-val">${_esc(t.val)}</span></div>`).join('');
+ const asofTxt=info.asof?`<div class="wt-note" style="margin-top:2px">As of ${_esc(info.asof)}</div>`:'';
+ return `<span class="wt-close" id="wt-x">✕</span><div class="wt-title">${_esc(info.title)}</div><div class="wt-formula">${_esc(info.formula)}</div>${rows}${asofTxt}${info.note?`<div class="wt-note">${_esc(info.note)}</div>`:''}`;
+}
+document.addEventListener('click',e=>{const inf=e.target.closest('.kpi-info');if(!inf)return;e.stopPropagation();const ki=+inf.dataset.ki;const info=(window._rptKpiInfo||[])[ki];if(!info)return;openWhyTip(whyPopoverHTMLKpi(info),inf);});
+function openWhyTip(html,anchorEl){
+ const wt=document.getElementById('whytip');if(!wt)return;
+ wt.innerHTML=html;wt.style.display='block';wt.style.visibility='hidden';
+ const r=anchorEl.getBoundingClientRect();
+ const w=wt.offsetWidth,h=wt.offsetHeight;
+ let x=r.left,y=r.bottom+6;
+ if(x+w+10>window.innerWidth)x=Math.max(10,window.innerWidth-w-10);
+ if(y+h+10>window.innerHeight)y=Math.max(10,r.top-h-6);
+ x=Math.max(10,x);y=Math.max(10,y);
+ wt.style.left=x+'px';wt.style.top=y+'px';wt.style.visibility='visible';
+ const xEl=document.getElementById('wt-x');if(xEl)xEl.onclick=e=>{e.stopPropagation();closeWhyTip();};
+}
+function closeWhyTip(){const wt=document.getElementById('whytip');if(wt)wt.style.display='none';}
+(function(){
+ document.addEventListener('click',e=>{const wt=document.getElementById('whytip');if(!wt||wt.style.display==='none')return;if(e.target.closest('#whytip')||e.target.closest('.info')||e.target.closest('.kpi-info'))return;closeWhyTip();});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeWhyTip();});
+ window.addEventListener('scroll',()=>closeWhyTip(),{passive:true,capture:true});
+})();
 const _seriesCache=new Map(),_inflight=new Map();
 let active=[], measures=[], peerMembers=[], peers={};
 let lastSeries=[], Qall=[], rangeSel={a:0,b:0};
@@ -599,7 +698,7 @@ function hashToState(){
     const eStr=p.get('e');if(eStr){active=eStr.split(',').filter(Boolean).map(id=>({id,label:id2lbl.get(id)||id}));}
     const mStr=p.get('m');if(mStr){measures=[];for(const code of mStr.split(',').filter(Boolean)){
       const d=DERIV[code];const lbl=d?d.lbl:(fullCap(code)||code);const pct=isPct(code);
-      if(measures.length<6)measures.push({code,label:lbl,pct:!!pct});}}
+      if(measures.length<20)measures.push({code,label:lbl,pct:!!pct});}}
     const q0=p.get('q0'),q1=p.get('q1');
     if(q0&&q1&&Qall.length){const a=Qall.indexOf(q0),b=Qall.indexOf(q1);
       if(a>=0&&b>=0)rangeSel={a:Math.min(a,b),b:Math.max(a,b)};}
@@ -736,7 +835,9 @@ async function seriesFor(id,m){const ids=expand(id);if(!ids.length)return [];
      for(const eid of Object.keys(byqe[q])){const mp=byqe[q][eid];
        const [np,ns]=acc(mp,d.plus);const [nm,ms]=acc(mp,d.minus||[]);num+=np-nm;if(ns||ms)anyN=true;
        const [dp,ds]=acc(mp,d.den||[]);den+=dp;if(ds)anyD=true;}
-     if(d.type==='sum'){if(anyN)out.push([q,num]);}else{if(anyN&&anyD&&den>0)out.push([q,100*num/den]);}}
+     if(d.type==='sum'){if(anyN)out.push([q,num]);}else if(anyN&&anyD&&den>0){let val=100*num/den;
+       if(d.annualize){const qn={'03':1,'06':2,'09':3,'12':4}[String(q).slice(5,7)];if(qn)val*=4/qn;}
+       out.push([q,val]);}}
    _seriesCache.set(_sk,out);return out;}
  const r=(await conn.query(`SELECT quarter_end, SUM(value) v FROM t WHERE entity_id IN (${sqlList(ids)}) AND mdrm='${m}' GROUP BY quarter_end ORDER BY quarter_end`)).toArray();
  const res=r.map(x=>[String(x.quarter_end),Number(x.v)]);_seriesCache.set(_sk,res);return res;})();
@@ -755,7 +856,7 @@ async function init(){try{
    await db.registerFileBuffer(p,new Uint8Array(await r.arrayBuffer()));_doneP++;pbar(20+60*_doneP/Math.max(1,PARTS.length));}
  await _rebuildView();
  ALLQ=(await conn.query('SELECT DISTINCT quarter_end FROM t ORDER BY quarter_end')).toArray().map(r=>String(r.quarter_end));
- {const maxQ=ALLQ[ALLQ.length-1];if(maxQ){const dc=document.getElementById('datacur');if(dc)dc.textContent=` · data through ${maxQ}`;}}
+ {const maxQ=ALLQ[ALLQ.length-1];if(maxQ){const dc=document.getElementById('datacur');if(dc)dc.textContent=` · data through ${maxQ} · built ${BUILD_TS}`;}}
  {const lb=document.getElementById('loadold');if(lb){if(OLD_PARTS.length)lb.style.display='';lb.onclick=async()=>{lb.disabled=true;lb.textContent='Loading…';await ensureOldCall();};}}
  {const sh=document.getElementById('sql-oldhint');if(sh&&OLD_PARTS.length)sh.style.display='';}
  pbar(85);st('Indexing entities…');
@@ -780,13 +881,20 @@ async function init(){try{
    const on=document.querySelector('#tree .trow.on');if(!on)return;
    on.scrollIntoView({block:'nearest',behavior:'smooth'});
    on.style.outline='2px solid #1b7f3b';setTimeout(()=>on.style.outline='',800);};
- document.addEventListener('keydown',e=>{if(e.target.closest('input,textarea,select'))return;if(e.key===']'||e.key==='.')  {e.preventDefault();drillSmart(1);}if(e.key==='['||e.key===','){e.preventDefault();drillSmart(-1);}if(e.key==='/'){e.preventDefault();const ts=document.getElementById('treesearch');ts.focus();ts.select();}if(e.key==='l'||e.key==='L'){e.preventDefault();openLeague();}if((e.key==='r'||e.key==='R')&&active.length===1&&active[0].id.startsWith('BANK:')){e.preventDefault();openReport(active[0].id);}if(e.key==='?'){e.preventDefault();document.getElementById('kbdmodal').style.display='flex';}if(e.key==='i'||e.key==='I'){e.preventDefault();switchTab(true);}if(e.key==='e'||e.key==='E'){e.preventDefault();switchTab(false);}if(e.key==='Escape'){document.querySelectorAll('.modal').forEach(m=>{if(m.style.display&&m.style.display!=='none')m.style.display='none';});}});
+ document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&(e.key==='k'||e.key==='K')){e.preventDefault();openCmdk();return;}if(e.target.closest('input,textarea,select'))return;if(e.key===']'||e.key==='.')  {e.preventDefault();drillSmart(1);}if(e.key==='['||e.key===','){e.preventDefault();drillSmart(-1);}if(e.key==='/'){e.preventDefault();const ts=document.getElementById('treesearch');ts.focus();ts.select();}if(e.key==='l'||e.key==='L'){e.preventDefault();openLeague();}if((e.key==='r'||e.key==='R')&&active.length===1&&active[0].id.startsWith('BANK:')){e.preventDefault();openReport(active[0].id);}if(e.key==='?'){e.preventDefault();document.getElementById('kbdmodal').style.display='flex';}if(e.key==='i'||e.key==='I'){e.preventDefault();switchTab(true);}if(e.key==='e'||e.key==='E'){e.preventDefault();switchTab(false);}if(e.key==='Escape'){document.querySelectorAll('.modal').forEach(m=>{if(m.style.display&&m.style.display!=='none')m.style.display='none';});}});
  document.getElementById('showmerged').onchange=renderEntList;
  document.getElementById('showraw').onchange=()=>{buildTree();};
  document.getElementById('tabItems').onclick=()=>switchTab(true);
  document.getElementById('tabEnts').onclick=()=>switchTab(false);
  let _esTimer=null;document.getElementById('entsearch').addEventListener('input',()=>{clearTimeout(_esTimer);_esTimer=setTimeout(renderEntList,120);});
  document.getElementById('entsearch').addEventListener('keydown',e=>{if(e.key==='Escape'){e.target.value='';renderEntList();e.target.blur();}else if(e.key==='Enter'){clearTimeout(_esTimer);renderEntList();const r=document.querySelector('#entlistpanel .erow');if(r)r.querySelector('.en').click();}});
+ document.getElementById('cmdkinput').addEventListener('input',e=>{const v=e.target.value;clearTimeout(_cmdkTimer);_cmdkTimer=setTimeout(()=>renderCmdk(v),100);});
+ document.getElementById('cmdkinput').addEventListener('keydown',e=>{
+   if(e.key==='ArrowDown'){e.preventDefault();if(_cmdkItems.length){_cmdkSel=Math.min(_cmdkItems.length-1,_cmdkSel+1);cmdkMarkSel();}}
+   else if(e.key==='ArrowUp'){e.preventDefault();if(_cmdkItems.length){_cmdkSel=Math.max(0,_cmdkSel-1);cmdkMarkSel();}}
+   else if(e.key==='Enter'){e.preventDefault();clearTimeout(_cmdkTimer);cmdkApply();}
+   else if(e.key==='Escape'){e.preventDefault();closeCmdk();}});
+ document.getElementById('cmdkmodal').addEventListener('mousedown',e=>{if(e.target.id==='cmdkmodal')closeCmdk();});
  document.getElementById('entfilter').onchange=renderEntList;
  document.getElementById('entsort').onchange=renderEntList;
  document.getElementById('entdesc').onchange=renderEntList;
@@ -813,7 +921,7 @@ async function init(){try{
  document.getElementById('lgmeasure').onchange=renderLeague;document.getElementById('lgquarter').onchange=renderLeague;document.getElementById('lgtopn').onchange=renderLeague;document.getElementById('lgbucket').onchange=renderLeague;
  document.getElementById('lgexport').onclick=()=>{if(!window._lg)return;const pm=window._lg.pctileMap||new Map();dl2(['rank','entity_id','bank',window._lg.meas.label,'QoQ','YoY','percentile'],window._lg.rows.map((r,i)=>[i+1,r.eid,r.name,r.v,r.qoq,r.yoy,pm.get(r.eid)??'']),'league');};
  document.getElementById('reportbtn').onclick=()=>{if(active.length===1&&active[0].id.startsWith('BANK:'))openReport(active[0].id);};
- document.getElementById('rptclose').onclick=()=>{document.getElementById('reportmodal').style.display='none';const p=new URLSearchParams(location.hash.slice(1));p.delete('report');history.replaceState(null,'','#'+p.toString());};
+ document.getElementById('rptclose').onclick=()=>{document.getElementById('reportmodal').style.display='none';closeWhyTip();const p=new URLSearchParams(location.hash.slice(1));p.delete('report');history.replaceState(null,'','#'+p.toString());};
  document.getElementById('rpt-print').onclick=rptPrint;
  document.getElementById('rpt-html').onclick=()=>{const b=document.getElementById('rptbody');if(!b)return;const title=document.getElementById('rpt-title')?.textContent||'entity_report';const css=`<style>body{font-family:system-ui,sans-serif;margin:20px;background:#fff;color:#111}h3{margin:14px 0 6px}table{border-collapse:collapse}td,th{padding:3px 6px;border-bottom:1px solid #ddd}.muted{color:#666}</style>`;const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>${css}</head><body>${b.innerHTML}</body></html>`;const bl=new Blob([html],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download=(title.replace(/\s+/g,'_').replace(/[^\w_-]/g,'')||'report')+'.html';a.click();};
  document.getElementById('rpt-link').onclick=()=>{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(location.href).then(()=>showToast('Link copied!','ok')).catch(()=>prompt('Copy this link:',location.href));}else{prompt('Copy this link:',location.href);}};
@@ -822,7 +930,7 @@ async function init(){try{
  document.getElementById('kbdbtn').onclick=()=>document.getElementById('kbdmodal').style.display='flex';
  document.getElementById('clrents').onclick=()=>{active=[];renderChips();scheduleRecompute();};
  document.getElementById('clrmeas').onclick=()=>{measures=[];entSortField='__none__';markTree();renderMeasures();scheduleRecompute();saveMeasures();};
- document.getElementById('deriv-grpadd-btn').onclick=()=>{const cat=document.getElementById('deriv-grpadd').value;if(!cat)return;let added=0;for(const [code,d] of Object.entries(DERIV)){const lbl=d.lbl||'';const parts=lbl.split(' ▸ ');if(parts[0]!==cat)continue;if(measures.length>=6){showToast('Measure limit is 6 — remove some first.','warn');break;}if(!measures.find(m=>m.code===code)){const shortLbl=parts.slice(1).join(' ▸ ')||lbl;measures.push({code,label:shortLbl,pct:true});added++;}}if(!added){showToast('No new measures found for that category.','warn');return;}entSortField='__none__';markTree();renderMeasures();scheduleRecompute();saveMeasures();};
+ document.getElementById('deriv-grpadd-btn').onclick=()=>{const cat=document.getElementById('deriv-grpadd').value;if(!cat)return;let added=0;for(const [code,d] of Object.entries(DERIV)){const lbl=d.lbl||'';const parts=lbl.split(' ▸ ');if(parts[0]!==cat)continue;if(measures.length>=20){showToast('Measure limit is 20 — remove some first.','warn');break;}if(!measures.find(m=>m.code===code)){const shortLbl=parts.slice(1).join(' ▸ ')||lbl;measures.push({code,label:shortLbl,pct:true});added++;}}if(!added){showToast('No new measures found for that category.','warn');return;}entSortField='__none__';markTree();renderMeasures();scheduleRecompute();saveMeasures();};
  document.getElementById('calcbtn').onclick=()=>{const d=document.getElementById('calcdiv');const show=d.style.display==='none';d.style.display=show?'block':'none';if(show)refreshCalcPicklist();};
  document.getElementById('calc-codesearch').oninput=function(){const srchInp=this;const q=srchInp.value.trim();const el=document.getElementById('calc-coderes');if(!q){el.style.display='none';el.innerHTML='';return;}const res=searchHier(q);el.innerHTML='';if(!res.length){const nm=document.createElement('div');nm.style.cssText='padding:4px 6px;color:var(--muted,#9aa3b2)';nm.textContent='No matches';el.appendChild(nm);el.style.display='block';return;}for(const r of res){const d=document.createElement('div');d.className='calc-cr';d.style.cssText='padding:2px 6px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';d.title=r.c;const rawCode=r.m;const b=document.createElement('b');b.textContent=rawCode;d.appendChild(b);d.appendChild(document.createTextNode(' — '+r.c));d.onclick=()=>{const inp=document.getElementById('calcformula');const p=inp.selectionStart,txt=inp.value;inp.value=txt.slice(0,p)+rawCode+txt.slice(inp.selectionEnd);inp.focus();inp.setSelectionRange(p+rawCode.length,p+rawCode.length);el.style.display='none';srchInp.value='';};el.appendChild(d);}el.style.display='block';};
  document.getElementById('calcadd').onclick=()=>{
@@ -891,7 +999,7 @@ async function init(){try{
  if(HIER)buildTree(); else document.getElementById('tree').innerHTML='<p class="muted" style="padding:10px">hierarchy not found</p>';
  const restored=hashToState();
  if(!restored){active=[{id:'ALL',label:'ALL'}];}
- if(!measures.length){try{const s=localStorage.getItem('ffiec_call_measures');if(s){const ms=JSON.parse(s);if(Array.isArray(ms)&&ms.length)measures=ms.slice(0,6);}}catch{}if(!measures.length)measures=[{code:'COMB2170',label:'Total assets',pct:false}];}
+ if(!measures.length){try{const s=localStorage.getItem('ffiec_call_measures');if(s){const ms=JSON.parse(s);if(Array.isArray(ms)&&ms.length)measures=ms.slice(0,20);}}catch{}if(!measures.length)measures=[{code:'COMB2170',label:'Total assets',pct:false}];}
  // Restore normden + normbyassets from localStorage
  try{const nd=localStorage.getItem('ffiec_call_normden');if(nd){const el=document.getElementById('normden');if(el&&[...el.options].some(o=>o.value===nd)){el.value=nd;window._normDenCd=nd;}}else{window._normDenCd='COMB2170';}}catch(_){window._normDenCd='COMB2170';}
  try{const nb=localStorage.getItem('ffiec_call_normbyassets');if(nb){const el=document.getElementById('normbyassets');if(el)el.checked=nb==='1';}}catch(_){}
@@ -915,8 +1023,9 @@ function renderChips(){const c=document.getElementById('chips');if(!active.lengt
  const rb=document.getElementById('reportbtn');if(rb)rb.disabled=!(active.length===1&&active[0].id.startsWith('BANK:'));}
 const saveMeasures=()=>{try{localStorage.setItem('ffiec_call_measures',JSON.stringify(measures.filter(m=>!m.code.startsWith('CALC_')).map(m=>({code:m.code,label:m.label,pct:m.pct}))));}catch{}};
 function renderMeasures(){const c=document.getElementById('mchips');if(!measures.length){c.innerHTML='<span class="muted">none</span>';return;}
- c.innerHTML=measures.map((m,i)=>`<span class="chip"><span class="sw" style="background:${COLORS[i%COLORS.length]}"></span><b>${m.label}</b> <span class="muted">${m.pct?'%':'$'}</span><span class="x" data-i="${i}">✕</span></span>`).join('');
- c.querySelectorAll('.x').forEach(x=>x.onclick=()=>{const code=measures[+x.dataset.i].code;measures.splice(+x.dataset.i,1);markTree();renderMeasures();scheduleRecompute();saveMeasures();});}
+ c.innerHTML=measures.map((m,i)=>`<span class="chip"><span class="sw" style="background:${COLORS[i%COLORS.length]}"></span><b>${m.label}</b> <span class="muted">${m.pct?'%':'$'}</span>${whyDescribe(m.code,m.label)?`<span class="info" data-i="${i}" title="Why this number?">ⓘ</span>`:''}<span class="x" data-i="${i}">✕</span></span>`).join('');
+ c.querySelectorAll('.x').forEach(x=>x.onclick=()=>{const code=measures[+x.dataset.i].code;measures.splice(+x.dataset.i,1);markTree();renderMeasures();scheduleRecompute();saveMeasures();});
+ c.querySelectorAll('.info').forEach(inf=>inf.onclick=e=>{e.stopPropagation();const m=measures[+inf.dataset.i];if(!m)return;const desc=whyDescribe(m.code,m.label);if(!desc)return;openWhyTip(whyPopoverHTML(desc),inf);});}
 function renderPeerBuilder(){const c=document.getElementById('pmembers');if(!peerMembers.length){c.innerHTML='<span class="muted">none</span>';return;}
  c.innerHTML=peerMembers.map((a,i)=>`<span class="chip"><b>${a.label}</b><span class="x" data-i="${i}">✕</span></span>`).join('');
  c.querySelectorAll('.x').forEach(x=>x.onclick=()=>{peerMembers.splice(+x.dataset.i,1);renderPeerBuilder();});}
@@ -1191,6 +1300,58 @@ async function applyView(vid){const v=VIEWS.find(x=>x.id===vid);if(!v)return;
  const hint=document.getElementById('viewshint');
  if(hint){hint.style.display='block';hint.innerHTML=`<b>${_esc(v.icon||'')} ${_esc(v.name)}</b> applied — modify freely, this is just a starting selection. <span style="cursor:pointer;text-decoration:underline" id="viewshint-x">dismiss</span>`;
    const xEl=document.getElementById('viewshint-x');if(xEl)xEl.onclick=()=>hint.style.display='none';}}
+
+// ---- Ctrl+K command palette: Measures / Entities / Views in one keyboard-first search ----
+let _cmdkSel=0,_cmdkItems=[],_cmdkTimer=null;
+function cmdkEntityPool(){
+ const pool=[];for(const e of (window._ents||[]))pool.push({id:e.entity_id,label:e.lbl});
+ for(const n in peers)pool.push({id:'PEER:'+n,label:'★ '+n});
+ return pool;}
+function openCmdk(){
+ const m=document.getElementById('cmdkmodal');m.style.display='flex';
+ const inp=document.getElementById('cmdkinput');inp.value='';inp.focus();
+ renderCmdk('');}
+function closeCmdk(){document.getElementById('cmdkmodal').style.display='none';}
+function renderCmdk(q){
+ const q2=q.trim().toLowerCase();
+ _cmdkItems=[];
+ let mHtml='',eHtml='',vHtml='';
+ // Measures — reuse searchHier() (HIER captions + DERIV labels), same index as tree search.
+ const mres=q2?searchHier(q2):[];
+ mres.slice(0,8).forEach(r=>{_cmdkItems.push({kind:'measure',code:r.m,caption:r.c});});
+ // Entities — reuse the same pool renderEntList() draws from (bank/agg/peer, label+RSSD search).
+ const epool=cmdkEntityPool();
+ const eres=q2?epool.filter(p=>p.label.toLowerCase().includes(q2)||p.id.toLowerCase().includes(q2)).slice(0,8):[];
+ eres.forEach(p=>{_cmdkItems.push({kind:'entity',id:p.id,label:p.label});});
+ // Views — VIEWS array (name/desc match).
+ const vres=q2?VIEWS.filter(v=>v.name.toLowerCase().includes(q2)||(v.desc||'').toLowerCase().includes(q2)).slice(0,8):(q2?[]:VIEWS.slice(0,8));
+ vres.forEach(v=>{_cmdkItems.push({kind:'view',vid:v.id,name:v.name,icon:v.icon,desc:v.desc});});
+ // Empty query: still show the Views group (first 8) as a starting hint rather than a blank modal.
+ const rowsFor=(items,fn)=>items.map(fn).join('');
+ if(mres.length)mHtml=`<div class="cmdk-grp">Measures</div>`+rowsFor(_cmdkItems.filter(x=>x.kind==='measure'),it=>`<div class="cmdk-row" data-idx="${_cmdkItems.indexOf(it)}"><span>${_esc(it.caption||it.code)}</span><span class="cmdk-sub">${_esc(it.code)}</span></div>`);
+ if(eres.length)eHtml=`<div class="cmdk-grp">Entities</div>`+rowsFor(_cmdkItems.filter(x=>x.kind==='entity'),it=>`<div class="cmdk-row" data-idx="${_cmdkItems.indexOf(it)}"><span>${_esc(it.label)}</span></div>`);
+ if(vres.length)vHtml=`<div class="cmdk-grp">Views</div>`+rowsFor(_cmdkItems.filter(x=>x.kind==='view'),it=>`<div class="cmdk-row" data-idx="${_cmdkItems.indexOf(it)}"><span>${it.icon||''} ${_esc(it.name)}</span><span class="cmdk-sub">${_esc(it.desc||'')}</span></div>`);
+ const body=document.getElementById('cmdkresults');
+ body.innerHTML=(mHtml+eHtml+vHtml)||`<p class="muted" style="padding:8px 16px">${q2?'No matches':'Type to search measures, entities, or views…'}</p>`;
+ _cmdkSel=_cmdkItems.length?0:-1;cmdkMarkSel();
+ body.querySelectorAll('.cmdk-row').forEach(el=>el.onclick=()=>{_cmdkSel=+el.dataset.idx;cmdkApply();});}
+function cmdkMarkSel(){document.querySelectorAll('#cmdkresults .cmdk-row').forEach(el=>el.classList.toggle('sel',+el.dataset.idx===_cmdkSel));
+ const sel=document.querySelector('#cmdkresults .cmdk-row.sel');if(sel)sel.scrollIntoView({block:'nearest'});}
+function cmdkApply(){
+ const it=_cmdkItems[_cmdkSel];if(!it)return;
+ if(it.kind==='measure'){
+   // Same add-path as a tree row click (toggleMeasure) so hash/labels/COMB semantics come free.
+   const d=DERIV[it.code];
+   const label=d?(d.lbl?short(d.lbl):it.code):(fullCap(it.code)||it.caption||it.code);
+   const pct=isPct(it.code)||PCTC.has(it.code);
+   toggleMeasure(it.code,label,pct);
+ }else if(it.kind==='entity'){
+   // Same add-path as the entity-list row click / #add button.
+   if(!active.find(a=>a.id===it.id)){active.push({id:it.id,label:it.label});renderChips();scheduleRecompute();}
+ }else if(it.kind==='view'){
+   applyView(it.vid);
+ }
+ closeCmdk();}
 
 // ---- entity panel (search / filter / sort) ----
 let entSortVals=new Map(), entSortField='__none__';
@@ -1596,7 +1757,9 @@ async function perFilerValues(measCode, quarters){
    const acc=(mp,arr)=>{let s=0,seen=false;for(const b of arr){const v=coalesce(mp,b);if(v!=null){s+=v;seen=true;}}return [s,seen];};
    for(const q of quarters){const per=byqf[q]||{};
      for(const id in per){const mp=per[id];const [np,ns]=acc(mp,d.plus);const [nm,ms]=acc(mp,d.minus||[]);const num=np-nm;const [dp,ds]=acc(mp,d.den||[]);
-       if(d.type==='sum'){if(ns||ms)out[q].set(id,num);}else{if((ns||ms)&&ds&&dp>0)out[q].set(id,100*num/dp);}}}
+       if(d.type==='sum'){if(ns||ms)out[q].set(id,num);}else{if((ns||ms)&&ds&&dp>0){let val=100*num/dp;
+         if(d.annualize){const qn={'03':1,'06':2,'09':3,'12':4}[String(q).slice(5,7)];if(qn)val*=4/qn;}
+         out[q].set(id,val);}}}}
  } else {
    const r=(await conn.query(`SELECT entity_id,quarter_end,SUM(value) v FROM t WHERE kind='bank' AND mdrm='${measCode}' AND quarter_end IN (${sqlList(quarters)}) GROUP BY entity_id,quarter_end`)).toArray();
    for(const x of r) out[String(x.quarter_end)].set(x.entity_id, Number(x.v));
@@ -1800,21 +1963,37 @@ async function buildReport(entityId,nm,latestQ,qtrs){
  const effQ=q=>{const n=getV(['RIAD4074'],q),nc=getV(['RIAD4079'],q),x=getV(['RIAD4093'],q);return n!=null&&nc!=null&&x!=null&&(n+nc)>0?100*x/(n+nc):null;};
  const nplQ=q=>{const l=getV(['RCFD2122','RCON2122'],q);const np=(getV(['RCFD1403','RCON1403'],q)||0)+(getV(['RCFD1406','RCON1406'],q)||0)+(getV(['RCFD1407','RCON1407'],q)||0);return l&&l>0?100*np/l:null;};
  const pctileBar=(p)=>{if(p==null)return '';const c=p>=75?'#1b7f3b':p>=50?'#2980b9':p>=25?'#e67e22':'#c0392b';return `<div style="margin-top:4px"><div style="height:5px;background:var(--border,#e0e4ea);border-radius:3px;overflow:hidden"><div style="height:100%;width:${p}%;background:${c};border-radius:3px"></div></div><div style="font-size:11px;color:var(--fg2,#888);margin-top:1px">${p}th %ile among reporters</div></div>`;};
+ // "Why this number?" KPI trace — every entry uses the SAME local variables already rendered above (getV()-sourced),
+ // never re-derived. kvV takes the SAME code list passed to getV() so the popover shows exactly which filing-variant codes were coalesced.
+ const kvV=(codes,val,vt)=>({code:codes.join(' ?? '),cap:fullCap(codes[0])||codes[0],val:vt==='pct'?fP(val):fA(val)});
  const kpis=[
-  {lbl:'Total Assets',val:fA(assets),spk:sparkline(qtrs.map(q=>[q,getV(['RCFD2170','RCON2170'],q)]),false,COLORS[0]),qoq:aQoQ,yoy:aYoY,pc:peerPctile['RCFD2170']},
-  {lbl:'Total Loans',val:fA(loans),spk:sparkline(qtrs.map(q=>[q,getV(['RCFD2122','RCON2122'],q)]),false,COLORS[1]),qoq:null,yoy:null,pc:peerPctile['RCFD2122']},
-  {lbl:'Total Deposits',val:fA(dep),spk:sparkline(qtrs.map(q=>[q,getV(['RCFD2200','RCON2200'],q)]),false,COLORS[2]),qoq:null,yoy:null,pc:peerPctile['RCFD2200']},
-  {lbl:'Total Equity',val:fA(eq),spk:sparkline(qtrs.map(q=>[q,getV(['RCFD3210','RCON3210'],q)]),false,COLORS[3]),qoq:null,yoy:null,pc:peerPctile['RCFD3210']},
-  {lbl:'ROA (ann.)',val:fP(roa),spk:sparkline(qtrs.map(q=>[q,annQ(['RIAD4340'],['RCFD2170','RCON2170'],q)]),true,COLORS[0]),qoq:null,yoy:null,pc:peerPctile['RIAD4340']},
-  {lbl:'ROE (ann.)',val:fP(roe),spk:sparkline(qtrs.map(q=>[q,annQ(['RIAD4340'],['RCFD3210','RCON3210'],q)]),true,COLORS[1]),qoq:null,yoy:null,pc:null},
-  {lbl:'NIM % (approx.)',val:fP(nim),spk:sparkline(qtrs.map(q=>[q,annQ(['RIAD4074'],['RCFD2170','RCON2170'],q)]),true,COLORS[2]),qoq:null,yoy:null,pc:peerPctile['RIAD4074']},
-  {lbl:'Efficiency Ratio',val:fP(eff),spk:sparkline(qtrs.map(q=>[q,effQ(q)]),true,COLORS[3]),qoq:null,yoy:null,pc:null},
-  {lbl:'CET1 Ratio',val:fP(cet1),spk:sparkline(qtrs.map(q=>[q,getV(['RCOAP793','RCFAP793','RCON7274'],q)]),true,COLORS[4]),qoq:null,yoy:null,pc:peerPctile['RCOAP793']},
-  {lbl:'Tier 1 RBC',val:fP(tier1),spk:sparkline(qtrs.map(q=>[q,getV(['RCOA7205','RCFA7205','RCON7205'],q)]),true,COLORS[5]),qoq:null,yoy:null,pc:peerPctile['RCOA7205']},
-  {lbl:'NPL Ratio',val:fP(nplRat),spk:sparkline(qtrs.map(q=>[q,nplQ(q)]),true,COLORS[6]),qoq:nplQoQ,yoy:null,pc:null},
-  {lbl:'NCO Rate (ann.)',val:fP(nco),spk:sparkline(qtrs.map(q=>[q,ncoQ(q)]),true,COLORS[7]),qoq:null,yoy:null,pc:peerPctile['RIAD4635']},
+  {lbl:'Total Assets',val:fA(assets),spk:sparkline(qtrs.map(q=>[q,getV(['RCFD2170','RCON2170'],q)]),false,COLORS[0]),qoq:aQoQ,yoy:aYoY,pc:peerPctile['RCFD2170'],
+   info:{title:'Total Assets',formula:'RCFD2170 ?? RCON2170 (coalesced, as reported)',terms:[kvV(['RCFD2170','RCON2170'],assets)],asof:latestQ}},
+  {lbl:'Total Loans',val:fA(loans),spk:sparkline(qtrs.map(q=>[q,getV(['RCFD2122','RCON2122'],q)]),false,COLORS[1]),qoq:null,yoy:null,pc:peerPctile['RCFD2122'],
+   info:{title:'Total Loans',formula:'RCFD2122 ?? RCON2122 (coalesced, as reported)',terms:[kvV(['RCFD2122','RCON2122'],loans)],asof:latestQ}},
+  {lbl:'Total Deposits',val:fA(dep),spk:sparkline(qtrs.map(q=>[q,getV(['RCFD2200','RCON2200'],q)]),false,COLORS[2]),qoq:null,yoy:null,pc:peerPctile['RCFD2200'],
+   info:{title:'Total Deposits',formula:'RCFD2200 ?? RCON2200 (coalesced, as reported)',terms:[kvV(['RCFD2200','RCON2200'],dep)],asof:latestQ}},
+  {lbl:'Total Equity',val:fA(eq),spk:sparkline(qtrs.map(q=>[q,getV(['RCFD3210','RCON3210'],q)]),false,COLORS[3]),qoq:null,yoy:null,pc:peerPctile['RCFD3210'],
+   info:{title:'Total Equity',formula:'RCFD3210 ?? RCON3210 (coalesced, as reported)',terms:[kvV(['RCFD3210','RCON3210'],eq)],asof:latestQ}},
+  {lbl:'ROA (ann.)',val:fP(roa),spk:sparkline(qtrs.map(q=>[q,annQ(['RIAD4340'],['RCFD2170','RCON2170'],q)]),true,COLORS[0]),qoq:null,yoy:null,pc:peerPctile['RIAD4340'],
+   info:{title:'ROA (annualized)',formula:'RIAD4340 ÷ (RCFD2170 ?? RCON2170) × 100 × (4/N)  [N = quarter number in fiscal year]',terms:[kvV(['RIAD4340'],ni),kvV(['RCFD2170','RCON2170'],assets)],asof:latestQ,note:`Annualization factor this quarter: 4/${qnl} (N=${qnl}).`}},
+  {lbl:'ROE (ann.)',val:fP(roe),spk:sparkline(qtrs.map(q=>[q,annQ(['RIAD4340'],['RCFD3210','RCON3210'],q)]),true,COLORS[1]),qoq:null,yoy:null,pc:null,
+   info:{title:'ROE (annualized)',formula:'RIAD4340 ÷ (RCFD3210 ?? RCON3210) × 100 × (4/N)',terms:[kvV(['RIAD4340'],ni),kvV(['RCFD3210','RCON3210'],eq)],asof:latestQ,note:`Annualization factor this quarter: 4/${qnl} (N=${qnl}).`}},
+  {lbl:'NIM % (approx.)',val:fP(nim),spk:sparkline(qtrs.map(q=>[q,annQ(['RIAD4074'],['RCFD2170','RCON2170'],q)]),true,COLORS[2]),qoq:null,yoy:null,pc:peerPctile['RIAD4074'],
+   info:{title:'NIM % (approx., annualized)',formula:'RIAD4074 ÷ (RCFD2170 ?? RCON2170) × 100 × (4/N)',terms:[kvV(['RIAD4074'],nii),kvV(['RCFD2170','RCON2170'],assets)],asof:latestQ,note:`Approximation: net interest income ÷ total assets (not average earning assets). Annualization factor: 4/${qnl}.`}},
+  {lbl:'Efficiency Ratio',val:fP(eff),spk:sparkline(qtrs.map(q=>[q,effQ(q)]),true,COLORS[3]),qoq:null,yoy:null,pc:null,
+   info:{title:'Efficiency Ratio',formula:'RIAD4093 ÷ (RIAD4074 + RIAD4079) × 100',terms:[kvV(['RIAD4093'],niexp),kvV(['RIAD4074'],nii),kvV(['RIAD4079'],niinc)],asof:latestQ}},
+  {lbl:'CET1 Ratio',val:fP(cet1),spk:sparkline(qtrs.map(q=>[q,getV(['RCOAP793','RCFAP793','RCON7274'],q)]),true,COLORS[4]),qoq:null,yoy:null,pc:peerPctile['RCOAP793'],
+   info:{title:'CET1 Ratio',formula:'RCOAP793 ?? RCFAP793 ?? RCON7274 (coalesced — as reported)',terms:[kvV(['RCOAP793','RCFAP793','RCON7274'],cet1,'pct')],asof:latestQ,note:'As-reported ratio (not recomputed). RCOA/RCFA are advanced-approach filing-variant prefixes.'}},
+  {lbl:'Tier 1 RBC',val:fP(tier1),spk:sparkline(qtrs.map(q=>[q,getV(['RCOA7205','RCFA7205','RCON7205'],q)]),true,COLORS[5]),qoq:null,yoy:null,pc:peerPctile['RCOA7205'],
+   info:{title:'Tier 1 RBC Ratio',formula:'RCOA7205 ?? RCFA7205 ?? RCON7205 (coalesced — as reported)',terms:[kvV(['RCOA7205','RCFA7205','RCON7205'],tier1,'pct')],asof:latestQ,note:'As-reported ratio (not recomputed).'}},
+  {lbl:'NPL Ratio',val:fP(nplRat),spk:sparkline(qtrs.map(q=>[q,nplQ(q)]),true,COLORS[6]),qoq:nplQoQ,yoy:null,pc:null,
+   info:{title:'NPL Ratio',formula:'Σ(RCFD/RCON 1406+1407+1403) ÷ (RCFD2122 ?? RCON2122) × 100',terms:[kvV(['RCFD1406','RCON1406'],npl30),kvV(['RCFD1407','RCON1407'],npl90),kvV(['RCFD1403','RCON1403'],nona),kvV(['RCFD2122','RCON2122'],loans)],asof:latestQ}},
+  {lbl:'NCO Rate (ann.)',val:fP(nco),spk:sparkline(qtrs.map(q=>[q,ncoQ(q)]),true,COLORS[7]),qoq:null,yoy:null,pc:peerPctile['RIAD4635'],
+   info:{title:'NCO Rate (annualized)',formula:'(RIAD4635 − RIAD4605) ÷ (RCFD2122 ?? RCON2122) × 100 × (4/N)',terms:[kvV(['RIAD4635'],coff),kvV(['RIAD4605'],rec),kvV(['RCFD2122','RCON2122'],loans)],asof:latestQ,note:`Annualization factor this quarter: 4/${qnl} (N=${qnl}).`}},
  ];
- const cards=kpis.map(k=>`<div style="border:1px solid var(--border,#ccc);border-radius:6px;padding:10px 14px;min-width:148px;display:inline-block;vertical-align:top;margin:4px"><div style="font-size:12px;color:var(--fg2,#666);font-weight:600;letter-spacing:.3px;text-transform:uppercase">${k.lbl}</div><div style="font-size:26px;font-weight:700;line-height:1.1;margin-top:4px">${k.val}</div><div style="min-height:14px;margin-top:2px">${fD(k.qoq)}${k.yoy!=null?' &nbsp;YoY:'+fD(k.yoy):''}</div>${k.spk||''}${pctileBar(k.pc)}</div>`).join('');
+ window._rptKpiInfo=kpis.map(k=>k.info||null);
+ const cards=kpis.map((k,ki)=>`<div style="border:1px solid var(--border,#ccc);border-radius:6px;padding:10px 14px;min-width:148px;display:inline-block;vertical-align:top;margin:4px"><div style="font-size:12px;color:var(--fg2,#666);font-weight:600;letter-spacing:.3px;text-transform:uppercase">${k.lbl}${k.info?` <span class="kpi-info" data-ki="${ki}" title="Why this number?">ⓘ</span>`:''}</div><div style="font-size:26px;font-weight:700;line-height:1.1;margin-top:4px">${k.val}</div><div style="min-height:14px;margin-top:2px">${fD(k.qoq)}${k.yoy!=null?' &nbsp;YoY:'+fD(k.yoy):''}</div>${k.spk||''}${pctileBar(k.pc)}</div>`).join('');
  const kpiSec=`<h3 style="font-size:14px;font-weight:600;margin:0 0 6px">Key Metrics — as of ${latestQ}</h3><div style="margin-bottom:14px">${cards}</div>`;
  // reserve coverage panel
  const resSec=alll!=null?`<div style="display:inline-block;vertical-align:top;border:1px solid var(--border,#ccc);border-radius:6px;padding:10px 14px;min-width:240px;margin-bottom:14px"><div style="font-size:13px;font-weight:600;margin-bottom:6px">Allowance / Reserve Coverage</div><table style="font-size:13px;border-collapse:collapse;width:100%"><tr><td style="padding:3px 0">ALLL / Total Loans</td><td style="text-align:right;font-weight:700">${fP(alllPct)}</td></tr><tr><td style="padding:3px 0">ALLL / Noncurrent Loans</td><td style="text-align:right;font-weight:700">${fP(rescov)}</td></tr><tr><td style="padding:3px 0">Noncurrent Loans</td><td style="text-align:right;font-weight:700">${noncur!=null?fA(noncur):'—'}</td></tr></table><div class="muted" style="font-size:11px;margin-top:6px">Noncurrent = 90+ days past due + nonaccrual (excludes 30–89 day past-due).</div></div>`:'';
