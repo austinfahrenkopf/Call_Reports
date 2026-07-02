@@ -17,20 +17,38 @@ import os, sys, shutil, json
 from datetime import datetime
 import pandas as pd
 BUILD_TS = datetime.now().strftime('%Y-%m-%d %H:%M')
-SRC="ffiec_call_tool.parquet"; SITE="site_call"; MAXROWS=12_000_000
+SRC="ffiec_call_tool.parquet"; SITE="site_call"
+SHARD_BOUNDARY=2018  # must match the build_call_shards.py --boundary actually used (2018: eager 23.4MB per the 25MB rule; the 2001 default gave 53.3MB)
 # --html-only: regenerate just index.html from the EXISTING site parquet(s) — fast iteration on
 # the dashboard UI without re-reading/re-splitting the ~60M-row tool dataset. Use after editing the template.
 HTML_ONLY="--html-only" in sys.argv
 os.makedirs(SITE, exist_ok=True)
+
+def _era_split(names):
+    """Classify site parquet filenames into (eager PARTS, lazy OLD_PARTS) using the
+    build_call_shards.py naming scheme (ffiec_call_recent_*/ffiec_call_old_*). Falls back to
+    treating everything as eager if the new naming isn't present (pre-sharding site dirs, or a
+    full build run without build_call_shards.py) so --html-only never hard-fails on old data."""
+    recent=sorted(n for n in names if n.startswith("ffiec_call_recent_"))
+    old=sorted(n for n in names if n.startswith("ffiec_call_old_"))
+    if recent: return recent, old
+    # legacy monolithic/MAXROWS naming (ffiec_call.parquet / ffiec_call_NN.parquet) - all eager
+    legacy=sorted(n for n in names if n=="ffiec_call.parquet" or (n.startswith("ffiec_call_") and n[11:13].isdigit()))
+    return legacy, []
+
 if HTML_ONLY:
-    PARTS=sorted(f for f in os.listdir(SITE) if f.endswith(".parquet"))
-    if not PARTS: raise SystemExit("--html-only: no site parquet in "+SITE+" yet; run a full build first.")
-    print("[--html-only] reusing", PARTS)
-    # no-data codes: in hierarchy but absent from all site parquets
+    _all_p=sorted(f for f in os.listdir(SITE) if f.endswith(".parquet"))
+    if not _all_p: raise SystemExit("--html-only: no site parquet in "+SITE+" yet; run a full build first.")
+    PARTS, OLD_PARTS = _era_split(_all_p)
+    if not PARTS: raise SystemExit("--html-only: no eager (recent) site parquet found in "+SITE+" — run build_call_shards.py first.")
+    print("[--html-only] PARTS (eager):", PARTS, "| OLD_PARTS (lazy):", OLD_PARTS)
+    # no-data codes: in hierarchy but absent from ALL site parquets (eager + lazy) — a code that
+    # only exists in the pre-2001 shard must NOT be marked NODATA just because the eager shard
+    # alone lacks it (the 002 _ND2205 PARTS[0]-only bug taught us this: always union every part).
     if os.path.exists("ffiec_call_hierarchy.json"):
         _hj2=json.load(open("ffiec_call_hierarchy.json",encoding="utf-8"))
         _dc2=set();[_dc2.add(_it.get("mdrm")) for _its in _hj2.values() for _it in _its];_dc2.discard(None)
-        _spq=pd.concat([pd.read_parquet(os.path.join(SITE,p),columns=["mdrm"]) for p in PARTS],ignore_index=True)
+        _spq=pd.concat([pd.read_parquet(os.path.join(SITE,p),columns=["mdrm"]) for p in (PARTS+OLD_PARTS)],ignore_index=True)
         NODATA_CODES=sorted(c for c in _dc2 if c and c not in set(_spq["mdrm"].unique()))
     else: NODATA_CODES=[]
 else:
@@ -38,20 +56,28 @@ else:
         if f.endswith(".parquet"): os.remove(os.path.join(SITE,f))
     # Sort entity_id (entity) first: single-entity queries prune to that entity's row groups + better zstd.
     df=pd.read_parquet(SRC).sort_values(["entity_id","mdrm","quarter_end"])
-    rpq=df.groupby("quarter_end").size().to_dict()
-    groups=[]; cur=[]; cnt=0
-    for q in sorted(rpq):
-        if cnt and cnt+rpq[q]>MAXROWS: groups.append(cur); cur=[]; cnt=0
-        cur.append(q); cnt+=rpq[q]
-    if cur: groups.append(cur)
     # Perf mirror from Y-9C (Levers 3+6): ZSTD compression (~-21% size) + finer row groups (4x DuckDB pruning)
     _PQARGS=dict(index=False, compression='zstd', row_group_size=50000)
-    PARTS=[]
-    for i,grp in enumerate(groups):
-        fn="ffiec_call.parquet" if len(groups)==1 else f"ffiec_call_{i:02d}.parquet"
-        df[df["quarter_end"].isin(grp)].to_parquet(os.path.join(SITE,fn), **_PQARGS)
+    # Era split (mirrors build_call_shards.py): eager shard = SHARD_BOUNDARY..present (loaded at
+    # startup), lazy shard = everything before SHARD_BOUNDARY (HTTP-range-loaded on "Older data").
+    # NOTE: this inline full-build path exists for completeness/consistency; the actual host
+    # workflow runs build_call_shards.py (which has the full self-verification suite) as a
+    # separate step, then `make_site_call.py --html-only` to pick up its shards. Prefer that path.
+    _yr=df["quarter_end"].astype(str).str[:4].astype(int)
+    _is_recent=_yr>=SHARD_BOUNDARY
+    df_recent=df[_is_recent].reset_index(drop=True); df_old=df[~_is_recent].reset_index(drop=True)
+    PARTS=[]; OLD_PARTS=[]
+    if not df_recent.empty:
+        _max_yr=int(_yr.max())
+        fn=f"ffiec_call_recent_{SHARD_BOUNDARY}_{_max_yr}.parquet"
+        df_recent.to_parquet(os.path.join(SITE,fn), **_PQARGS)
         PARTS.append(fn)
-    # no-data codes: codes in hierarchy but absent from this panel
+    if not df_old.empty:
+        _min_yr=int(_yr[~_is_recent].min())
+        fn=f"ffiec_call_old_{_min_yr}_{SHARD_BOUNDARY-1}.parquet"
+        df_old.to_parquet(os.path.join(SITE,fn), **_PQARGS)
+        OLD_PARTS.append(fn)
+    # no-data codes: codes in hierarchy but absent from this panel (whole panel — both eras)
     if os.path.exists("ffiec_call_hierarchy.json"):
         _hj3=json.load(open("ffiec_call_hierarchy.json",encoding="utf-8"))
         _dc3=set();[_dc3.add(_it.get("mdrm")) for _its in _hj3.values() for _it in _its];_dc3.discard(None)
@@ -65,8 +91,10 @@ if os.path.exists("ffiec_call_hierarchy.json"):
 else:
     print("NOTE: ffiec_call_hierarchy.json not found — run build_hierarchy.py")
 parts_js="["+",".join(f"'{p}'" for p in PARTS)+"]"
+old_parts_js="["+",".join(f"'{p}'" for p in OLD_PARTS)+"]"
 nodata_codes_js=json.dumps(NODATA_CODES)
-print("parts:", [(p, round(os.path.getsize(os.path.join(SITE,p))/1e6,1)) for p in PARTS])
+print("parts (eager):", [(p, round(os.path.getsize(os.path.join(SITE,p))/1e6,1)) for p in PARTS])
+print("old parts (lazy):", [(p, round(os.path.getsize(os.path.join(SITE,p))/1e6,1)) for p in OLD_PARTS])
 
 HTML = r"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -231,7 +259,10 @@ body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td
      <button id="drillup" class="sec" title="collapse deepest open level [ ] keys">▲ Drill</button>
      <button id="expall" class="sec">⊕ all</button><button id="colall" class="sec">⊖ all</button>
      <button id="jumpto" class="sec" title="scroll to active measure in tree">⊙ active</button>
-     <label><input type="checkbox" id="showraw"> RCFD/RCON variants</label>
+    </div>
+    <div class="muted" style="font-size:12px;margin-top:3px"><b style="color:#1b7f3b">Bold code</b> = combined (all filing variants); light code = one variant only</div>
+    <div class="railctl">
+     <label title="Shows the individual filing-variant codes (RCFD domestic-consolidated / RCON domestic-only / RCFN foreign-office) nested under each combined row"><input type="checkbox" id="showraw"> Show raw filing codes</label>
     </div></div>
    <div id="tree"><p class="muted" style="padding:10px">Loading…</p></div>
   </div>
@@ -250,10 +281,12 @@ body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td
  </div>
  <div id="railsplit" title="drag to resize the panel"></div>
  <div class="main">
-  <div id="status">Loading data engine…</div><div id="downloads" class="muted" style="margin-bottom:8px"></div>
+  <div id="status">Loading data engine…</div>
+  <button id="loadold" class="sec" style="display:none" title="Load pre-2001 historical series (~lazy HTTP range-loaded)">📅 Older data</button>
+  <div id="downloads" class="muted" style="margin-bottom:8px"></div>
   <div class="row">
-   <div><label>Entity (bank name, RSSD, ALL / 031 / 051 / SIZE_… , or ★ peer group)</label>
-    <input id="ent" list="entlist" autocomplete="off"><datalist id="entlist"></datalist></div>
+   <div><label>Entity <span class="muted" style="cursor:help;border:1px solid var(--border,#ccc);border-radius:50%;padding:0 5px;font-size:12px" title="Type a bank name or RSSD ID. Also accepts: ALL (all filers), 031 / 041 / 051 (charter-type buckets), SIZE_… (asset-size buckets), or a ★ saved peer group name.">(?)</span></label>
+    <input id="ent" list="entlist" autocomplete="off" placeholder="Search bank name or RSSD ID…"><datalist id="entlist"></datalist></div>
    <div><button id="add" class="sec">+ Add to chart</button> <button id="addpeer" class="sec">+ Add to peer</button>
     <button id="formbtn" class="sec">📄 Call-report view</button> <button id="leaguebtn" class="sec">🏆 League table</button>
     <span style="position:relative;display:inline-block">
@@ -264,8 +297,8 @@ body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td
   </div>
   <div id="viewshint" style="display:none;font-size:12px;color:var(--muted,#9aa3b2);margin:-4px 0 8px;padding:3px 8px;background:var(--bg2,#f7f9fb);border-radius:5px"></div>
   <div><label>Entities (overlay to compare)</label> <button id="clrents" class="sec" style="padding:1px 6px;font-size:12px;opacity:0.6" title="Remove all entities from chart">✕ Clear</button><div id="chips" class="chips"><span class="muted">none</span></div><div id="crosslinks" style="font-size:12px;color:var(--muted,#9aa3b2);margin-bottom:4px"></div></div>
-  <div><label>Measures (click items in the left rail; ✕ to remove)</label> <button id="clrmeas" class="sec" style="padding:1px 6px;font-size:12px;opacity:0.6" title="Remove all measures">✕ Clear</button> <button id="calcbtn" class="sec" style="padding:1px 6px;font-size:12px" title="Define a custom calculated series combining existing line items">Σ Calc</button>
-   <span style="font-size:13px;white-space:nowrap">Quick add: <select id="deriv-grpadd" style="font-size:13px;padding:1px 3px"><option value="">— category —</option><option value="Credit">Credit quality</option><option value="Loan quality">Loan-level NPL</option><option value="Capital">Capital</option><option value="Earnings">Earnings</option><option value="Funding">Funding</option><option value="Liquidity">Liquidity</option><option value="Subtotal">Subtotals $</option></select><button id="deriv-grpadd-btn" class="sec" style="padding:1px 6px;font-size:13px">Add</button></span>
+  <div><label>Measures (click items in the left rail; ✕ to remove)</label> <button id="clrmeas" class="sec" style="padding:1px 6px;font-size:12px;opacity:0.6" title="Remove all measures">✕ Clear</button> <button id="calcbtn" class="sec" style="padding:1px 6px;font-size:12px" title="Define a custom calculated series combining existing line items">Custom formula (Σ)</button>
+   <span style="font-size:13px;white-space:nowrap">Quick add: <select id="deriv-grpadd" style="font-size:13px;padding:1px 3px"><option value="">Add a measure category…</option><option value="Credit">Credit quality</option><option value="Loan quality">Loan-level NPL</option><option value="Capital">Capital</option><option value="Earnings">Earnings</option><option value="Funding">Funding</option><option value="Liquidity">Liquidity</option><option value="Subtotal">Subtotals $</option></select><button id="deriv-grpadd-btn" class="sec" style="padding:1px 6px;font-size:13px">Add</button></span>
    <div id="mchips" class="chips"><span class="muted">none</span></div>
    <div id="calcdiv" style="display:none;margin:4px 0 8px;padding:8px 10px;border:1px solid var(--border,#ccc);border-radius:6px;font-size:13px;background:var(--bg2,#f7f9fb)">
     <b style="display:block;margin-bottom:4px">Custom calculated series <span style="font-weight:400;color:var(--muted,#9aa3b2)">(session-only)</span></b>
@@ -304,7 +337,7 @@ body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td
   <div id="kpiselrow" style="display:none;margin-bottom:4px"><span class="muted" style="font-size:13px">KPI series: </span><select id="kpisel" style="font-size:13px;padding:2px 4px;border:1px solid var(--border,#ccc);background:inherit;color:inherit;border-radius:4px"></select></div>
   <div class="cards" id="cards"></div>
   <div id="snapshot"></div>
-  <div id="charts-flex"><div id="panes"><p class="muted">Pick an entity, then click a line item on the left.</p></div><div id="extracharts-area"></div></div><button id="addchartbtn" class="sec" style="margin-top:8px;font-size:13px;display:none" onclick="addChart()">⊕ Add chart</button>
+  <div id="charts-flex"><div id="panes"><p class="muted">Pick a Views preset above, or click a measure in the left rail, to get started.</p></div><div id="extracharts-area"></div></div><button id="addchartbtn" class="sec" style="margin-top:8px;font-size:13px;display:none" onclick="addChart()">⊕ Add chart</button>
   <div class="slider" id="sliderwrap" style="display:none">
    <span class="ctl-cluster">
     <span class="ctl-cap">Transform</span>
@@ -314,7 +347,7 @@ body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td
     <label class="muted" id="sharemode-lbl" title="each selected entity's value as % of the total across selected entities per quarter (needs 2+ entities, $ measures)"><input type="checkbox" id="sharemode"> Share %</label>
     <label class="muted" title="rebase each $ series to 100 at the start of the range"><input type="checkbox" id="idx"> index to 100</label>
     <label class="muted" title="render $ series as stacked areas (additive measures only — disabled for % / ratio series)"><input type="checkbox" id="stackedmode"> ◫ Stacked</label>
-    <span style="white-space:nowrap"><label class="muted" title="Divide each $ series by the selected denominator, producing a % ratio"><input type="checkbox" id="normbyassets"> ÷</label> <select id="normden" style="font-size:12px;padding:1px 3px;border:1px solid var(--border,#ccc);border-radius:3px;background:inherit;color:inherit;max-width:90px"><option value="COMB2170">assets</option><option value="COMB2122">loans</option><option value="COMB2200">deposits</option><option value="COMB3210">equity</option></select></span>
+    <span style="white-space:nowrap"><label class="muted" title="Divide each $ series by the selected denominator, producing a % ratio"><input type="checkbox" id="normbyassets"> ÷ (ratio to…)</label> <select id="normden" style="font-size:12px;padding:1px 3px;border:1px solid var(--border,#ccc);border-radius:3px;background:inherit;color:inherit;max-width:90px"><option value="COMB2170">assets</option><option value="COMB2122">loans</option><option value="COMB2200">deposits</option><option value="COMB3210">equity</option></select></span>
    </span>
    <span class="ctl-cluster">
     <span class="ctl-cap">Display</span>
@@ -338,7 +371,9 @@ body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td
   <div id="tbl"></div>
 
   <details class="box"><summary><b>SQL</b> — table <code>t</code></summary>
-   <textarea id="sql">SELECT quarter_end, value FROM t WHERE entity_id='ALL' AND mdrm='COMB2170' ORDER BY quarter_end;</textarea>
+   <p id="sql-oldhint" class="muted" style="display:none;font-size:12px;margin:4px 0">Data before __SHARD_BOUNDARY__ loads on demand — click 📅 Older data first for pre-__SHARD_BOUNDARY__ queries.</p>
+   <textarea id="sql">-- COMB2170 = Total assets (combined across RCFD/RCON/RCFN filing variants)
+SELECT quarter_end, value FROM t WHERE entity_id='ALL' AND mdrm='COMB2170' ORDER BY quarter_end;</textarea>
    <div style="margin-top:8px"><button id="runsql" class="sec">Run</button> <button id="sqlcsv" class="sec">Export result</button></div>
    <div id="sqlout"></div></details>
   <div class="credit">Built by Austin Fahrenkopf &middot; data: public FFIEC filings &middot; Built __BUILD_TS__</div>
@@ -364,7 +399,7 @@ body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td
   <label style="font-size:13px">Measure <select id="lgmeasure"></select></label>
   <label style="font-size:13px">Quarter <select id="lgquarter"></select></label>
   <label style="font-size:13px">Top <select id="lgtopn"><option>25</option><option>50</option><option>100</option><option value="0">All</option></select></label>
-  <label style="font-size:13px" title="Filter by total-asset bucket">Size <select id="lgbucket"><option value="">All</option><option value="1">≥$1T</option><option value="0.1">$100B–$1T</option><option value="0.01">$10B–$100B</option><option value="0.001">$1B–$10B</option><option value="0.0001">$100M–$1B</option><option value="-">&lt;$100M</option></select></label>
+  <label style="font-size:13px" title="Bucketed by combined total assets (COMB2170), not any single filing variant.">Size <select id="lgbucket"><option value="">All</option><option value="1">≥$1T</option><option value="0.1">$100B–$1T</option><option value="0.01">$10B–$100B</option><option value="0.001">$1B–$10B</option><option value="0.0001">$100M–$1B</option><option value="-">&lt;$100M</option></select></label>
   <button id="lgexport" class="sec">Export</button> <button id="lgclose" class="sec">Close</button></div>
  <div id="leaguebody" style="flex:1;overflow:auto;padding:10px 14px"><p class="muted">Loading…</p></div></div></div>
 <div id="reportmodal" class="modal" style="display:none"><div class="modalbox" style="width:min(1040px,96vw);height:92vh">
@@ -395,7 +430,7 @@ body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td
  </table></div></div></div>
 <script type="module">
 import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.0/+esm';
-const PARTS=__PARTS__;
+const PARTS=__PARTS__, OLD_PARTS=__OLD_PARTS__;
 const EMPTY_CODES=new Set(__NODATA__);
 const st=m=>document.getElementById('status').textContent=m;
 const _pb=document.getElementById('pbar');const pbar=pct=>{if(!_pb)return;_pb.style.width=pct+'%';if(pct>=100){setTimeout(()=>{_pb.style.opacity='0';setTimeout(()=>{_pb.style.display='none';},400);},300);}};
@@ -508,7 +543,7 @@ function roll4qSeries(srcSeries,ws,baseIsQoq){return srcSeries.map(s=>{const rw=
 function shareSeries(group,ws){const rows=group.map(s=>Object.fromEntries(s.rows));const qs=[...ws];return group.map((s,gi)=>{const rr=qs.map(q=>{let tot=0,any=false;for(const rm of rows){const v=rm[q];if(v!=null){tot+=v;any=true;}}const mine=rows[gi][q];return [q,(any&&tot!==0&&mine!=null)?100*mine/tot:null];}).filter(r=>r[1]!=null);return {...s,rows:rr,pct:true,label:s.label+' — share of total'};});}
 const fmtUnit=(v,pct)=>v==null?'—':pct?(+v).toFixed(2)+'%':(Math.abs(v)>=1e9?(v/1e6).toLocaleString(undefined,{maximumFractionDigits:0})+' B':Math.abs(v)>=1e6?(v/1e3).toLocaleString(undefined,{maximumFractionDigits:0})+' M':Number(v).toLocaleString()+' k');
 
-let conn,lbl2id=new Map(),id2lbl=new Map(),HIER=null,treeBuilt=false,sqlC=[],sqlR=[],ALLQ=[];
+let db,conn,lbl2id=new Map(),id2lbl=new Map(),HIER=null,treeBuilt=false,sqlC=[],sqlR=[],ALLQ=[];
 const SUB_AGG_DESCS={
   // RC-N: cols A/B/C = 30-89 days / 90+ days / nonaccrual — mutually exclusive, additive
   'RCN':'Total Past Due & Nonaccrual',
@@ -521,6 +556,34 @@ function fullCap(code){return _fullCap.get(code)||'';}
 const _seriesCache=new Map(),_inflight=new Map();
 let active=[], measures=[], peerMembers=[], peers={};
 let lastSeries=[], Qall=[], rangeSel={a:0,b:0};
+// ── Lazy old-era shard (pre-2001) — mirrors FR Y-9C's ensureOldActive/registerFileURL pattern.
+// PARTS (eager, 2001-present) loads at startup via registerFileBuffer (fetched in full, ~small).
+// OLD_PARTS (pre-2001) is HTTP-range-loaded via registerFileURL only when the user needs it: the
+// "📅 Older data" button, OR any query whose quarter range/entity could touch pre-2001 data.
+let oldLoaded=false, oldLoading=null, oldError=false;
+let _loadedParts=[...PARTS];
+async function _rebuildView(){
+  await conn.query(`CREATE OR REPLACE VIEW t AS SELECT * FROM read_parquet([${_loadedParts.map(p=>`'${p}'`).join(',')}])`);
+  _seriesCache.clear();_inflight.clear();}
+function _showPanesLoading(msg){const ph=document.getElementById('panes');if(ph)ph.innerHTML=`<p class="muted" style="padding:30px;text-align:center;font-size:14px">⧖ ${msg}</p>`;}
+async function ensureOldCall(){
+  if(oldLoaded||oldError||!OLD_PARTS.length)return;
+  if(oldLoading)return oldLoading;
+  oldLoading=(async()=>{
+    const prev=document.getElementById('status').textContent;st('Loading older series data…');_showPanesLoading('Loading pre-2001 data…');
+    try{
+      for(const p of OLD_PARTS){await db.registerFileURL(p,new URL(p,location.href).href,duckdb.DuckDBDataProtocol.HTTP,false);_loadedParts.push(p);}
+      await _rebuildView();oldLoaded=true;
+      // Extend ALLQ (was eager-only) to the full history now that the old shard is attached —
+      // doesn't reset rangeSel, so the user's current slider position is preserved; new older
+      // quarters simply become reachable via the slider/1Y-5Y-10Y-All presets.
+      ALLQ=(await conn.query('SELECT DISTINCT quarter_end FROM t ORDER BY quarter_end')).toArray().map(r=>String(r.quarter_end));
+      const lb=document.getElementById('loadold');if(lb)lb.style.display='none';
+      const sh=document.getElementById('sql-oldhint');if(sh)sh.style.display='none';
+      st(prev);recompute();
+    }catch(e){oldError=true;oldLoading=null;st('Could not load older data');const ph=document.getElementById('panes');if(ph)ph.innerHTML=`<p class="muted" style="padding:30px;text-align:center;font-size:14px">⚠ Could not load older data — ${String(e).slice(0,200)}</p>`;}
+  })();
+  return oldLoading;}
 
 function loadPeers(){try{peers=JSON.parse(localStorage.getItem('ffiec_peers')||'{}');}catch{peers={};}}
 function savePeers(){localStorage.setItem('ffiec_peers',JSON.stringify(peers));}
@@ -624,7 +687,7 @@ function refreshCalcPicklist(){
   for(let i=0;i<Math.min(measures.length,26);i++){
     const m=measures[i];const lbl=m.label||fullCap(m.code)||m.code;
     h+=`<tr><td style="font-weight:700;padding:1px 8px 1px 0;color:var(--accent,#1b7f3b)">${AL[i]}</td><td style="color:var(--muted,#9aa3b2);padding:1px 8px 1px 0;font-family:monospace;font-size:12px">${m.code}</td><td style="color:var(--fg,#14213d)">${lbl}</td></tr>`;}
-  tbody.innerHTML=h||'<tr><td colspan="3" style="color:var(--muted,#9aa3b2);font-style:italic">Add measures to the chart first, then open Σ Calc.</td></tr>';}
+  tbody.innerHTML=h||'<tr><td colspan="3" style="color:var(--muted,#9aa3b2);font-style:italic">Add measures to the chart first, then open Custom formula.</td></tr>';}
 function getFormulasJson(){const out={};for(const[k,v]of Object.entries(USERCALC))out[k]=v;return JSON.stringify(out);}
 function applyFormulas(obj){let n=0;for(const[code,entry]of Object.entries(obj)){if(!code.startsWith('CALC_'))continue;if(!entry?.type||!entry?.lbl)continue;if(!USERCALC[code]){USERCALC[code]=entry;toggleMeasure(code,entry.lbl,!!entry.pct);n++;}}return n;}
 function saveFormulas(){const s=getFormulasJson();const b=new Blob([s],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='ffiec_call_formulas.json';a.click();URL.revokeObjectURL(u);showToast('Formulas downloaded as ffiec_call_formulas.json.','ok');try{localStorage.setItem('ffiec_call_formulas',s);}catch(_){}}
@@ -682,14 +745,19 @@ async function seriesFor(id,m){const ids=expand(id);if(!ids.length)return [];
 async function init(){try{
  pbar(5);
  const B=duckdb.getJsDelivrBundles(),b=await duckdb.selectBundle(B);
- const w=await duckdb.createWorker(b.mainWorker);const db=new duckdb.AsyncDuckDB(new duckdb.ConsoleLogger(),w);
+ const w=await duckdb.createWorker(b.mainWorker);db=new duckdb.AsyncDuckDB(new duckdb.ConsoleLogger(),w);
  await db.instantiate(b.mainModule,b.pthreadWorker);conn=await db.connect();pbar(20);
  let _doneP=0;
+ // Eager shard only (2001-present, small): fetched in full via registerFileBuffer, same as before
+ // sharding. OLD_PARTS (pre-2001) is NOT touched here — it's HTTP-range-loaded lazily by
+ // ensureOldCall() only when the user clicks "📅 Older data" or queries something that needs it.
  for(const p of PARTS){const r=await fetch(new URL(p,location.href).href);if(!r.ok)throw new Error(p+' HTTP '+r.status);
    await db.registerFileBuffer(p,new Uint8Array(await r.arrayBuffer()));_doneP++;pbar(20+60*_doneP/Math.max(1,PARTS.length));}
- await conn.query(`CREATE VIEW t AS SELECT * FROM read_parquet([${PARTS.map(p=>`'${p}'`).join(',')}])`);
+ await _rebuildView();
  ALLQ=(await conn.query('SELECT DISTINCT quarter_end FROM t ORDER BY quarter_end')).toArray().map(r=>String(r.quarter_end));
  {const maxQ=ALLQ[ALLQ.length-1];if(maxQ){const dc=document.getElementById('datacur');if(dc)dc.textContent=` · data through ${maxQ}`;}}
+ {const lb=document.getElementById('loadold');if(lb){if(OLD_PARTS.length)lb.style.display='';lb.onclick=async()=>{lb.disabled=true;lb.textContent='Loading…';await ensureOldCall();};}}
+ {const sh=document.getElementById('sql-oldhint');if(sh&&OLD_PARTS.length)sh.style.display='';}
  pbar(85);st('Indexing entities…');
  const ents=(await conn.query("SELECT entity_id, any_value(entity_label) lbl, any_value(kind) k FROM t GROUP BY entity_id")).toArray();
  const rank=e=>({all:0,filing_type:1,size_bucket:2,bank:3}[e.k]??9);
@@ -792,7 +860,14 @@ async function init(){try{
  document.getElementById('frow-filter').oninput=function(){const q=this.value;const el=document.getElementById('frow-coderes');if(q.length>=2){const res=searchHier(q);if(res.length){el.innerHTML=res.map(r=>`<div class="frow-cr" data-m="${r.m}" style="padding:3px 8px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:inherit" title="${r.c}"><b>${r.m}</b> — ${r.c}</div>`).join('');el.style.display='block';el.querySelectorAll('.frow-cr').forEach(d=>d.onclick=()=>{document.getElementById('frow-filter').value=d.dataset.m;el.style.display='none';const qm=d.dataset.m.toLowerCase();document.querySelectorAll('#formbody .frow').forEach(r=>{const lab=r.querySelector('.lab');if(!lab)return;r.style.display=lab.textContent.toLowerCase().includes(qm)?'':'none';});});}else el.style.display='none';}else el.style.display='none';const qlo=q.toLowerCase();document.querySelectorAll('#formbody .frow').forEach(r=>{const lab=r.querySelector('.lab');if(!lab)return;const txt=lab.textContent.toLowerCase();const show=!qlo||txt.includes(qlo);r.style.display=show?'':'none';});};
  document.getElementById('ffull').onclick=()=>{const qs=window._fq||[];if(qs.length){document.getElementById('ffrom').value=qs[0];document.getElementById('fto').value=qs[qs.length-1];}renderForm();};
  document.getElementById('fent-add').onclick=async()=>{const v=document.getElementById('fent-inp').value.trim();if(!v)return;let ent=null;const cv=v.replace(/^★\s*/,'');if(cv in peers)ent={id:'PEER:'+cv,label:'★ '+cv};else if(lbl2id.has(v))ent={id:lbl2id.get(v),label:v};else{const m=v.match(/(\d{3,})/);if(m){const id='BANK:'+m[1];ent={id,label:id2lbl.get(id)||id};}}if(ent){window._feEnts=window._feEnts||[];if(!window._feEnts.find(e=>e.id===ent.id)){window._feEnts.push(ent);renderFentChips();await openForm();}}document.getElementById('fent-inp').value='';};
- document.getElementById('fent-cur').onclick=async()=>{window._feEnts=window._feEnts||[];for(const e of active){if(e.id.startsWith('BANK:')&&!window._feEnts.find(x=>x.id===e.id))window._feEnts.push({id:e.id,label:e.label});}renderFentChips();renderForm();};
+ document.getElementById('fent-cur').onclick=async()=>{window._feEnts=window._feEnts||[];for(const e of active){if(e.id.startsWith('BANK:')&&!window._feEnts.find(x=>x.id===e.id))window._feEnts.push({id:e.id,label:e.label});}renderFentChips();
+  // Newly-added entities may reach back before SHARD_BOUNDARY — same guard as openForm() so their
+  // full quarter range (and _fq/from/to dropdowns) reflects the old shard once it's needed.
+  if(!oldLoaded&&!oldError&&OLD_PARTS.length)await ensureOldCall();
+  const ids2=fentIds();if(ids2.length){const qs2=(await conn.query(`SELECT DISTINCT quarter_end FROM t WHERE entity_id IN (${sqlList(ids2)}) ORDER BY quarter_end`)).toArray().map(r=>String(r.quarter_end));
+   window._fq=qs2;const opt2=qs2.map(q=>`<option>${q}</option>`).join('');const ff2=document.getElementById('ffrom'),ft2=document.getElementById('fto');ff2.innerHTML=opt2;ft2.innerHTML=opt2;
+   if(qs2.length){ft2.value=qs2[qs2.length-1];ff2.value=qs2[Math.max(0,qs2.length-8)];}}
+  renderForm();};
  document.getElementById('fexp').onclick=()=>expandAll(true,'#formbody'); document.getElementById('fcol').onclick=()=>expandAll(false,'#formbody');
  document.getElementById('fdn').onclick=()=>drill(1,'#formbody'); document.getElementById('fup').onclick=()=>drill(-1,'#formbody');
  (function(){const md=document.getElementById('formmodal'),box=md.querySelector('.modalbox'),head=md.querySelector('.modalhead');
@@ -812,7 +887,7 @@ async function init(){try{
   sp.addEventListener('mousedown',e=>{drag=true;e.preventDefault();document.body.style.userSelect='none';});
   window.addEventListener('mousemove',e=>{if(!drag)return;const w=Math.min(820,Math.max(300,e.clientX));document.documentElement.style.setProperty('--railw',w+'px');});
   window.addEventListener('mouseup',()=>{drag=false;document.body.style.userSelect='';});})();
- document.getElementById('downloads').innerHTML='&#11015; Data: '+PARTS.map(p=>`<a href="${p}" download>${p}</a>`).join(' &middot; ')+' (Python / Power BI / DuckDB)';
+ document.getElementById('downloads').innerHTML='&#11015; Data: '+[...PARTS,...OLD_PARTS].map(p=>`<a href="${p}" download>${p}</a>`).join(' &middot; ')+' (Python / Power BI / DuckDB)';
  if(HIER)buildTree(); else document.getElementById('tree').innerHTML='<p class="muted" style="padding:10px">hierarchy not found</p>';
  const restored=hashToState();
  if(!restored){active=[{id:'ALL',label:'ALL'}];}
@@ -1190,6 +1265,14 @@ async function recompute(){
  const pEl=document.getElementById('panes'),cEl=document.getElementById('cards');
  if(pEl)pEl.innerHTML=`<div style="padding:24px 16px">${skW(90)}${skW(75)}${skW(85)}${skW(60)}</div>`;
  if(cEl)cEl.innerHTML=`<div style="padding:10px 0">${skW(55)}${skW(40)}${skW(48)}</div>`;
+ // Safety net for the lazy old-era shard: if every measure for a BANK: entity comes back
+ // completely empty AND the old (pre-2001) shard hasn't loaded yet, that entity may be a
+ // pre-2001-only filer absent from the eager shard entirely (analogous to FR Y-9C's inactive
+ // filer case) — load the old shard once and retry, rather than silently showing an empty chart.
+ if(!oldLoaded&&!oldError&&OLD_PARTS.length&&active.some(e=>e.id.startsWith('BANK:'))){
+   const probe=await Promise.all(active.filter(e=>e.id.startsWith('BANK:')).map(e=>seriesFor(e.id,measures[0]?.code)));
+   if(probe.length&&probe.every(r=>!r.length)){await ensureOldCall();if(mySeq!==_rcSeq)return;}
+ }
  const out=[];let ci=0;
  for(const m of measures)for(const e of active){if(mySeq!==_rcSeq)return;const blocked=isRawPct(m.code)&&isAggScope(e.id);
    const rows=blocked?[]:await seriesFor(e.id,m.code);if(mySeq!==_rcSeq)return;
@@ -1251,7 +1334,7 @@ function renderLblOverlay(series,show){
   box.style.display='block';}
 function draw(){const host=document.getElementById('panes');
  window._hybridOnChart=measures.some(m=>DERIV[m.code]?.type==='hybrid_sum'||DYN[m.code]?.type==='hybrid_sum');
- if(!lastSeries.length){host.innerHTML='<p class="muted">Pick an entity, then click a line item on the left.</p>';document.getElementById('cards').innerHTML='';document.getElementById('tbl').innerHTML='';renderLblOverlay([],false);return;}
+ if(!lastSeries.length){host.innerHTML='<p class="muted">Pick a Views preset above, or click a measure in the left rail, to get started.</p>';document.getElementById('cards').innerHTML='';document.getElementById('tbl').innerHTML='';renderLblOverlay([],false);return;}
  const win=Qall.slice(rangeSel.a,rangeSel.b+1),ws=new Set(win);
  {const smEl=document.getElementById('sharemode'),smLbl=document.getElementById('sharemode-lbl');const canShare=active.length>=2&&lastSeries.some(s=>!s.pct);if(smEl){smEl.disabled=!canShare;if(!canShare&&smEl.checked)smEl.checked=false;if(smLbl){smLbl.style.opacity=canShare?'':'.45';smLbl.title=canShare?"each selected entity's value as % of the total across selected entities per quarter (needs 2+ entities, $ measures)":'Share % needs 2+ entities and a $ (non-ratio) measure selected';}}}
  const normOn=document.getElementById('normbyassets')&&document.getElementById('normbyassets').checked;
@@ -1306,7 +1389,7 @@ function draw(){const host=document.getElementById('panes');
  const qoqRaw=last!=null&&prev!=null?last-prev:null,yoyRaw=last!=null&&yr!=null?last-yr:null,totRaw=last!=null&&f0!=null?last-f0:null;
  const absChg=(d)=>{if(d==null)return '';const s=d>=0?'+':'−';const a=Math.abs(d);if(prim.pct)return `${s}${a.toFixed(2)} pp`;if(a>=1e9)return `${s}${(a/1e6).toLocaleString(undefined,{maximumFractionDigits:0})} B`;if(a>=1e6)return `${s}${(a/1e3).toLocaleString(undefined,{maximumFractionDigits:0})} M`;return `${s}${a.toLocaleString()} k`;};
  const hasAgg=active.some(a=>isAggScope(a.id));
- const aggNote=hasAgg?`<div style="font-size:13px;color:#d97706;padding:4px 0 2px" title="Dollar figures for aggregate/charter-type/size entities are Σ of individual filer values — ratios (%) are Σnumerator/Σdenominator, not averages">⚠ Aggregate view — $ values are sums across filers; ratios are population-weighted</div>`:'';
+ const aggNote=hasAgg?`<div style="font-size:13px;color:#d97706;padding:4px 0 2px" title="Dollar figures for aggregate/charter-type/size entities are Σ of individual filer values — ratios (%) are Σnumerator/Σdenominator, not averages">⚠ You're viewing an aggregate (ALL/size bucket/peer group): dollar totals are summed across banks; percentages are recomputed from the summed numerator ÷ summed denominator, not averaged.</div>`:'';
  document.getElementById('cards').innerHTML=
   aggNote+
   `<div class=card><div class=k>${prim.label} — latest${lastQ?` (${lastQ})`:''}</div><div class=v>${fmtUnit(last,prim.pct)}</div></div>`+
@@ -1564,11 +1647,21 @@ async function renderLeague(){
  body.querySelectorAll('.lglink').forEach(td=>{td.onclick=()=>{const id=td.dataset.id,nm=td.dataset.nm;if(!active.find(a=>a.id===id))active.push({id,label:nm});renderChips();scheduleRecompute();};});}
 async function openLeague(){
  initModalResize('leaguemodal','ffiec_call_leaguemsz');
+ // League's quarter dropdown is built from ALLQ, which is eager-only (post-SHARD_BOUNDARY) until
+ // ensureOldCall() runs — load the old shard first so pre-2001 quarters are selectable and their
+ // data is present, instead of silently omitting them from the dropdown (never-empty-silently rule).
+ if(!oldLoaded&&!oldError&&OLD_PARTS.length)await ensureOldCall();
  LGMEAS=buildLGMEAS();
  const msel=document.getElementById('lgmeasure');
  msel.innerHTML=LGMEAS.map((m,i)=>`<option value="${i}">${m.label}</option>`).join('');
  const qsel=document.getElementById('lgquarter');
  if(!qsel.options.length){qsel.innerHTML=ALLQ.map(q=>`<option>${q}</option>`).join(''); if(ALLQ.length)qsel.value=ALLQ[ALLQ.length-1];}
+ else if(OLD_PARTS.length&&oldLoaded){
+   // Old shard finished loading after the dropdown was first built (e.g. reopening League after
+   // a prior open) — repopulate so newly-available pre-2001 quarters appear without a full reload.
+   const cur=qsel.value;qsel.innerHTML=ALLQ.map(q=>`<option>${q}</option>`).join('');
+   qsel.value=ALLQ.includes(cur)?cur:(ALLQ.length?ALLQ[ALLQ.length-1]:'');
+ }
  document.getElementById('leaguemodal').style.display='flex'; await renderLeague();}
 
 // ---- call-report view (drill-down hierarchy + time-frame columns) ----
@@ -1580,6 +1673,10 @@ async function openForm(){initModalResize('formmodal','ffiec_call_formmsz');if(!
  if(!window._feEnts||!window._feEnts.length){window._feEnts=active.length?active.filter(e=>e.id.startsWith('BANK:')||e.id.startsWith('PEER:')):[initE];}
  renderFentChips();
  const ids=fentIds();if(!ids.length)return;
+ // The Call-report view queries `t` for this entity's available quarters — `t` only reflects
+ // currently loaded parts, so a filer whose history reaches back before SHARD_BOUNDARY would
+ // silently show a truncated quarter range (or none) until the old shard is attached.
+ if(!oldLoaded&&!oldError&&OLD_PARTS.length)await ensureOldCall();
  const qs=(await conn.query(`SELECT DISTINCT quarter_end FROM t WHERE entity_id IN (${sqlList(ids)}) ORDER BY quarter_end`)).toArray().map(r=>String(r.quarter_end));
  window._fq=qs;const opt=qs.map(q=>`<option>${q}</option>`).join('');
  const ff=document.getElementById('ffrom'),ft=document.getElementById('fto');ff.innerHTML=opt;ft.innerHTML=opt;
@@ -1695,7 +1792,7 @@ async function buildReport(entityId,nm,latestQ,qtrs){
  const pct=assetRank&&assetCount?Math.round((1-assetRank/assetCount)*100):null;
  const rnk=assetRank?`Rank #${assetRank} of ${assetCount}${pct!=null?' ('+pct+'th %ile)':''}`:null;
  const eid=entityId.startsWith('BANK:')?entityId.slice(5):entityId;
- const hdr=`<div style="border:1px solid var(--border,#ccc);border-radius:6px;padding:14px 18px;margin-bottom:14px;background:var(--head,#f7f8fc);color:var(--fg,#111)"><div style="font-size:20px;font-weight:700;color:var(--fg,#111)">${nm}</div><div class="muted" style="font-size:13px;margin-top:3px">RSSD ${eid} · Commercial Bank · FFIEC 031/041/051</div><div style="font-size:14px;margin-top:7px;color:var(--fg,#111)">As of ${latestQ}${assets!=null?' &nbsp;·&nbsp; Total assets: '+fA(assets):''}${rnk?' &nbsp;·&nbsp; '+rnk:''}</div></div>`;
+ const hdr=`<div style="border:1px solid var(--border,#ccc);border-radius:6px;padding:14px 18px;margin-bottom:14px;background:var(--head,#f7f8fc);color:var(--fg,#111)"><div style="font-size:20px;font-weight:700;color:var(--fg,#111)">${nm} <span title="All figures below use the combined convention: RCFD/RCON/RCFN filing variants coalesced into one value per code" style="font-size:11px;font-weight:600;color:#1b7f3b;background:#eaf6ee;border:1px solid #bfe3c9;border-radius:10px;padding:2px 8px;vertical-align:middle">Combined (RCFD+RCON+RCFN coalesced)</span></div><div class="muted" style="font-size:13px;margin-top:3px">RSSD ${eid} · Commercial Bank · FFIEC 031/041/051</div><div style="font-size:14px;margin-top:7px;color:var(--fg,#111)">As of ${latestQ}${assets!=null?' &nbsp;·&nbsp; Total assets: '+fA(assets):''}${rnk?' &nbsp;·&nbsp; '+rnk:''}</div></div>`;
  // per-quarter helpers for sparklines and trend charts
  const qnlQ=q=>({'03':1,'06':2,'09':3,'12':4}[String(q).slice(5,7)]||4);
  const annQ=(ncodes,dcodes,q)=>{const n=getV(ncodes,q),d=getV(dcodes,q);return n!=null&&d!=null&&d>0?100*n/d*(4/qnlQ(q)):null;};
@@ -1714,13 +1811,13 @@ async function buildReport(entityId,nm,latestQ,qtrs){
   {lbl:'Efficiency Ratio',val:fP(eff),spk:sparkline(qtrs.map(q=>[q,effQ(q)]),true,COLORS[3]),qoq:null,yoy:null,pc:null},
   {lbl:'CET1 Ratio',val:fP(cet1),spk:sparkline(qtrs.map(q=>[q,getV(['RCOAP793','RCFAP793','RCON7274'],q)]),true,COLORS[4]),qoq:null,yoy:null,pc:peerPctile['RCOAP793']},
   {lbl:'Tier 1 RBC',val:fP(tier1),spk:sparkline(qtrs.map(q=>[q,getV(['RCOA7205','RCFA7205','RCON7205'],q)]),true,COLORS[5]),qoq:null,yoy:null,pc:peerPctile['RCOA7205']},
-  {lbl:'NPL Ratio',val:fP(nplRat),spk:sparkline(qtrs.map(q=>[q,nplQ(q)]),true,COLORS[6]),qoq:nplQoQ,yoy:null,pc:peerPctile['RCFD1403']},
+  {lbl:'NPL Ratio',val:fP(nplRat),spk:sparkline(qtrs.map(q=>[q,nplQ(q)]),true,COLORS[6]),qoq:nplQoQ,yoy:null,pc:null},
   {lbl:'NCO Rate (ann.)',val:fP(nco),spk:sparkline(qtrs.map(q=>[q,ncoQ(q)]),true,COLORS[7]),qoq:null,yoy:null,pc:peerPctile['RIAD4635']},
  ];
  const cards=kpis.map(k=>`<div style="border:1px solid var(--border,#ccc);border-radius:6px;padding:10px 14px;min-width:148px;display:inline-block;vertical-align:top;margin:4px"><div style="font-size:12px;color:var(--fg2,#666);font-weight:600;letter-spacing:.3px;text-transform:uppercase">${k.lbl}</div><div style="font-size:26px;font-weight:700;line-height:1.1;margin-top:4px">${k.val}</div><div style="min-height:14px;margin-top:2px">${fD(k.qoq)}${k.yoy!=null?' &nbsp;YoY:'+fD(k.yoy):''}</div>${k.spk||''}${pctileBar(k.pc)}</div>`).join('');
  const kpiSec=`<h3 style="font-size:14px;font-weight:600;margin:0 0 6px">Key Metrics — as of ${latestQ}</h3><div style="margin-bottom:14px">${cards}</div>`;
  // reserve coverage panel
- const resSec=alll!=null?`<div style="display:inline-block;vertical-align:top;border:1px solid var(--border,#ccc);border-radius:6px;padding:10px 14px;min-width:240px;margin-bottom:14px"><div style="font-size:13px;font-weight:600;margin-bottom:6px">Allowance / Reserve Coverage</div><table style="font-size:13px;border-collapse:collapse;width:100%"><tr><td style="padding:3px 0">ALLL / Total Loans</td><td style="text-align:right;font-weight:700">${fP(alllPct)}</td></tr><tr><td style="padding:3px 0">ALLL / Noncurrent Loans</td><td style="text-align:right;font-weight:700">${fP(rescov)}</td></tr><tr><td style="padding:3px 0">Noncurrent Loans</td><td style="text-align:right;font-weight:700">${noncur!=null?fA(noncur):'—'}</td></tr></table></div>`:'';
+ const resSec=alll!=null?`<div style="display:inline-block;vertical-align:top;border:1px solid var(--border,#ccc);border-radius:6px;padding:10px 14px;min-width:240px;margin-bottom:14px"><div style="font-size:13px;font-weight:600;margin-bottom:6px">Allowance / Reserve Coverage</div><table style="font-size:13px;border-collapse:collapse;width:100%"><tr><td style="padding:3px 0">ALLL / Total Loans</td><td style="text-align:right;font-weight:700">${fP(alllPct)}</td></tr><tr><td style="padding:3px 0">ALLL / Noncurrent Loans</td><td style="text-align:right;font-weight:700">${fP(rescov)}</td></tr><tr><td style="padding:3px 0">Noncurrent Loans</td><td style="text-align:right;font-weight:700">${noncur!=null?fA(noncur):'—'}</td></tr></table><div class="muted" style="font-size:11px;margin-top:6px">Noncurrent = 90+ days past due + nonaccrual (excludes 30–89 day past-due).</div></div>`:'';
  // trend small-multiples — 2×3 grid
  const mkS=(rows,color,lbl)=>({rows:rows.filter(r=>r[1]!=null),color,label:lbl,pct:false});
  const trends=[
@@ -1828,7 +1925,12 @@ async function ebEstimate(){
  if(el){el.innerHTML=`Estimated rows: <b>~${nR.toLocaleString()}</b> (${nC.toLocaleString()} codes × ${nQ} qtrs × ${nE} entities)`+(warn&&!block?' <span style="color:#e07a1f">⚠ large export</span>':'')+(block?' <span style="color:#c0392b">⛔ too large — narrow scope or date range first</span>':'');
    const btn=document.getElementById('expbld-run');if(btn)btn.disabled=block;}
  return nR;}
-function openExportBuilder(){initModalResize('exportmodal','ffiec_call_exportmsz');document.getElementById('exportmodal').style.display='flex';renderExportUI();}
+async function openExportBuilder(){initModalResize('exportmodal','ffiec_call_exportmsz');document.getElementById('exportmodal').style.display='flex';
+ // Export Builder's date-range pickers (and any export run before the user touches them) query
+ // `t` for available quarters — load the old shard first so pre-2001 quarters are offered and
+ // exported, not silently dropped because the lazy shard hadn't attached yet.
+ if(!oldLoaded&&!oldError&&OLD_PARTS.length)await ensureOldCall();
+ renderExportUI();}
 async function renderExportUI(){
  const body=document.getElementById('expbldbody');
  const hierKeys=HIER?[...FORM_ORDER.filter(k=>HIER[k]),...Object.keys(HIER).filter(k=>SCHED_NAMES[k]&&!FORM_ORDER.includes(k))]:[];
@@ -2121,12 +2223,12 @@ async function runsql(){try{const r=(await conn.query(document.getElementById('s
 })();
 init();
 </script></body></html>"""
-HTML=HTML.replace("__PARTS__", parts_js).replace("__NODATA__", nodata_codes_js).replace("__BUILD_TS__", BUILD_TS)
+HTML=HTML.replace("__PARTS__", parts_js).replace("__OLD_PARTS__", old_parts_js).replace("__NODATA__", nodata_codes_js).replace("__BUILD_TS__", BUILD_TS).replace("__SHARD_BOUNDARY__", str(SHARD_BOUNDARY))
 # Atomic write + completeness check — this file has repeatedly been truncated by non-atomic writes.
 _out=os.path.join(SITE,"index.html"); _tmp=_out+".tmp"
 with open(_tmp,"w",encoding="utf-8") as _f: _f.write(HTML)
 os.replace(_tmp,_out)
 _chk=open(_out,encoding="utf-8").read()
 assert _chk.rstrip().endswith("</html>") and len(_chk)==len(HTML), "index.html write looks truncated — aborting!"
-print(f"wrote {SITE}/index.html ({len(HTML):,} bytes) and {len(PARTS)} parquet part(s)")
+print(f"wrote {SITE}/index.html ({len(HTML):,} bytes) — {len(PARTS)} eager part(s) + {len(OLD_PARTS)} lazy old-era part(s)")
 print("Upload site_call/'s index.html + ffiec_call*.parquet + ffiec_call_hierarchy.json")
