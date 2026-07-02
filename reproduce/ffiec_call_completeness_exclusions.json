@@ -1,0 +1,1182 @@
+{
+  "_description": "Completeness exclusion list for FFIEC 031 validate_build_call.py. excluded_codes: none (Call hierarchy covers all panel codes). sequence_exclusions: RC-T item 8 gap needs PDF verification. Gate threshold: MAX(quarter_end) >= 2022-01-01 AND n_filers >= 20.",
+  "_gate_threshold": {
+    "min_quarter": "2022-01-01",
+    "min_filers": 20
+  },
+  "excluded_codes": {},
+  "sequence_exclusions": {
+    "RCT": {
+      "8": "known_gap_needs_pdf_verification: RC-T fiduciary accounts item 8 between \"investment management agency accounts\" (7) and \"other fiduciary accounts\" (9); item 10 = sum of items 4-9 so item 8 must exist or be zero; verify in Call form PDF"
+    },
+    "RC": {
+      "22": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "17": "Not-applicable item in current FFIEC 031 RC Balance Sheet (confirmed from 2026-03-31 TD Bank filing).",
+      "18": "Not-applicable item in current FFIEC 031 RC Balance Sheet (confirmed from 2026-03-31 TD Bank filing)."
+    },
+    "RCB": {
+      "9": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "11": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "14": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "15": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "16": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21."
+    },
+    "RCCI": {
+      "5": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21."
+    },
+    "RCCII": {
+      "5": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "6": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21."
+    },
+    "RCD": {
+      "7": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "8": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "10": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "12": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "16": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "17": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "18": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21."
+    },
+    "RCF": {
+      "7": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "8": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "9": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "10": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21."
+    },
+    "RCH": {
+      "16": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21."
+    },
+    "RCL": {
+      "5": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21."
+    },
+    "RCM": {
+      "6": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "9": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "11": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "12": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21."
+    },
+    "RCO": {
+      "10": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21."
+    },
+    "RCQ": {
+      "12": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "15": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "16": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21."
+    },
+    "RCR": {
+      "5": "RCR item 5 codes (RCFD0010/RCFD3545/RCON0010) are RC Balance Sheet cross-references that appeared in RC-R only as contamination from the form parser; they have no RC-R-specific risk-weight context. Demoted to item=None in _columnize_batch3.py (2026-06-23 §B3). GATE MISSING check confirms these codes are present in the hierarchy under their correct RC schedule nodes, so no active RCR-specific line was dropped.",
+      "7": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "10": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "11": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "13": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "14": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "15": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "16": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "18": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21."
+    },
+    "RCRI": {
+      "11": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "13": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "14": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "33": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "36": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "37": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "38": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "43": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "52": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21."
+    },
+    "RCRIB": {
+      "2": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "11": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "13": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "14": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "15": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "16": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "27": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "43": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21."
+    },
+    "RCRII": {
+      "15": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "24": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21."
+    },
+    "RCS": {
+      "7": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "8": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "9": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21."
+    },
+    "RIA": {
+      "4": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21.",
+      "13": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21."
+    },
+    "RIBI": {
+      "2": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21."
+    },
+    "RIBII": {
+      "8": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21."
+    },
+    "RID": {
+      "11": "Not-applicable/header-only/historical form item (no active-era data). Gate MISSING check (panel-based, authoritative) confirms 0 active codes absent, so this item-number gap is not a dropped active line. Verified examples in the current FFIEC 031 form: RI-B I item 2 and RC-C I item 5 are explicitly 'Not applicable'. Auto-documented during Call PDF item-numbering overlay 2026-06-21."
+    },
+    "ENT": {
+      "2": "ENT schedule only has items 1 and 7 in June-19 hierarchy; items 2-6 absent (new entity metadata section with gap in item numbering)",
+      "3": "ENT schedule only has items 1 and 7 in June-19 hierarchy; items 2-6 absent (new entity metadata section with gap in item numbering)",
+      "4": "ENT schedule only has items 1 and 7 in June-19 hierarchy; items 2-6 absent (new entity metadata section with gap in item numbering)",
+      "5": "ENT schedule only has items 1 and 7 in June-19 hierarchy; items 2-6 absent (new entity metadata section with gap in item numbering)",
+      "6": "ENT schedule only has items 1 and 7 in June-19 hierarchy; items 2-6 absent (new entity metadata section with gap in item numbering)"
+    }
+  },
+  "spurious_allowed": {
+    "RCFDHT65": {
+      "category": "no_data_in_panel",
+      "reason": "RC-D item 6.c Trading assets -- consumer loans. Valid FFIEC 031 PDF form line but has never been reported by any filer in the collected CDR dataset (0 rows across all quarters). Retained in hierarchy so users can see the form item exists; .nodata indicator makes the absence explicit."
+    },
+    "RCFD1395": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCFDB769": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCFDF686": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCFDF690": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCFDG489": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCFDG522": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCFDK272": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCOAKX77": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCOAKX80": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCOALB58": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCOALB61": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCOAP853": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCON1395": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCON2315": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCON3557": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCON5594": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCON5595": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONB667": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONF587": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONF599": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONF657": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONF682": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONF686": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONF688": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONF689": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONF690": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONFT01": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONFT02": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONFT10": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONFT12": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONFT14": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONFT15": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONFT18": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONFT19": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONFT20": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONFT21": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONFT22": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONG484": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONG489": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONG522": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONG530": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONG537": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONG586": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONG589": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONG590": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONGW45": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONGW46": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONGW47": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONH174": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONH273": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONH274": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONH277": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONH278": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONH283": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONH284": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONH290": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONHJ75": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONHJ77": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONHJ85": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONHJ93": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONHJ95": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONHJ99": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONHK18": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONHK19": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONHT54": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONHT55": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONJ469": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONJ471": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONJ992": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONK093": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONK136": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONK167": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONK272": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONK657": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONK658": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RCONS411": {
+      "category": "no_data_in_panel",
+      "reason": "Valid form line never filed by any sampled filer in the full panel history; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RIADB775": {
+      "category": "no_data_in_panel",
+      "reason": "Income-statement line not filed by any bank in the panel; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RIADHT73": {
+      "category": "no_data_in_panel",
+      "reason": "Income-statement line not filed by any bank in the panel; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RIADHT74": {
+      "category": "no_data_in_panel",
+      "reason": "Income-statement line not filed by any bank in the panel; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RIADJJ00": {
+      "category": "no_data_in_panel",
+      "reason": "Income-statement line not filed by any bank in the panel; greyed-out (EMPTY_CODES) per the C4 no-data decision"
+    },
+    "RSSD9017": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "RSSD9130": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "RSSD9200": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXT3557": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXT4086": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXT4087": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXT4769": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXT5594": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXT5595": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXT6980": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXT8901": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXT8902": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXT9116": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTB926": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTB962": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTB963": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTB964": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC366": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC367": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC368": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC369": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC370": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC371": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC372": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC373": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC374": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC375": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC437": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC438": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC439": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC440": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC441": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC442": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC443": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC444": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC445": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC446": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC490": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC491": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC492": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC493": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC494": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC495": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC496": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC870": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC871": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC872": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC873": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC874": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC875": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC876": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC877": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC878": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTC879": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTF657": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTF660": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTFT42": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTFT43": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTFT44": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTFT45": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "TEXTG586": {
+      "category": "free_text_note",
+      "reason": "Free-text narrative / RSSD identifier field — captured for the form-view & export but never charted"
+    },
+    "RCFAH036": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFAH311": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFAKX78": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFAKX83": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFD4088": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDA345": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDA346": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDB569": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDB700": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDB766": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDB784": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDB867": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDF615": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDF616": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDF633": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDF684": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDG334": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDG344": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDG345": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDG429": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDG444": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDG449": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDG527": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDG528": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDG587": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDG588": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDG634": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDH270": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDH275": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDH276": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDHJ78": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDHJ79": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDHJ81": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDHJ83": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDHJ87": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDHT68": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDHU11": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDHU16": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDHU17": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDJ449": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDJ991": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK010": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK015": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK016": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK021": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK023": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK095": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK096": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK097": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK134": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK135": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK185": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK199": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK200": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK212": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK283": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK284": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK656": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK659": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK663": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK664": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK665": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK666": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK667": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK668": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK673": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK674": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDK675": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM964": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM965": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM966": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM967": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM968": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM969": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM970": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM971": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM972": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM973": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM974": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM975": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM976": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM977": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM978": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM979": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM980": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM981": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM982": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM983": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM984": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM985": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM986": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM987": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM988": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM989": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM990": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM991": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM992": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM993": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM994": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM995": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM996": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM997": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM998": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDM999": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN001": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN002": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN003": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN004": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN005": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN006": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN007": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN008": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN009": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN010": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN011": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN012": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN013": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN014": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN015": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN016": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN017": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN018": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN019": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN020": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN021": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN022": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN023": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN024": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN025": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN026": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN027": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN028": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN029": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN030": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN040": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN041": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN042": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN043": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN044": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN045": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN046": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN047": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN048": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN049": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN050": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN051": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN052": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN053": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN054": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN055": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN056": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN057": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN058": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN059": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN060": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN061": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN062": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN063": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN064": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN065": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN066": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN067": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN068": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN069": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN070": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN071": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN072": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN073": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN074": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN075": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN076": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN077": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN078": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN079": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN080": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN081": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN082": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN083": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN084": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN085": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN086": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN087": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN088": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN089": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN090": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN091": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN092": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN093": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN094": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN095": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN096": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN097": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN098": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN099": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN100": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN101": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN102": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN103": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN104": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN105": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN106": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN107": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN108": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN109": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN110": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN111": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN112": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN113": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN114": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN115": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN116": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN117": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN118": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN119": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN120": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN121": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN122": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN123": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN124": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN125": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN126": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN127": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDN128": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDS514": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFDS541": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFNK260": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFNK289": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFNK290": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFNK292": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCFWH312": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCOAH036": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCOAH311": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCOAKX78": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCOAKX83": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCON4088": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCON9224": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONA345": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONA346": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONB569": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONB700": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONB766": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONB784": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONB867": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONF605": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONF615": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONF616": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONF626": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONF633": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONF684": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONFT00": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONFT03": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONFT06": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONFT07": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONFT09": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONFT11": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONFT13": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONFT16": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONFT17": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONG334": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONG344": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONG345": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONG429": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONG444": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONG449": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONG463": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONG464": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONG527": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONG528": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONG587": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONG588": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONG634": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONH270": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONH275": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONH276": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONHJ78": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONHJ79": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONHJ81": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONHJ83": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONHJ87": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONHT68": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONJ449": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONJ991": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK010": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK015": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK016": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK021": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK023": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK095": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK096": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK097": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK134": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK135": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK185": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK199": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK200": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK212": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK283": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK284": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK656": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK659": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK663": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK664": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK665": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK666": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK667": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK668": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK673": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK674": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONK675": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONL135": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONL191": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONL192": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONLG24": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONLG25": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM964": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM965": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM966": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM967": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM968": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM969": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM970": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM971": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM972": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM973": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM974": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM975": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM976": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM977": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM978": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM979": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM980": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM981": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM982": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM983": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM984": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM985": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM986": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM987": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM988": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM989": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM990": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM991": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM992": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM993": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM994": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM995": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM996": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM997": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM998": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONM999": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN001": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN002": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN003": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN004": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN005": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN006": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN007": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN008": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN009": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN010": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN011": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN012": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN013": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN014": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN015": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN016": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN017": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN018": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN019": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN020": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN021": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN022": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN023": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN024": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN025": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN026": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN027": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN028": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN029": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN030": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN040": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN041": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN042": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN043": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN044": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN045": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN046": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN047": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN048": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN049": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN050": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN051": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN052": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN053": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN054": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN055": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN056": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN057": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN058": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN059": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN060": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN061": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN062": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN063": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN064": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN065": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN066": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN067": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN068": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN069": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN070": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN071": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN072": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN073": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN074": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN075": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN076": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN077": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN078": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN079": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN080": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN081": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN082": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN083": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN084": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN085": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN086": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN087": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN088": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN089": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN090": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN091": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN092": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN093": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN094": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN095": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN096": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN097": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN098": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN099": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN100": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN101": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN102": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN103": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN104": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN105": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN106": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN107": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN108": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN109": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN110": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN111": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN112": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN113": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN114": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN115": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN116": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN117": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN118": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN119": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN120": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN121": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN122": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN123": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN124": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN125": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN126": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN127": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN128": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN512": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN514": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN515": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN516": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN517": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN518": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN519": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN520": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONN521": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONP752": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONS514": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCONS541": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RCOWH312": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel",
+    "RIADB772": "Code in June-19 FFIEC hierarchy for planned/new form item; no filings yet in tool panel"
+  },
+  "_spurious_description": "spurious_allowed: hierarchy LEAF codes legitimately absent from the panel (text/admin fields or valid-but-unfiled form lines greyed-out per C4). The bidirectional gate FAILS on any hierarchy leaf code never reported in the panel that is NOT listed here — so genuine parse artifacts must be dropped via *_hierarchy_overrides.json drop_codes, not parked here."
+}

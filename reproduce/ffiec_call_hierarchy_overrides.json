@@ -1,0 +1,823 @@
+{
+  "_README": "Depth corrections for the FFIEC 031 Call hierarchy. Root cause: CDR column order != PDF item order; items from one section appear adjacent to items from another, and if the displaced item has PDF depth=2 the audit/visual tree shows it as a false child of the preceding depth=1 item. Fix pattern: drop_codes uses key-scoped {key,mdrm} objects (NOT Y-9C flat strings) because Call codes repeat across 45 schedules — RCFD1773 appears in 5 schedules, RCFD3632 in 3. A flat-string global drop would silently remove correct entries from sibling schedules. drop_code removes the wrong-depth item; force_row re-adds it with corrected depth at the same CDR order position. Consumed by build_hierarchy.py apply_overrides(). Rebuild: python build_hierarchy.py --pdf Call_Cert18409_12312025.PDF",
+  "drop_codes": [
+    {
+      "_note": "RC: RCFD1773 (AFS, item=2.b, depth=2) after RCFD1754 (HtM, item=8, depth=1). No parent item '2' in RC. Corrected to depth=1.",
+      "key": "RC",
+      "mdrm": "RCFD1773"
+    },
+    {
+      "_note": "RC: RCFD3632 (Undivided Profits, item=26.a, depth=2) after RCFD3548 (Trading Liab, item=15, depth=1). No parent item '26' in RC. Corrected to depth=1.",
+      "key": "RC",
+      "mdrm": "RCFD3632"
+    },
+    {
+      "_note": "RCL: RCFD3826 (FX Swaps $5.9T, item=12.e, depth=2) after RCFD3821 (Perf Standby, item=3, depth=1). No parent item '12' in RCL. Corrected to depth=1.",
+      "key": "RCL",
+      "mdrm": "RCFD3826"
+    },
+    {
+      "_note": "RC: RCFD5369 (Loans & Leases HFS, item=4.a, depth=2) after RCFD3839 (Other Equity, item=25, depth=1). No parent item '4' in RC before it. Corrected to depth=1.",
+      "key": "RC",
+      "mdrm": "RCFD5369"
+    },
+    {
+      "_note": "RC: RCONB993 (Fed Funds Purchased Domestic, item=14.a, depth=2) after RCONB989 (item=3, depth=1). No parent item '14' in RC before it. Corrected to depth=1.",
+      "key": "RC",
+      "mdrm": "RCONB993"
+    },
+    {
+      "_note": "RCR: RCFD1773 (AFS, item=2.b, depth=2) after RCFD1754 (HtM, item=8, depth=1). Same CDR-order artifact as RC/8. No parent item '2' in RCR.",
+      "key": "RCR",
+      "mdrm": "RCFD1773"
+    },
+    {
+      "_note": "RCR: RCFD3210 (Total Equity Capital, item=27.a, depth=2) after RCFD3128 (Allocated Transfer Risk, item=30, depth=1). No parent item '27' in RCR. Item 27 cannot be child of item 30.",
+      "key": "RCR",
+      "mdrm": "RCFD3210"
+    },
+    {
+      "_note": "RCB: RCFD1773 (AFS, item=2.b, depth=2) after RCFD1772 (HtM Total, item=8, depth=1). Same CDR-order artifact. No parent item '2' in RCB before it.",
+      "key": "RCB",
+      "mdrm": "RCFD1773"
+    },
+    {
+      "_note": "RCRII: RCFD1773 (AFS, item=2.b, depth=2) after RCFD1754 (HtM, item=8, depth=1). Same CDR-order artifact. No parent item '2' in RCRII before it.",
+      "key": "RCRII",
+      "mdrm": "RCFD1773"
+    },
+    {
+      "_note": "RCRI: RCFAA223 (Risk-Weighted Assets, item=48.a, depth=2) after RCFA8274 (item=26, depth=1). No parent item '48' in RCRI. Item 48 cannot be child of item 26.",
+      "key": "RCRI",
+      "mdrm": "RCFAA223"
+    },
+    {
+      "_note": "RCRIB: RCFAA223 (Risk-Weighted Assets, item=48.a, depth=2) after RCFA8274 (item=26, depth=1). No parent item '48' in RCRIB. Item 48 cannot be child of item 26.",
+      "key": "RCRIB",
+      "mdrm": "RCFAA223"
+    },
+    {
+      "_note": "RCRIB: RCFAP850 (Less: All Other Deductions, item=10.b, depth=2) after RCFAP849 (item=9.f, depth=2) which is after RCFAP843 (item=8, depth=1). No parent item '10' anywhere in RCRIB. Corrected to depth=1.",
+      "key": "RCRIB",
+      "mdrm": "RCFAP850"
+    },
+    {
+      "_note": "RCT: RCFDB872-RCFDB875 (Employee Benefit Defined Contribution, items=5.a, depth=2) appear right after RCFDB871 (item=4, depth=1). Section 5 and section 4 are different parts of RCT. No parent item '5' in RCT.",
+      "key": "RCT",
+      "mdrm": "RCFDB872"
+    },
+    {
+      "_note": "RCT: same batch — item 5.a",
+      "key": "RCT",
+      "mdrm": "RCFDB873"
+    },
+    {
+      "_note": "RCT: same batch — item 5.a",
+      "key": "RCT",
+      "mdrm": "RCFDB874"
+    },
+    {
+      "_note": "RCT: same batch — item 5.a",
+      "key": "RCT",
+      "mdrm": "RCFDB875"
+    },
+    {
+      "_note": "RCT: RCFDB876-RCFDB879 (Employee Benefit Defined Benefit, items=5.b, depth=2). Same CDR-order batch, no parent item '5'.",
+      "key": "RCT",
+      "mdrm": "RCFDB876"
+    },
+    {
+      "_note": "RCT: same batch — item 5.b",
+      "key": "RCT",
+      "mdrm": "RCFDB877"
+    },
+    {
+      "_note": "RCT: same batch — item 5.b",
+      "key": "RCT",
+      "mdrm": "RCFDB878"
+    },
+    {
+      "_note": "RCT: same batch — item 5.b",
+      "key": "RCT",
+      "mdrm": "RCFDB879"
+    },
+    {
+      "_note": "RCT: RCFDB880-RCFDB883 (Other Retirement Accounts, items=5.c, depth=2). Same batch.",
+      "key": "RCT",
+      "mdrm": "RCFDB880"
+    },
+    {
+      "_note": "RCT: same batch — item 5.c",
+      "key": "RCT",
+      "mdrm": "RCFDB881"
+    },
+    {
+      "_note": "RCT: same batch — item 5.c",
+      "key": "RCT",
+      "mdrm": "RCFDB882"
+    },
+    {
+      "_note": "RCT: same batch — item 5.c",
+      "key": "RCT",
+      "mdrm": "RCFDB883"
+    },
+    {
+      "_note": "RCT: RIADB905-907 (Employee Benefit income, items=15.a/b/c, depth=2) appear right after RIADB904 (Personal Trust, item=14, depth=1). No parent item '15' in RCT. Income section 15 is separate from asset section 14.",
+      "key": "RCT",
+      "mdrm": "RIADB905"
+    },
+    {
+      "_note": "RCT: same batch — item 15.b",
+      "key": "RCT",
+      "mdrm": "RIADB906"
+    },
+    {
+      "_note": "RCT: same batch — item 15.c",
+      "key": "RCT",
+      "mdrm": "RIADB907"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB869"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB894"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB898"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFNB903"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB896"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB891"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDC002"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB871"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB885"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFNB902"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB884"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDJ253"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB892"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB886"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDC001"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB888"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFNB900"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB899"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB895"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB897"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB893"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB870"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFNB901"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB868"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB890"
+    }
+  ],
+  "force_rows": [
+    {
+      "_note": "RC: RCFD1773 re-added at same CDR order with depth corrected to 1",
+      "key": "RC",
+      "mdrm": "RCFD1773",
+      "caption": "Available-for-sale debt securities (from Schedule RC-B; column D)",
+      "item": "2.b",
+      "depth": 1,
+      "order": 5
+    },
+    {
+      "_note": "RC: RCFD3632 re-added at same CDR order with depth corrected to 1",
+      "key": "RC",
+      "mdrm": "RCFD3632",
+      "caption": "UNDIVIDED PROFITS AND CAPITAL RESERVES",
+      "item": "26.a",
+      "depth": 1,
+      "order": 26
+    },
+    {
+      "_note": "RCL: RCFD3826 re-added at same CDR order with depth corrected to 1",
+      "key": "RCL",
+      "mdrm": "RCFD3826",
+      "caption": "FOREIGN EXCHANGE SWAPS",
+      "item": "12.e",
+      "depth": 1,
+      "order": 20
+    },
+    {
+      "_note": "RC: RCFD5369 re-added at depth=1 (no parent item '4' in RC balance sheet section before it)",
+      "key": "RC",
+      "mdrm": "RCFD5369",
+      "caption": "LOANS AND LEASES HELD FOR SALE",
+      "item": "4.a",
+      "depth": 1,
+      "order": 29
+    },
+    {
+      "_note": "RC: RCONB993 re-added at depth=1 (no parent item '14' in RC before it)",
+      "key": "RC",
+      "mdrm": "RCONB993",
+      "caption": "FEDERAL FUNDS PURCHASED IN DOMESTIC OFFICES",
+      "item": "14.a",
+      "depth": 1,
+      "order": 80
+    },
+    {
+      "_note": "RCR: RCFD1773 re-added at depth=1 (same CDR-order artifact as RC/8)",
+      "key": "RCR",
+      "mdrm": "RCFD1773",
+      "caption": "Available-for-sale debt securities (from Schedule RC-B; column D)",
+      "item": "2.b",
+      "depth": 1,
+      "order": 6
+    },
+    {
+      "_note": "RCR: RCFD3210 re-added at depth=1 (item 27.a cannot be child of item 30)",
+      "key": "RCR",
+      "mdrm": "RCFD3210",
+      "caption": "TOTAL EQUITY CAPITAL",
+      "item": "27.a",
+      "depth": 1,
+      "order": 12
+    },
+    {
+      "_note": "RCB: RCFD1773 re-added at depth=1 (same CDR-order artifact — after RCFD1772 HtM Total)",
+      "key": "RCB",
+      "mdrm": "RCFD1773",
+      "caption": "Available-for-sale debt securities (from Schedule RC-B; column D)",
+      "item": "2.b",
+      "depth": 1,
+      "order": 48
+    },
+    {
+      "_note": "RCRII: RCFD1773 re-added at depth=1 (same CDR-order artifact as RC/8 and RCR/8)",
+      "key": "RCRII",
+      "mdrm": "RCFD1773",
+      "caption": "Available-for-sale debt securities (from Schedule RC-B; column D)",
+      "item": "2.b",
+      "depth": 1,
+      "order": 3
+    },
+    {
+      "_note": "RCRI: RCFAA223 re-added at depth=1 (no parent item '48' in RCRI)",
+      "key": "RCRI",
+      "mdrm": "RCFAA223",
+      "caption": "RISK-WEIGHTED ASSETS (NET OF ALLOWANCES AND OTHER DEDUCTIONS)",
+      "item": "48.a",
+      "depth": 1,
+      "order": 7
+    },
+    {
+      "_note": "RCRIB: RCFAA223 re-added at depth=1 (no parent item '48' in RCRIB)",
+      "key": "RCRIB",
+      "mdrm": "RCFAA223",
+      "caption": "RISK-WEIGHTED ASSETS (NET OF ALLOWANCES AND OTHER DEDUCTIONS)",
+      "item": "48.a",
+      "depth": 1,
+      "order": 7
+    },
+    {
+      "_note": "RCRIB: RCFAP850 re-added at depth=1 (no parent item '10' in RCRIB)",
+      "key": "RCRIB",
+      "mdrm": "RCFAP850",
+      "caption": "LESS: ALL OTHER DEDUCTIONS FROM (ADDITIONS TO) COMMON EQUITY TIER 1 CAPITAL BEFORE THRESHOLD-BASED DEDUCTIONS",
+      "item": "10.b",
+      "depth": 1,
+      "order": 19
+    },
+    {
+      "_note": "RCT: RIADB905 re-added at depth=1 (no parent item '15'; income section 15 is separate from assets section 14)",
+      "key": "RCT",
+      "mdrm": "RIADB905",
+      "caption": "EMPLOYEE BENEFIT-DEFINED CONTRIBUTION",
+      "item": "15.a",
+      "depth": 1,
+      "order": 140
+    },
+    {
+      "_note": "RCT: same batch",
+      "key": "RCT",
+      "mdrm": "RIADB906",
+      "caption": "EMPLOYEE BENEFIT-DEFINED BENEFIT",
+      "item": "15.b",
+      "depth": 1,
+      "order": 141
+    },
+    {
+      "_note": "RCT: same batch",
+      "key": "RCT",
+      "mdrm": "RIADB907",
+      "caption": "OTHER RETIREMENT ACCOUNTS",
+      "item": "15.c",
+      "depth": 1,
+      "order": 142
+    },
+    {
+      "key": "RCT",
+      "mdrm": "",
+      "item": "4",
+      "depth": 1,
+      "caption": "Personal trust and agency accounts"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "",
+      "item": "5",
+      "depth": 1,
+      "caption": "Retirement related trust and agency accounts"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "",
+      "item": "5.a",
+      "depth": 2,
+      "caption": "Employee benefit — defined contribution"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "",
+      "item": "5.b",
+      "depth": 2,
+      "caption": "Employee benefit — defined benefit"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "",
+      "item": "5.c",
+      "depth": 2,
+      "caption": "Other retirement accounts"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "",
+      "item": "6",
+      "depth": 1,
+      "caption": "Corporate trust and agency accounts"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "",
+      "item": "7",
+      "depth": 1,
+      "caption": "Investment management agency accounts"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "",
+      "item": "9",
+      "depth": 1,
+      "caption": "Other fiduciary accounts"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "",
+      "item": "10",
+      "depth": 1,
+      "caption": "Total fiduciary accounts (sum of items 4 through 9)"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "",
+      "item": "11",
+      "depth": 1,
+      "caption": "Custody and safekeeping accounts"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "",
+      "item": "12",
+      "depth": 1,
+      "caption": "Fiduciary accounts held in foreign offices"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB868",
+      "item": "4.a",
+      "depth": 2,
+      "caption": "PERSONAL TRUST AND AGENCY ACCOUNTS - MANAGED ASSETS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB869",
+      "item": "4.b",
+      "depth": 2,
+      "caption": "PERSONAL TRUST AND AGENCY ACCOUNTS - NON-MANAGED"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB870",
+      "item": "4.c",
+      "depth": 2,
+      "caption": "PERSONAL TRUST AND AGENCY ACCOUNTS - NUMBER OF MANAGED ACCOUNTS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB871",
+      "item": "4.d",
+      "depth": 2,
+      "caption": "PERSONAL TRUST AND AGENCY ACCOUNTS - NUMBER OF NON-MANAGED ACCOUNTS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB872",
+      "item": "5.a.a",
+      "depth": 3,
+      "caption": "EMPLOYEE BENEFIT-DEFINED CONTRIBUTION - MANAGED ASSETS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB873",
+      "item": "5.a.b",
+      "depth": 3,
+      "caption": "EMPLOYEE BENEFIT-DEFINED CONTRIBUTION - NON-MANAGED ASSETS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB874",
+      "item": "5.a.c",
+      "depth": 3,
+      "caption": "EMPLOYEE BENEFIT-DEFINED CONTRIBUTION - NUMBER OF MANAGED ACCOUNTS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB875",
+      "item": "5.a.d",
+      "depth": 3,
+      "caption": "EMPLOYEE BENEFIT-DEFINED CONTRIBUTION - NUMBER OF NON-MANAGED ACCOUNTS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB876",
+      "item": "5.b.a",
+      "depth": 3,
+      "caption": "EMPLOYEE BENEFIT-DEFINED BENEFIT - MANAGED ASSETS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB877",
+      "item": "5.b.b",
+      "depth": 3,
+      "caption": "EMPLOYEE BENEFIT-DEFINED BENEFIT - NON-MANAGED ASSETS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB878",
+      "item": "5.b.c",
+      "depth": 3,
+      "caption": "EMPLOYEE BENEFIT-DEFINED BENEFIT - NUMBER OF MANAGED ACCOUNTS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB879",
+      "item": "5.b.d",
+      "depth": 3,
+      "caption": "EMPLOYEE BENEFIT-DEFINED BENEFIT - NUMBER OF NON-MANAGED ACCOUNTS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB880",
+      "item": "5.c.a",
+      "depth": 3,
+      "caption": "OTHER RETIREMENT ACCOUNTS - MANAGED ASSETS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB881",
+      "item": "5.c.b",
+      "depth": 3,
+      "caption": "OTHER RETIREMENT ACCOUNTS - NON-MANAGED ASSETS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB882",
+      "item": "5.c.c",
+      "depth": 3,
+      "caption": "OTHER RETIREMENT ACCOUNTS - NUMBER OF MANAGED ACCOUNTS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB883",
+      "item": "5.c.d",
+      "depth": 3,
+      "caption": "OTHER RETIREMENT ACCOUNTS - NUMBER OF NON-MANAGED ACCOUNTS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB884",
+      "item": "6.a",
+      "depth": 2,
+      "caption": "CORPORATE TRUST AND AGENCY ACCOUNTS - MANAGED ASSETS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB885",
+      "item": "6.b",
+      "depth": 2,
+      "caption": "CORPORATE TRUST AND AGENCY ACCOUNTS - NON-MANAGED ASSETS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDC001",
+      "item": "6.c",
+      "depth": 2,
+      "caption": "CORPORATE TRUST AND AGENCY ACCOUNTS - NUMBER OF MANAGED ACCOUNTS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDC002",
+      "item": "6.d",
+      "depth": 2,
+      "caption": "CORPORATE TRUST AND AGENCY ACCOUNTS - NUMBER OF NON-MANAGED ACCOUNTS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB886",
+      "item": "7.a",
+      "depth": 2,
+      "caption": "INVESTMENT MANAGEMENT AGENCY ACCOUNTS - MANAGED ASSETS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB888",
+      "item": "7.c",
+      "depth": 2,
+      "caption": "INVESTMENT MANAGEMENT AGENCY ACCOUNTS - NUMBER OF MANAGED ACCOUNTS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDJ253",
+      "item": "7.e",
+      "depth": 2,
+      "caption": "FIDUCIARY AND RELATED ASSETS:INVESTMENT MGMT AND INVESTMENT ADVISORY AGENCY ACCOUNTS -NON-MANAGED ASSETS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB890",
+      "item": "9.a",
+      "depth": 2,
+      "caption": "OTHER FIDUCIARY ACCOUNTS - MANAGED ASSETS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB891",
+      "item": "9.b",
+      "depth": 2,
+      "caption": "OTHER FIDUCIARY ACCOUNTS - NON-MANAGED ASSETS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB892",
+      "item": "9.c",
+      "depth": 2,
+      "caption": "OTHER FIDUCIARY ACCOUNTS - NUMBER OF MANAGED ACCOUNTS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB893",
+      "item": "9.d",
+      "depth": 2,
+      "caption": "OTHER FIDUCIARY ACCOUNTS - NUMBER OF NON-MANAGED ACCOUNTS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB894",
+      "item": "10.a",
+      "depth": 2,
+      "caption": "TOTAL FIDUCIARY ACCOUNTS - MANAGED ASSETS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB895",
+      "item": "10.b",
+      "depth": 2,
+      "caption": "TOTAL FIDUCIARY ACCOUNTS - NON-MANAGED ASSETS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB896",
+      "item": "10.c",
+      "depth": 2,
+      "caption": "TOTAL FIDUCIARY ACCOUNTS - NUMBER OF MANAGED ACCOUNTS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB897",
+      "item": "10.d",
+      "depth": 2,
+      "caption": "TOTAL FIDUCIARY ACCOUNTS - NON-MANAGED ACCOUNTS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB898",
+      "item": "11.b",
+      "depth": 2,
+      "caption": "CUSTODY AND SAFEKEEPING ACCOUNTS - NON-MANAGED ASSETS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFDB899",
+      "item": "11.d",
+      "depth": 2,
+      "caption": "CUSTODY AND SAFEKEEPING ACCOUNTS - NUMBER OF NON-MANAGED ACCOUNTS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFNB900",
+      "item": "12.a",
+      "depth": 2,
+      "caption": "FIDUCIARY ACCOUNTS HELD IN FOREIGN OFFICES - MANAGED ASSETS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFNB901",
+      "item": "12.b",
+      "depth": 2,
+      "caption": "FIDUCIARY ACCOUNTS HELD IN FOREIGN OFFICES - NON-MANAGED ASSETS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFNB902",
+      "item": "12.c",
+      "depth": 2,
+      "caption": "FIDUCIARY ACCOUNTS HELD IN FOREIGN OFFICES - NUMBER OF MANAGED ACCOUNTS"
+    },
+    {
+      "key": "RCT",
+      "mdrm": "RCFNB903",
+      "item": "12.d",
+      "depth": 2,
+      "caption": "FIDUCIARY ACCOUNTS HELD IN FOREIGN OFFICES - NUMBER OF NON-MANAGED ACCOUNTS"
+    },
+    {
+      "key": "RC",
+      "mdrm": "",
+      "item": "2",
+      "depth": 0,
+      "caption": "Securities",
+      "header": true
+    },
+    {
+      "key": "RC",
+      "mdrm": "",
+      "item": "4",
+      "depth": 0,
+      "caption": "Loans and leases",
+      "header": true
+    },
+    {
+      "key": "RC",
+      "mdrm": "",
+      "item": "14",
+      "depth": 0,
+      "caption": "Other borrowed money",
+      "header": true
+    },
+    {
+      "key": "RC",
+      "mdrm": "",
+      "item": "26",
+      "depth": 0,
+      "caption": "Retained earnings and other equity components",
+      "header": true
+    },
+    {
+      "key": "RCB",
+      "mdrm": "",
+      "item": "2",
+      "depth": 0,
+      "caption": "Securities",
+      "header": true
+    },
+    {
+      "key": "RCL",
+      "mdrm": "",
+      "item": "12",
+      "depth": 0,
+      "caption": "Off-balance-sheet items",
+      "header": true
+    },
+    {
+      "key": "RCR",
+      "mdrm": "",
+      "item": "2",
+      "depth": 0,
+      "caption": "Common equity tier 1 capital components",
+      "header": true
+    },
+    {
+      "key": "RCR",
+      "mdrm": "",
+      "item": "27",
+      "depth": 0,
+      "caption": "Risk-weighted assets",
+      "header": true
+    },
+    {
+      "key": "RCRI",
+      "mdrm": "",
+      "item": "48",
+      "depth": 0,
+      "caption": "Total risk-weighted assets",
+      "header": true
+    },
+    {
+      "key": "RCRIB",
+      "mdrm": "",
+      "item": "10",
+      "depth": 0,
+      "caption": "Tier 2 capital components",
+      "header": true
+    },
+    {
+      "key": "RCRIB",
+      "mdrm": "",
+      "item": "48",
+      "depth": 0,
+      "caption": "Total risk-weighted assets",
+      "header": true
+    },
+    {
+      "key": "RCRII",
+      "mdrm": "",
+      "item": "2",
+      "depth": 0,
+      "caption": "Common equity tier 1 capital components",
+      "header": true
+    },
+    {
+      "key": "RCT",
+      "mdrm": "",
+      "item": "15",
+      "depth": 0,
+      "caption": "Retirement-related trust income",
+      "header": true
+    }
+  ],
+  "captions": {
+    "TEXTB963": "TELEPHONE: AREA CODE/PHONE NUMBER/EXTENSION",
+    "RCFDF597": "UNPAID PRINCIPAL BALANCE OF COMMERCIAL AND INDUSTRIAL LOANS MEASURED AT FAIR VALUE:",
+    "RCONF597": "UNPAID PRINCIPAL BALANCE OF COMMERCIAL AND INDUSTRIAL LOANS MEASURED AT FAIR VALUE:",
+    "RCONF064": "SECURED LIABILITIES: AMOUNT OF 'FEDERAL FUNDS PURCHASED' THAT ARE SECURED"
+  }
+}
