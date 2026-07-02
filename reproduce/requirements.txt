@@ -5,10 +5,13 @@
 #
 # Tier 1 (--html-only rebuild + validator) needs ONLY pandas + pyarrow.
 # pandas/pyarrow : parse FFIEC CDR bulk files, build/read the parquet panel
+# duckdb         : completeness/validator panel queries (Tier 1 — keep the env identical to the
+#                  clean-room-verified set even where a specific script degrades without it)
 # playwright     : real-Chrome downloader for Akamai-guarded FFIEC CDR endpoints (Tier 2)
 # requests       : fallback HTTP for non-guarded endpoints (Tier 2)
-# (DuckDB runs client-side as DuckDB-WASM in the browser — no Python duckdb needed here.)
+# (the BROWSER uses DuckDB-WASM independently of the Python duckdb package)
 pandas==3.0.3
 pyarrow==24.0.0
+duckdb==1.5.4
 playwright==1.60.0
 requests==2.34.2
