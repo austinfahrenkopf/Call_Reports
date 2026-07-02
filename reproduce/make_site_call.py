@@ -483,8 +483,12 @@ const DERIV={
  'D_SEC_ASSETS':{type:'ratio',lbl:'Liquidity ▸ Securities / Assets (%)',plus:['1754','1773'],den:['2170']},
  'D_LOANSDEP':{type:'ratio',lbl:'Liquidity ▸ Loans / Deposits (%)',plus:['2122'],den:['2200']},
  'D_DEPASSETS':{type:'ratio',lbl:'Funding ▸ Deposits / Assets (%)',plus:['2200'],den:['2170']},
- 'S_BORROW':{type:'sum',lbl:'Funding ▸ Borrowings $ (fed funds purch+repos+other)',plus:['3353','3190']},
- 'D_BORROW_ASSETS':{type:'ratio',lbl:'Funding ▸ Borrowings / Assets (%)',plus:['3353','3190'],den:['2170']},
+ // Period-end only (RC lines 14a/14b/16), matching Y-9C's S_BORROW convention. Previously included
+ // RCFD3353 (RC-K quarterly-AVERAGE of fed funds purchased+repos) mixed with period-end 3190 —
+ // conceptually inconsistent (average + period-end in one sum). Verified in ffiec_call_tool.parquet
+ // vs BANK:852218 @2026-03-31: RCONB993=217,000 + RCFDB995=257,320,000 + RCFD3190=269,093,000 = 526,630,000.
+ 'S_BORROW':{type:'sum',lbl:'Funding ▸ Borrowings $ (fed funds purch+repos+other)',plus:['B993','B995','3190']},
+ 'D_BORROW_ASSETS':{type:'ratio',lbl:'Funding ▸ Borrowings / Assets (%)',plus:['B993','B995','3190'],den:['2170']},
  'D_NONDEP':{type:'ratio',lbl:'Funding ▸ Non-deposit liabilities / Assets (%)',plus:['2948'],minus:['2200'],den:['2170']},
  'D_BROKERED':{type:'ratio',lbl:'Funding ▸ Brokered deposits / Deposits (%)',plus:['2365'],den:['2200']},
  'D_NPL':{type:'ratio',lbl:'Credit ▸ NPL % (Past Due + Non Accrual / loans)',plus:['1406','1407','1403'],den:['2122']},
@@ -686,11 +690,21 @@ async function ensureOldCall(){
 
 function loadPeers(){try{peers=JSON.parse(localStorage.getItem('ffiec_peers')||'{}');}catch{peers={};}}
 function savePeers(){localStorage.setItem('ffiec_peers',JSON.stringify(peers));}
+// Transform-state hash grammar (t=/nd=): checkbox id <-> short token, in fixed emit order.
+// Only ACTIVE flags are listed in t= (compact, and absence of t= means "all off/default" for
+// full backward compat with old shared links). 'nolbl' is the one inverted flag: inline labels
+// default ON, so we only emit a token when they're turned OFF.
+const TFM_TOKS=[['qoqdelta','qoq'],['yoydelta','yoy'],['roll4q','4q'],['sharemode','share'],['idx','idx'],['stackedmode','stk'],['normbyassets','norm']];
 function stateToHash(){
   const params=new URLSearchParams();
   if(active.length)params.set('e',active.map(a=>a.id).join(','));
   if(measures.length)params.set('m',measures.filter(m=>!m.code.startsWith('CALC_')).map(m=>m.code).join(','));
   if(Qall.length){params.set('q0',Qall[rangeSel.a]||'');params.set('q1',Qall[rangeSel.b]||'');}
+  const toks=[];
+  for(const[cid,tok] of TFM_TOKS){const el=document.getElementById(cid);if(el&&el.checked)toks.push(tok);}
+  {const il=document.getElementById('inlinelbls');if(il&&!il.checked)toks.push('nolbl');}
+  if(toks.length)params.set('t',toks.join(','));
+  if(toks.includes('norm')){const nd=document.getElementById('normden');if(nd&&nd.value)params.set('nd',nd.value);}
   history.replaceState(null,'','#'+params.toString());}
 function hashToState(){
   if(!location.hash||location.hash==='#')return false;
@@ -702,7 +716,15 @@ function hashToState(){
     const q0=p.get('q0'),q1=p.get('q1');
     if(q0&&q1&&Qall.length){const a=Qall.indexOf(q0),b=Qall.indexOf(q1);
       if(a>=0&&b>=0)rangeSel={a:Math.min(a,b),b:Math.max(a,b)};}
-    return !!(eStr||mStr);}catch{return false;}}
+    const tStr=p.get('t');
+    window._hashHasTfm=(tStr!==null);
+    if(tStr!==null){
+      const toks=new Set(tStr.split(',').filter(Boolean));
+      for(const[cid,tok] of TFM_TOKS){const el=document.getElementById(cid);if(el)el.checked=toks.has(tok);}
+      {const il=document.getElementById('inlinelbls');if(il){il.checked=!toks.has('nolbl');window._inlineLbls=il.checked;}}
+      const nd=p.get('nd');if(nd){const ndEl=document.getElementById('normden');if(ndEl&&[...ndEl.options].some(o=>o.value===nd)){ndEl.value=nd;window._normDenCd=nd;}}
+    }
+    return !!(eStr||mStr||tStr!==null);}catch{return false;}}
 function resolveEnt(){const v=document.getElementById('ent').value.trim();
  if(lbl2id.has(v))return {id:lbl2id.get(v),label:v};
  if(v.replace(/^★\s*/,'') in peers){const n=v.replace(/^★\s*/,'');return {id:'PEER:'+n,label:'★ '+n};}
@@ -990,7 +1012,7 @@ async function init(){try{
  ['1y','5y','10y'].forEach((id,k)=>{const btn=document.getElementById(`preset${id}`);if(btn)btn.onclick=()=>{if(!Qall.length)return;const n=[4,20,40][k];rangeSel={a:Math.max(0,Qall.length-n),b:Qall.length-1};syncSlider();draw();};});
  document.getElementById('rfrom').onchange=()=>{const q=document.getElementById('rfrom').value.trim();const i=Qall.indexOf(q);if(i>=0){rangeSel.a=Math.min(i,rangeSel.b);syncSlider();draw();}};
  document.getElementById('rto').onchange=()=>{const q=document.getElementById('rto').value.trim();const i=Qall.indexOf(q);if(i>=0){rangeSel.b=Math.max(i,rangeSel.a);syncSlider();draw();}};
- document.getElementById('idx').onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();};document.getElementById('qoqdelta').onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();};document.getElementById('yoydelta').onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();};document.getElementById('roll4q').onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();};document.getElementById('sharemode').onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();};document.getElementById('normbyassets').onchange=()=>{try{localStorage.setItem('ffiec_call_normbyassets',document.getElementById('normbyassets').checked?'1':'0');}catch(_){}if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}if(document.getElementById('normbyassets').checked)scheduleRecompute();else draw();};{const nde=document.getElementById('normden');if(nde)nde.onchange=()=>{window._normDenCd=nde.value;try{localStorage.setItem('ffiec_call_normden',nde.value);}catch(_){}if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}if(document.getElementById('normbyassets')?.checked)scheduleRecompute();};};{const stackEl=document.getElementById('stackedmode');if(stackEl)stackEl.onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();};}{const lcEl=document.getElementById('linkcharts');if(lcEl){lcEl.checked=_linkCharts;lcEl.onchange=()=>{_linkCharts=lcEl.checked;try{localStorage.setItem('ffiec_call_linkcharts',_linkCharts?'1':'0');}catch(_){}if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}};}}{const il=document.getElementById('inlinelbls');if(il){il.checked=(window._inlineLbls!==false);il.onchange=()=>{window._inlineLbls=il.checked;try{localStorage.setItem('ffiec_call_inlinelbls',il.checked?'1':'0');}catch(_){}draw();};}}document.getElementById('reflineset').onclick=()=>{const v=parseFloat(document.getElementById('reflineval').value);if(!isNaN(v)){_reflineVal=v;_reflineLbl=document.getElementById('reflinelbl').value.trim()||String(v);}draw();};document.getElementById('reflineclr').onclick=()=>{_reflineVal=null;document.getElementById('reflineval').value='';document.getElementById('reflinelbl').value='';draw();};
+ document.getElementById('idx').onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();stateToHash();};document.getElementById('qoqdelta').onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();stateToHash();};document.getElementById('yoydelta').onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();stateToHash();};document.getElementById('roll4q').onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();stateToHash();};document.getElementById('sharemode').onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();stateToHash();};document.getElementById('normbyassets').onchange=()=>{try{localStorage.setItem('ffiec_call_normbyassets',document.getElementById('normbyassets').checked?'1':'0');}catch(_){}if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}if(document.getElementById('normbyassets').checked)scheduleRecompute();else{draw();stateToHash();}};{const nde=document.getElementById('normden');if(nde)nde.onchange=()=>{window._normDenCd=nde.value;try{localStorage.setItem('ffiec_call_normden',nde.value);}catch(_){}if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}if(document.getElementById('normbyassets')?.checked)scheduleRecompute();else stateToHash();};};{const stackEl=document.getElementById('stackedmode');if(stackEl)stackEl.onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();stateToHash();};}{const lcEl=document.getElementById('linkcharts');if(lcEl){lcEl.checked=_linkCharts;lcEl.onchange=()=>{_linkCharts=lcEl.checked;try{localStorage.setItem('ffiec_call_linkcharts',_linkCharts?'1':'0');}catch(_){}if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}};}}{const il=document.getElementById('inlinelbls');if(il){il.checked=(window._inlineLbls!==false);il.onchange=()=>{window._inlineLbls=il.checked;try{localStorage.setItem('ffiec_call_inlinelbls',il.checked?'1':'0');}catch(_){}draw();stateToHash();};}}document.getElementById('reflineset').onclick=()=>{const v=parseFloat(document.getElementById('reflineval').value);if(!isNaN(v)){_reflineVal=v;_reflineLbl=document.getElementById('reflinelbl').value.trim()||String(v);}draw();};document.getElementById('reflineclr').onclick=()=>{_reflineVal=null;document.getElementById('reflineval').value='';document.getElementById('reflinelbl').value='';draw();};
  (function(){const sp=document.getElementById('railsplit');let drag=false;
   sp.addEventListener('mousedown',e=>{drag=true;e.preventDefault();document.body.style.userSelect='none';});
   window.addEventListener('mousemove',e=>{if(!drag)return;const w=Math.min(820,Math.max(300,e.clientX));document.documentElement.style.setProperty('--railw',w+'px');});
@@ -1000,9 +1022,12 @@ async function init(){try{
  const restored=hashToState();
  if(!restored){active=[{id:'ALL',label:'ALL'}];}
  if(!measures.length){try{const s=localStorage.getItem('ffiec_call_measures');if(s){const ms=JSON.parse(s);if(Array.isArray(ms)&&ms.length)measures=ms.slice(0,20);}}catch{}if(!measures.length)measures=[{code:'COMB2170',label:'Total assets',pct:false}];}
- // Restore normden + normbyassets from localStorage
+ // Restore normden + normbyassets from localStorage — skipped when the link hash already carried
+ // transform state (t=), so a shared link's transforms/normden always win over local prefs.
+ if(!window._hashHasTfm){
  try{const nd=localStorage.getItem('ffiec_call_normden');if(nd){const el=document.getElementById('normden');if(el&&[...el.options].some(o=>o.value===nd)){el.value=nd;window._normDenCd=nd;}}else{window._normDenCd='COMB2170';}}catch(_){window._normDenCd='COMB2170';}
  try{const nb=localStorage.getItem('ffiec_call_normbyassets');if(nb){const el=document.getElementById('normbyassets');if(el)el.checked=nb==='1';}}catch(_){}
+ }else if(!document.getElementById('normden')?.value){window._normDenCd='COMB2170';}
  renderChips(); renderMeasures(); renderPeerSaved();
  initWidthResize('cards','ffiec_call_cardsw');initWidthResize('mchips','ffiec_call_legendw');initWidthResize('tbl','ffiec_call_tblw');initWidthResize('snapshot','ffiec_call_snapw');initWidthResize('calcdiv','ffiec_call_calcdivw');initWidthResize('peerbox','ffiec_call_peerbuilderw');
  st(`Ready — ${ents.length} entities. Click items on the left; add entities to compare.`);pbar(100); recompute(); autoLoadFormulas();
@@ -1575,10 +1600,10 @@ function draw(){const host=document.getElementById('panes');
   for(const {s,sLast,sQoq,sYoy,sTot,sQR,sYR,sTR} of snapRows){const dot=`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${s.color};margin-right:5px"></span>`;sh+=`<tr><td style="text-align:left;padding:3px 6px">${dot}${s.label}</td><td style="padding:3px 6px;text-align:right">${fmtUnit(sLast,s.pct)}</td><td class="${cls(sQoq)}" style="padding:3px 6px;text-align:right">${arr(sQoq)}${sQR!=null?` <span class="muted" style="font-size:12px">${fmtDelta(sQR,s.pct)}</span>`:''}</td><td class="${cls(sYoy)}" style="padding:3px 6px;text-align:right">${arr(sYoy)}${sYR!=null?` <span class="muted" style="font-size:12px">${fmtDelta(sYR,s.pct)}</span>`:''}</td><td class="${cls(sTot)}" style="padding:3px 6px;text-align:right">${arr(sTot)}${sTR!=null?` <span class="muted" style="font-size:12px">${fmtDelta(sTR,s.pct)}</span>`:''}</td></tr>`;}
   snapEl.innerHTML=sh+'</tbody></table>';
  }else if(snapEl){snapEl.innerHTML='';} const _aBtn=document.getElementById('addchartbtn');if(_aBtn)_aBtn.style.display='';const _lLbl=document.getElementById('linkcharts-lbl');if(_lLbl)_lLbl.style.display='';drawExtraCharts();}
-function pane(series,pct,unit,win,stacked){const W=1080,H=300,pad=64,n=win.length;
+function pane(series,pct,unit,win,stacked){const W=1080,pad=64,n=win.length;const _gut=16;const _vbw=W+_gut;const _pinned=window._chartW>40&&window._chartH>40;let H=_pinned?Math.round(_vbw*window._chartH/window._chartW):300;H=Math.max(260,Math.min(2800,H));const _svgsty=(_pinned?'width:100%;height:100%':'width:100%;height:auto')+';display:block';
  const xi=Object.fromEntries(win.map((q,i)=>[q,i]));
  let mn=Infinity,mx=-Infinity;for(const s of series)for(const r of s.rows){mn=Math.min(mn,r[1]);mx=Math.max(mx,r[1]);}
- if(!isFinite(mn)){const aC=DK()?'#9aa3b2':'#5a6478';return `<div class="chartbox"><svg viewBox="0 0 1080 300" width="100%" xmlns="http://www.w3.org/2000/svg"><text x="540" y="150" font-size="16" fill="${aC}" text-anchor="middle" dominant-baseline="middle">No data available for this entity / date range</text></svg></div>`;}
+ if(!isFinite(mn)){const aC=DK()?'#9aa3b2':'#5a6478';return `<div class="chartbox"><svg viewBox="0 0 ${_vbw} ${H}" preserveAspectRatio="none" style="${_svgsty}" xmlns="http://www.w3.org/2000/svg"><text x="${(_vbw/2).toFixed(0)}" y="${(H/2).toFixed(0)}" font-size="16" fill="${aC}" text-anchor="middle" dominant-baseline="middle">No data available for this entity / date range</text></svg></div>`;}
  // In stacked mode scale to total; otherwise anchor at zero baseline
  if(stacked){mn=0;const tots={};for(const q of win)tots[q]=0;for(const s of series){const m=Object.fromEntries(s.rows.map(r=>[r[0],r[1]]));for(const q of win)tots[q]+=(m[q]??0);}mx=Math.max(...Object.values(tots),0);}
  else{if(unit==='$ thousands'&&mn>0)mn=0;if(unit==='percent'){if(mn>0)mn=0;if(mx<0)mx=0;}}
@@ -1634,8 +1659,7 @@ function pane(series,pct,unit,win,stacked){const W=1080,H=300,pad=64,n=win.lengt
  const want=Math.min(8,n),ix=[...new Set(Array.from({length:want},(_,k)=>Math.round(k*(n-1)/Math.max(1,want-1))))];
  const lb=ix.map(i=>{const a=i===0?'start':(i===n-1?'end':'middle');return `<text x="${X(i)}" y="${H-pad+18}" font-size="10" fill="${aC}" text-anchor="${a}">${win[i]}</text>`;}).join('');
  slbls=''; // labels moved to #lbl-overlay overlay
- const _vbw=W+16;
- return `<div class="chartbox"><svg viewBox="0 0 ${_vbw} ${H}" width="100%" data-pl="${pad}" data-pw="${W-2*pad}" xmlns="http://www.w3.org/2000/svg">${tk}${areas}${paths}${pts}${slbls}${lb}<text x="14" y="18" font-size="13" fill="${tC}">${unit==='$ thousands'?'$':unit}</text>${bands}</svg></div>`;}
+ return `<div class="chartbox"><svg viewBox="0 0 ${_vbw} ${H}" preserveAspectRatio="none" style="${_svgsty}" data-pl="${pad}" data-pw="${W-2*pad}" xmlns="http://www.w3.org/2000/svg">${tk}${areas}${paths}${pts}${slbls}${lb}<text x="14" y="18" font-size="13" fill="${tC}">${unit==='$ thousands'?'$':unit}</text>${bands}</svg></div>`;}
 // ---- extra charts ----
 let _extraCharts=[],_nextChartId=1;window._addToChartId=null;
 let _linkCharts=false;try{_linkCharts=localStorage.getItem('ffiec_call_linkcharts')==='1';}catch(_){}
@@ -1657,7 +1681,7 @@ if(chart.transforms.roll4q){const dol=chart.lastSeries.filter(s=>!s.pct);if(dol.
 if(chart.transforms.sharemode){const dol=chart.lastSeries.filter(s=>!s.pct);if(dol.length>=2){const perM=Math.max(1,active.length);const chunks=[];for(let i=0;i<dol.length;i+=perM)chunks.push(dol.slice(i,i+perM));const w=chunks.flatMap(g=>g.length>=2?shareSeries(g,ws):[]);if(w.length)html+=`<div class="idx-pane"><div style="font-size:12px;color:var(--muted,#9aa3b2);padding:2px 14px">Share % — composition across selected entities</div>${pane(w,true,'percent',win,stackedOn)}<div style="font-size:11px;color:var(--muted,#9aa3b2);padding:0 14px 6px">Share of reporting entities that quarter (non-reporters excluded)</div></div>`;}}}finally{measures=_m;}host.innerHTML=html;renderEcLegend(chart);if(chart._pinnedQ){document.querySelectorAll(`#ec-${chart.id} .qband[data-q="${chart._pinnedQ}"]`).forEach(g=>g.classList.add('qband-pinned'));}}
 function exportSeries(){if(!window._exp){showToast('Nothing to export.');return;}dl2(window._exp.head,window._exp.body,'series');}
 function exportChartSVG(){const svgs=[...document.querySelectorAll('#panes svg')];if(!svgs.length){showToast('No chart to export.');return;}let y=0;const bg=DK()?'#0f1825':'#fff';const gs=svgs.map(s=>{const vb=(s.getAttribute('viewBox')||'0 0 1080 300').split(' ').map(Number);const H=vb[3]||300;const g=`<g transform="translate(0,${y})">${s.innerHTML}</g>`;y+=H+8;return g;});const total=Math.max(y-8,1);const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 ${total}" width="1080" height="${total}"><rect width="1080" height="${total}" fill="${bg}"/>${gs.join('')}</svg>`;const a=document.createElement('a');a.href='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);a.download='chart.svg';a.click();}
-function paneDual(dol,pct,win){const W=1080,H=300,pad=64,padR=80,n=win.length;const xi=Object.fromEntries(win.map((q,i)=>[q,i]));
+function paneDual(dol,pct,win){const W=1080,pad=64,padR=80,n=win.length;const _gut=16;const _vbw=W+_gut;const _pinned=window._chartW>40&&window._chartH>40;let H=_pinned?Math.round(_vbw*window._chartH/window._chartW):300;H=Math.max(260,Math.min(2800,H));const _svgsty=(_pinned?'width:100%;height:100%':'width:100%;height:auto')+';display:block';const xi=Object.fromEntries(win.map((q,i)=>[q,i]));
  let mn0=Infinity,mx0=-Infinity;for(const s of dol)for(const r of s.rows){mn0=Math.min(mn0,r[1]);mx0=Math.max(mx0,r[1]);}
  let mn1=Infinity,mx1=-Infinity;for(const s of pct)for(const r of s.rows){mn1=Math.min(mn1,r[1]);mx1=Math.max(mx1,r[1]);}
  if(!isFinite(mn0)&&!isFinite(mn1))return '';
@@ -1683,7 +1707,6 @@ function paneDual(dol,pct,win){const W=1080,H=300,pad=64,padR=80,n=win.length;co
  const want=Math.min(8,n),ix=[...new Set(Array.from({length:want},(_,k)=>Math.round(k*(n-1)/Math.max(1,want-1))))];
  const lb=ix.map(i=>`<text x="${X(i)}" y="${H-pad+18}" font-size="10" fill="${aC}" text-anchor="${i===0?'start':(i===n-1?'end':'middle')}">${win[i]}</text>`).join('');
  slbls=''; // labels moved to #lbl-overlay overlay
- const _vbw=W+16;
  // Hover crosshair bands — parity with pane() so dual-axis gets the identical tracking line + markers.
  const _bi=Object.keys(byQ).map(Number).sort((a,b)=>a-b);let bands='';
  _bi.forEach((qi,k)=>{const Q=byQ[qi],xc=Q.x;
@@ -1691,7 +1714,7 @@ function paneDual(dol,pct,win){const W=1080,H=300,pad=64,padR=80,n=win.length;co
    let mk=`<line class="reveal" x1="${xc.toFixed(1)}" y1="${pad}" x2="${xc.toFixed(1)}" y2="${H-pad}" stroke="${aC}" stroke-width="1" stroke-dasharray="2 2"></line>`;
    for(const it of Q.items)mk+=`<circle class="reveal" cx="${xc.toFixed(1)}" cy="${it.cy.toFixed(1)}" r="4" fill="${it.color}" stroke="${dotC}" stroke-width="1.5"></circle>`;
    bands+=`<g class="qband" data-q="${Q.q}"><rect class="hit" x="${left.toFixed(1)}" y="0" width="${(right-left).toFixed(1)}" height="${H}"></rect>${mk}</g>`;});
- return `<div class="chartbox"><svg viewBox="0 0 ${_vbw} ${H}" width="100%" data-pl="${pad}" data-pw="${W-pad-padR}" xmlns="http://www.w3.org/2000/svg"><text x="14" y="18" font-size="13" fill="${tC}">$ (left) \xb7 % (right)</text>${tk}${areas}${paths}${pts}${slbls}${lb}${bands}</svg></div>`;}
+ return `<div class="chartbox"><svg viewBox="0 0 ${_vbw} ${H}" preserveAspectRatio="none" style="${_svgsty}" data-pl="${pad}" data-pw="${W-pad-padR}" xmlns="http://www.w3.org/2000/svg"><text x="14" y="18" font-size="13" fill="${tC}">$ (left) \xb7 % (right)</text>${tk}${areas}${paths}${pts}${slbls}${lb}${bands}</svg></div>`;}
 
 // ---- league / rank table ----
 // Ranks INDIVIDUAL banks (kind='bank'); per-bank values use coalesce(COMB/RCFD/RCON/RIAD) +
