@@ -112,7 +112,9 @@ HTML = r"""<!doctype html><html lang="en"><head><meta charset="utf-8">
  #tree{flex:1;overflow:auto;padding:6px 10px}
  .main{padding:14px 18px;overflow:auto}
  label{font-size:13px;color:#5a6478;display:block;margin-bottom:3px}
- select,input{font-size:15px;padding:7px;border:1px solid #cdd5e0;border-radius:7px;background:#fff}
+ /* C7-4: explicit light-theme base for select so it never falls back to UA/system white-on-white
+    once body.dark overrides kick in below; :root token vars keep this in sync with the rest of the UI. */
+ select,input{font-size:15px;padding:7px;border:1px solid #cdd5e0;border-radius:7px;background:#fff;color:#14213d}
  input{min-width:300px}#ent{min-width:380px}#pname{min-width:160px}
  button{font-size:14px;padding:7px 12px;border:1px solid #1b7f3b;background:#1b7f3b;color:#fff;border-radius:7px;cursor:pointer}
  button.sec{background:#fff;color:#14213d;border-color:#cdd5e0}
@@ -169,11 +171,20 @@ HTML = r"""<!doctype html><html lang="en"><head><meta charset="utf-8">
  body.dark #panelEnts.entfloat{background:#161e2b;border-color:#2a3547}
  #panelEnts.entfloat .railhead{cursor:move}
  #entdetach{float:right;padding:2px 8px;margin-left:6px}
- .slider{display:flex;align-items:center;flex-wrap:wrap;gap:4px 14px;margin:2px 0 10px}.slider input[type=range]{min-width:80px;flex:1;max-width:200px}.slider input[type=text]{flex:none}
- .ctl-cluster{display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px 8px;padding:2px 12px 2px 0;border-right:1px solid var(--border,#e3e8ef)}
+ /* C7-3: controls row — hardened so no child ever stretches/centers regardless of ancestor flex
+    context. .slider is itself display:flex (row of clusters); each .ctl-cluster is an
+    inline-flex "chip group" that must never grow past its content, and every control inside a
+    cluster (label+checkbox, select, text input) is pinned flex-start/no-grow so labels stay glued
+    to their checkboxes instead of drifting per justify-content on an ancestor. */
+ .slider{display:flex;align-items:flex-start;flex-wrap:wrap;gap:6px 14px;margin:6px 0 8px;justify-content:flex-start}
+ .slider input[type=range]{min-width:80px;flex:0 1 140px;max-width:200px}.slider input[type=text]{flex:none}
+ .ctl-cluster{display:inline-flex;align-items:center;justify-content:flex-start;flex:0 0 auto;flex-wrap:wrap;gap:4px 8px;padding:3px 12px 3px 0;border-right:1px solid var(--border,#e3e8ef)}
  .ctl-cluster:last-child{border-right:none;padding-right:0}
- .ctl-cap{font-size:11px;color:var(--muted,#9aa3b2);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;margin-right:1px}
- .ctl-cluster label{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;margin:0}
+ .ctl-cluster>*{flex:0 0 auto}
+ .ctl-cap{font-size:11px;color:var(--muted,#9aa3b2);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;margin-right:1px;flex:0 0 auto}
+ .ctl-cluster label,.ctl-cluster label.muted{display:inline-flex;align-items:center;justify-content:flex-start;gap:4px;white-space:nowrap;margin:0;flex:0 0 auto;cursor:pointer}
+ .ctl-cluster label input[type=checkbox]{flex:0 0 auto;margin:0}
+ .ctl-cluster select,.ctl-cluster input[type=text]{flex:0 0 auto}
  .frow{display:flex;gap:10px;padding:2px 6px;font-size:14px;border-bottom:1px solid #f3f5f8}
  .frow .lab{flex:1;min-width:280px}.frow .val{font-variant-numeric:tabular-nums}
  .vcell{width:92px;flex:none;text-align:right;font-variant-numeric:tabular-nums;color:#14213d}
@@ -197,12 +208,25 @@ HTML = r"""<!doctype html><html lang="en"><head><meta charset="utf-8">
  body.dark #cmdkbox{background:#161e2b;border:1px solid #2a3547}
  body.dark #cmdkinput{border-color:#2a3547}
  /* ---- dark mode ---- */
- body.dark{background:#0e1420;color:#e6e9ef;--border:#2a3547;--head:#1a2638;--fg2:#9aa3b2;--fg:#e6e9ef;--bg2:#1b2433;--bg:#161e2b;--muted:#9aa3b2}
+ /* C7-4: color-scheme:dark tells the browser to render NATIVE chrome (select popup listboxes,
+    scrollbars, form-control defaults) in a dark palette — without this, the closed <select> box
+    can be styled via CSS below but the OPEN option dropdown list still renders with the UA's light
+    default on many browsers, which is the "white-on-white" bug reported for ÷ ratio-to, quick-add,
+    league selects, Views etc. Scoped to body.dark only — light mode keeps color-scheme:light (default). */
+ body.dark{background:#0e1420;color:#e6e9ef;--border:#2a3547;--head:#1a2638;--fg2:#9aa3b2;--fg:#e6e9ef;--bg2:#1b2433;--bg:#161e2b;--muted:#9aa3b2;color-scheme:dark}
+ body:not(.dark){color-scheme:light}
  body.dark .rail,body.dark .card,body.dark .box,body.dark details,body.dark .modalbox{background:#161e2b;border-color:#2a3547}
  body.dark .railtabs{background:#121a26;border-color:#2a3547}
  body.dark .railhead,body.dark .modalhead{border-color:#2a3547}
  body.dark .rail{border-right-color:#2a3547}
- body.dark select,body.dark input,body.dark textarea{background:#1b2433;color:#e6e9ef;border-color:#2a3547}
+ /* body.dark select — element selector on select (not just [select,input,textarea]) so this rule's
+    specificity (0,1,1) reliably beats an inline style="background:inherit;color:inherit" (inherit
+    resolves from the DOM ancestor chain, which is fine in dark mode, but some selects — #normden,
+    #kpisel, #eb-from/#eb-to, #rfrom/#rto — sit inside elements with no explicit background, so
+    "inherit" could resolve to a light ancestor before body.dark's own background paints; pinning
+    the value here removes that ambiguity entirely). Verified var names against :root/body.dark tokens above. */
+ body.dark select,body.dark input,body.dark textarea{background:var(--bg2,#1b2433);color:var(--fg,#e6e9ef);border-color:var(--border,#2a3547)}
+ body.dark select{background-color:var(--bg2,#1b2433)}
  body.dark button.sec{background:#1b2433;color:#e6e9ef;border-color:#2a3547}
  body.dark .tab{background:#1b2433;color:#e6e9ef;border-color:#2a3547}body.dark .tab.on{background:#1b7f3b;color:#fff;border-color:#1b7f3b}
  body.dark .muted,body.dark label,body.dark .card .k,body.dark .schhead .cnt,body.dark .trow .code,body.dark .trow .num,body.dark .caret{color:#9aa3b2}
@@ -243,6 +267,15 @@ body.dark #lbl-overlay{background:#0f1825;border-color:#2a3547}
  .chartbox{position:relative;resize:both;overflow:hidden;width:100%;max-width:100%;min-width:300px;min-height:200px;box-sizing:border-box;border-radius:8px;margin-bottom:2px}
  .chartbox>svg{margin-bottom:0}
  .chartbox::after{content:"\2921";position:absolute;right:4px;bottom:1px;font-size:12px;line-height:1;color:var(--muted,#9aa3b2);opacity:.5;pointer-events:none}
+ /* C7-7(b): Entity Report trend grid — minmax(0,1fr) tracks (not bare 1fr) so a track can actually
+    shrink to the column width instead of being clamped by .chartbox's min-width:300px, which is what
+    caused one wide chart to overflow its column and visually overlap the next row/the page-2 break
+    in Print/PDF. Report .chartbox cells are also non-resizable (resize:none) and drop the drag-corner
+    affordance — the report is a fixed tear-sheet layout, not an interactive dashboard pane. */
+ .rpt-trend-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .rpt-trend-grid .chartbox{resize:none;min-width:0;min-height:0}
+ .rpt-trend-grid .chartbox::after{display:none}
+ @media print{.rpt-trend-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.rpt-trend-cell{break-inside:avoid;page-break-inside:avoid}}
 /* resizable non-chart panels */
 #cards{resize:horizontal;overflow:hidden;max-width:100%;min-width:200px;box-sizing:border-box}
 #mchips{resize:horizontal;overflow:hidden;max-width:100%;min-width:100px;box-sizing:border-box}
@@ -357,10 +390,10 @@ body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td
    <div><label>Saved peer groups</label><div id="psaved" class="chips"></div></div>
   </details>
 
-  <div id="kpiselrow" style="display:none;margin-bottom:4px"><span class="muted" style="font-size:13px">KPI series: </span><select id="kpisel" style="font-size:13px;padding:2px 4px;border:1px solid var(--border,#ccc);background:inherit;color:inherit;border-radius:4px"></select></div>
+  <div id="kpiselrow" style="display:none;margin-bottom:4px"><span class="muted" style="font-size:13px">KPI series: </span><select id="kpisel" style="font-size:13px;padding:2px 4px;border:1px solid var(--border,#ccc);background:var(--bg2,#f7f9fb);color:var(--fg,#14213d);border-radius:4px"></select></div>
   <div class="cards" id="cards"></div>
   <div id="snapshot"></div>
-  <div id="charts-flex"><div id="panes"><p class="muted">Pick a Views preset above, or click a measure in the left rail, to get started.</p></div><div id="extracharts-area"></div></div><button id="addchartbtn" class="sec" style="margin-top:8px;font-size:13px;display:none" onclick="addChart()">⊕ Add chart</button>
+  <div id="charts-flex"><div id="panes"><p class="muted">Pick a Views preset above, or click a measure in the left rail, to get started.</p></div><div id="extracharts-area"></div></div><button id="addchartbtn" class="sec" style="margin:6px 0 2px;font-size:13px;display:none" onclick="addChart()">⊕ Add chart</button>
   <div class="slider" id="sliderwrap" style="display:none">
    <span class="ctl-cluster">
     <span class="ctl-cap">Transform</span>
@@ -370,7 +403,7 @@ body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td
     <label class="muted" id="sharemode-lbl" title="each selected entity's value as % of the total across selected entities per quarter (needs 2+ entities, $ measures)"><input type="checkbox" id="sharemode"> Share %</label>
     <label class="muted" title="rebase each $ series to 100 at the start of the range"><input type="checkbox" id="idx"> index to 100</label>
     <label class="muted" title="render $ series as stacked areas (additive measures only — disabled for % / ratio series)"><input type="checkbox" id="stackedmode"> ◫ Stacked</label>
-    <span style="white-space:nowrap"><label class="muted" title="Divide each $ series by the selected denominator, producing a % ratio"><input type="checkbox" id="normbyassets"> ÷ (ratio to…)</label> <select id="normden" style="font-size:12px;padding:1px 3px;border:1px solid var(--border,#ccc);border-radius:3px;background:inherit;color:inherit;max-width:90px"><option value="COMB2170">assets</option><option value="COMB2122">loans</option><option value="COMB2200">deposits</option><option value="COMB3210">equity</option></select></span>
+    <span style="white-space:nowrap"><label class="muted" title="Divide each $ series by the selected denominator, producing a % ratio"><input type="checkbox" id="normbyassets"> ÷ (ratio to…)</label> <select id="normden" style="font-size:12px;padding:1px 3px;border:1px solid var(--border,#ccc);border-radius:3px;background:var(--bg2,#f7f9fb);color:var(--fg,#14213d);max-width:90px"><option value="COMB2170">assets</option><option value="COMB2122">loans</option><option value="COMB2200">deposits</option><option value="COMB3210">equity</option></select></span>
    </span>
    <span class="ctl-cluster">
     <span class="ctl-cap">Display</span>
@@ -383,8 +416,14 @@ body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td
     <input type="text" id="rfrom" list="qlist" size="10" style="font:inherit;font-size:13px;border:1px solid var(--border,#ccc);border-radius:3px;padding:1px 4px;background:inherit;color:inherit"><span class="muted">to</span><input type="text" id="rto" list="qlist" size="10" style="font:inherit;font-size:13px;border:1px solid var(--border,#ccc);border-radius:3px;padding:1px 4px;background:inherit;color:inherit"><datalist id="qlist"></datalist> <button id="preset1y" class="sec" style="padding:3px 8px;font-size:13px">1Y</button><button id="preset5y" class="sec" style="padding:3px 8px;font-size:13px">5Y</button><button id="preset10y" class="sec" style="padding:3px 8px;font-size:13px">10Y</button><button id="rreset" class="sec" style="padding:3px 8px;font-size:13px">All</button>
    </span>
    <span class="ctl-cluster">
-    <span class="ctl-cap">Ref line</span>
-    <span class="muted" style="font-size:13px;white-space:nowrap">⟵<input id="reflineval" type="text" placeholder="ref line e.g. 8 or 5e6" style="width:100px;font-size:13px;padding:1px 4px;border:1px solid var(--border,#ccc);background:inherit;color:inherit;border-radius:3px"><input id="reflinelbl" type="text" placeholder="label" style="width:60px;font-size:13px;padding:1px 4px;border:1px solid var(--border,#ccc);background:inherit;color:inherit;border-radius:3px"><button id="reflineset" class="sec" style="padding:1px 6px;font-size:13px">Set</button><button id="reflineclr" class="sec" style="padding:1px 6px;font-size:13px">✕</button></span>
+    <span class="ctl-cap" title="Draws a horizontal guide line at the y-value you enter, with an optional short label next to it — useful for marking a regulatory threshold, a peer benchmark, or any target level on the chart.">Reference line</span>
+    <span style="display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap">
+     <input id="reflineval" type="text" placeholder="value e.g. 8 or 5e6" title="Y-axis value to draw the reference line at (same units as the chart — % for ratio panes, $ thousands for dollar panes)" style="width:120px;font-size:13px;padding:3px 6px;border:1px solid var(--border,#ccc);background:var(--bg2,#fff);color:var(--fg,#14213d);border-radius:4px">
+     <input id="reflinelbl" type="text" placeholder="label (optional)" title="Short text shown next to the line, e.g. &quot;min. requirement&quot; — defaults to the value if left blank" style="width:110px;font-size:13px;padding:3px 6px;border:1px solid var(--border,#ccc);background:var(--bg2,#fff);color:var(--fg,#14213d);border-radius:4px">
+     <button id="reflineset" class="sec" style="padding:3px 9px;font-size:13px;font-weight:600" title="Draw the reference line at the value above">Set</button>
+     <button id="reflineclr" class="sec" style="padding:3px 9px;font-size:13px" title="Remove the reference line">✕ Clear</button>
+     <span id="reflinechip" style="display:none"></span>
+    </span>
    </span>
    <span class="ctl-cluster">
     <span class="ctl-cap">Export</span>
@@ -426,7 +465,7 @@ SELECT quarter_end, value FROM t WHERE entity_id='ALL' AND mdrm='COMB2170' ORDER
   <button id="lgexport" class="sec">Export</button> <button id="lgclose" class="sec">Close</button></div>
  <p class="muted" style="font-size:12px;padding:2px 14px 0">League lists individual banks only — size buckets are groups used to filter which banks appear, not aggregate rows; values shown are always per-bank.</p>
  <div id="leaguebody" style="flex:1;overflow:auto;padding:10px 14px"><p class="muted">Loading…</p></div></div></div>
-<div id="reportmodal" class="modal" style="display:none"><div class="modalbox" style="width:min(1040px,96vw);height:92vh">
+<div id="reportmodal" class="modal" style="display:none"><div class="modalbox" style="width:min(1220px,97vw);height:94vh;min-width:520px;min-height:360px">
  <div class="modalhead"><b>📋 Entity Report</b> &nbsp;<span id="rpt-title"></span><span id="rpt-asof" class="muted" style="font-size:13px"></span>
   <button id="rpt-addchart" class="sec">📈 Add to chart</button> <button id="rpt-print" class="sec">🖨 Print / PDF</button> <button id="rpt-html" class="sec" title="Download report as HTML file">⬇ HTML</button> <button id="rpt-link" class="sec" style="padding:3px 8px;font-size:13px" title="Copy link to this entity view">📎 Link</button> <button id="rptclose" class="sec">Close</button></div>
  <div id="rptbody" class="modalbody" style="flex:1;overflow:auto;padding:14px 18px"></div></div></div>
@@ -459,6 +498,7 @@ SELECT quarter_end, value FROM t WHERE entity_id='ALL' AND mdrm='COMB2170' ORDER
 <script type="module">
 import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.0/+esm';
 const PARTS=__PARTS__, OLD_PARTS=__OLD_PARTS__;
+const SHARD_BOUNDARY_JS=__SHARD_BOUNDARY__; // C7-6: JS-side mirror of the Python SHARD_BOUNDARY constant (year), for q0-vs-shard comparisons
 const EMPTY_CODES=new Set(__NODATA__);
 const BUILD_TS='__BUILD_TS__';
 const st=m=>document.getElementById('status').textContent=m;
@@ -683,7 +723,13 @@ async function ensureOldCall(){
       ALLQ=(await conn.query('SELECT DISTINCT quarter_end FROM t ORDER BY quarter_end')).toArray().map(r=>String(r.quarter_end));
       const lb=document.getElementById('loadold');if(lb)lb.style.display='none';
       const sh=document.getElementById('sql-oldhint');if(sh)sh.style.display='none';
-      st(prev);recompute();
+      // C7 fix: AWAIT the recompute — callers (rreset/rfrom/rto) resume after `await
+      // ensureOldCall()` and immediately read Qall; with a fire-and-forget recompute they saw
+      // the stale eager-only axis (All spanned 2018+ then the preserve-window logic re-anchored
+      // to it; typed pre-boundary From/To dates silently no-op'd on Qall.indexOf === -1).
+      // Deadlock-safe: oldLoaded=true is already set above, so recompute()'s own internal
+      // ensureOldCall() calls return immediately.
+      st(prev);await recompute();
     }catch(e){oldError=true;oldLoading=null;st('Could not load older data');const ph=document.getElementById('panes');if(ph)ph.innerHTML=`<p class="muted" style="padding:30px;text-align:center;font-size:14px">⚠ Could not load older data — ${String(e).slice(0,200)}</p>`;}
   })();
   return oldLoading;}
@@ -691,9 +737,22 @@ async function ensureOldCall(){
 function loadPeers(){try{peers=JSON.parse(localStorage.getItem('ffiec_peers')||'{}');}catch{peers={};}}
 function savePeers(){localStorage.setItem('ffiec_peers',JSON.stringify(peers));}
 // Transform-state hash grammar (t=/nd=): checkbox id <-> short token, in fixed emit order.
-// Only ACTIVE flags are listed in t= (compact, and absence of t= means "all off/default" for
-// full backward compat with old shared links). 'nolbl' is the one inverted flag: inline labels
-// default ON, so we only emit a token when they're turned OFF.
+// Only ACTIVE (non-default) flags are listed in t= (compact, and absence of t= means "all at
+// engine default" for full backward compat with old shared links).
+// FIX-5 (2026-07-02): the inline-labels token used to be UNCONDITIONALLY inverted ('nolbl' emitted
+// whenever the checkbox was unchecked), on the assumption that inline labels default ON. They don't:
+// the markup has no `checked` attribute (`<input type="checkbox" id="inlinelbls">`) and the boot
+// default is `window._inlineLbls=false` (verified in this engine's own init code above) — so on a
+// completely fresh load, the checkbox is unchecked, MATCHING the true default, yet the old code still
+// wrote 'nolbl' into the hash immediately (every fresh load looked like a deviation that never
+// happened, polluting the URL and confusing "has this link customized anything?" checks like
+// window._hashHasTfm). FIX: LBL_DEFAULT is a real per-engine constant read from the same boot value;
+// the emitted token is direction-aware — 'lbl' when checked but the engine default is OFF, 'nolbl'
+// when unchecked but the engine default is ON — so a token is written ONLY on true deviation from
+// this engine's actual default, matching every other flag in TFM_TOKS. hashToState() accepts EITHER
+// token name (old shared links with 'nolbl' from before this fix keep working: 'nolbl' still means
+// "force unchecked" on read, regardless of which way this engine's default now points).
+const LBL_DEFAULT=false; // Call: verified OFF (bare checkbox markup + window._inlineLbls boot default)
 const TFM_TOKS=[['qoqdelta','qoq'],['yoydelta','yoy'],['roll4q','4q'],['sharemode','share'],['idx','idx'],['stackedmode','stk'],['normbyassets','norm']];
 function stateToHash(){
   const params=new URLSearchParams();
@@ -702,7 +761,8 @@ function stateToHash(){
   if(Qall.length){params.set('q0',Qall[rangeSel.a]||'');params.set('q1',Qall[rangeSel.b]||'');}
   const toks=[];
   for(const[cid,tok] of TFM_TOKS){const el=document.getElementById(cid);if(el&&el.checked)toks.push(tok);}
-  {const il=document.getElementById('inlinelbls');if(il&&!il.checked)toks.push('nolbl');}
+  {const il=document.getElementById('inlinelbls');if(il){const on=!!il.checked;
+    if(on!==LBL_DEFAULT)toks.push(LBL_DEFAULT?'nolbl':'lbl');}}
   if(toks.length)params.set('t',toks.join(','));
   if(toks.includes('norm')){const nd=document.getElementById('normden');if(nd&&nd.value)params.set('nd',nd.value);}
   history.replaceState(null,'','#'+params.toString());}
@@ -716,12 +776,21 @@ function hashToState(){
     const q0=p.get('q0'),q1=p.get('q1');
     if(q0&&q1&&Qall.length){const a=Qall.indexOf(q0),b=Qall.indexOf(q1);
       if(a>=0&&b>=0)rangeSel={a:Math.min(a,b),b:Math.max(a,b)};}
+    // C7-6: at initial page load Qall is still empty (it's only populated by the first recompute()),
+    // so a shared link's q0/q1 can't be resolved to indices yet — stash the raw quarter strings and
+    // let the first recompute() apply them (loading the old pre-shard-boundary data first via
+    // ensureOldCall() if q0 predates what's eagerly loaded) instead of silently dropping them.
+    if(q0&&q1&&!Qall.length)window._pendingQ0Q1=[q0,q1];
     const tStr=p.get('t');
     window._hashHasTfm=(tStr!==null);
     if(tStr!==null){
       const toks=new Set(tStr.split(',').filter(Boolean));
       for(const[cid,tok] of TFM_TOKS){const el=document.getElementById(cid);if(el)el.checked=toks.has(tok);}
-      {const il=document.getElementById('inlinelbls');if(il){il.checked=!toks.has('nolbl');window._inlineLbls=il.checked;}}
+      // FIX-5: accept BOTH token spellings on read. 'lbl' forces ON, 'nolbl' forces OFF; if neither is
+      // present, fall back to this engine's actual default (LBL_DEFAULT) instead of hardcoding true.
+      {const il=document.getElementById('inlinelbls');if(il){
+        il.checked=toks.has('lbl')?true:toks.has('nolbl')?false:LBL_DEFAULT;
+        window._inlineLbls=il.checked;}}
       const nd=p.get('nd');if(nd){const ndEl=document.getElementById('normden');if(ndEl&&[...ndEl.options].some(o=>o.value===nd)){ndEl.value=nd;window._normDenCd=nd;}}
     }
     return !!(eStr||mStr||tStr!==null);}catch{return false;}}
@@ -732,6 +801,11 @@ function resolveEnt(){const v=document.getElementById('ent').value.trim();
  const m=v.match(/(\d{3,})/);if(m){const id='BANK:'+m[1];return {id,label:id2lbl.get(id)||id};}return null;}
 function expand(id){if(id&&id.startsWith('PEER:')){const n=id.slice(5);return peers[n]||[];}return [id];}
 function coalesce(map,base){return map['COMB'+base]??map['RCFD'+base]??map['RCON'+base]??map['RIAD'+base]??map['RCFA'+base]??map['RCFW'+base]??map['RCOA'+base]??map['RCOW'+base]??map['RCFN'+base];}
+// FIX-2: ordSuffix — correct English ordinal suffix (1st/2nd/3rd/4th…, with 11th/12th/13th special-
+// cased so it doesn't say "11st"). Module-scope (not buildReport()-local) so buildNarrative() — a
+// separate top-level function called from buildReport() but without closure access to its locals —
+// can use the same one everywhere a percentile/rank string renders (grep 'th %ile'/'th percentile').
+function ordSuffix(n){const a=Math.abs(n)%100;if(a>=11&&a<=13)return n+'th';switch(Math.abs(n)%10){case 1:return n+'st';case 2:return n+'nd';case 3:return n+'rd';default:return n+'th';}}
 function searchHier(q){const q2=q.toLowerCase();const seen=new Set();const res=[];
  if(HIER)for(const sch of Object.keys(HIER))for(const r of (HIER[sch]||[])){
   if(!r.mdrm||seen.has(r.mdrm))continue;seen.add(r.mdrm);
@@ -945,7 +1019,9 @@ async function init(){try{
  document.getElementById('reportbtn').onclick=()=>{if(active.length===1&&active[0].id.startsWith('BANK:'))openReport(active[0].id);};
  document.getElementById('rptclose').onclick=()=>{document.getElementById('reportmodal').style.display='none';closeWhyTip();const p=new URLSearchParams(location.hash.slice(1));p.delete('report');history.replaceState(null,'','#'+p.toString());};
  document.getElementById('rpt-print').onclick=rptPrint;
- document.getElementById('rpt-html').onclick=()=>{const b=document.getElementById('rptbody');if(!b)return;const title=document.getElementById('rpt-title')?.textContent||'entity_report';const css=`<style>body{font-family:system-ui,sans-serif;margin:20px;background:#fff;color:#111}h3{margin:14px 0 6px}table{border-collapse:collapse}td,th{padding:3px 6px;border-bottom:1px solid #ddd}.muted{color:#666}</style>`;const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>${css}</head><body>${b.innerHTML}</body></html>`;const bl=new Blob([html],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download=(title.replace(/\s+/g,'_').replace(/[^\w_-]/g,'')||'report')+'.html';a.click();};
+ // C7-1: ⬇ HTML export — same forced-light token set + defensive .pt/.qband hide rules as
+ // rptPrint(), since this file is opened standalone with none of the dashboard's own <style>.
+ document.getElementById('rpt-html').onclick=()=>{const b=document.getElementById('rptbody');if(!b)return;const title=document.getElementById('rpt-title')?.textContent||'entity_report';const css=`<style>:root{color-scheme:light;--border:#ccc;--head:#f7f8fc;--fg:#111;--fg2:#666;--bg:#fff;--bg2:#f7f9fb;--muted:#666}body{font-family:system-ui,sans-serif;margin:20px;background:#fff;color:#111}h3{margin:14px 0 6px}table{border-collapse:collapse}td,th{padding:3px 6px;border-bottom:1px solid #ddd}.muted{color:#666}svg{background:#fff}svg circle.pt{display:none}.qband{display:none}.rpt-trend-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:14px}.rpt-trend-cell{min-width:0}</style>`;const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>${css}</head><body>${b.innerHTML}</body></html>`;const bl=new Blob([html],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download=(title.replace(/\s+/g,'_').replace(/[^\w_-]/g,'')||'report')+'.html';a.click();};
  document.getElementById('rpt-link').onclick=()=>{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(location.href).then(()=>showToast('Link copied!','ok')).catch(()=>prompt('Copy this link:',location.href));}else{prompt('Copy this link:',location.href);}};
  document.getElementById('exportbtn').onclick=openExportBuilder;
  document.getElementById('copylink').onclick=()=>{const b=document.getElementById('copylink');navigator.clipboard.writeText(location.href).then(()=>{const t=b.textContent;b.textContent='✓ Copied!';setTimeout(()=>b.textContent=t,2000);}).catch(()=>showToast('Copy the URL from the address bar.'));};
@@ -1008,11 +1084,28 @@ async function init(){try{
  document.getElementById('csv').onclick=exportSeries;document.getElementById('svgexport').onclick=exportChartSVG;document.getElementById('kpisel').onchange=draw;document.getElementById('cplink').onclick=()=>{const url=location.href;if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(()=>showToast('Link copied!','ok')).catch(()=>prompt('Copy this link:',url));}else{prompt('Copy this link:',url);}};
  document.getElementById('runsql').onclick=runsql; document.getElementById('sqlcsv').onclick=()=>dl2(sqlC,sqlR,'query');
  document.getElementById('r0').oninput=onSlide; document.getElementById('r1').oninput=onSlide;
- document.getElementById('rreset').onclick=()=>{rangeSel={a:0,b:Qall.length-1};syncSlider();draw();};
+ // C7-6: 'All' must actually mean all — with era-sharding, Qall is eager-shard-only (2018+) until
+ // the old (pre-2018) shard is attached, so resetting to {a:0,b:Qall.length-1} before that silently
+ // capped "All" at the shard boundary. Same guard idiom as openLeague()/openForm(): ensure the old
+ // shard is loaded (no-op if already loaded or there isn't one), THEN span the now-complete Qall.
+ document.getElementById('rreset').onclick=async()=>{if(!oldLoaded&&!oldError&&OLD_PARTS.length)await ensureOldCall();rangeSel={a:0,b:Qall.length-1};syncSlider();draw();};
  ['1y','5y','10y'].forEach((id,k)=>{const btn=document.getElementById(`preset${id}`);if(btn)btn.onclick=()=>{if(!Qall.length)return;const n=[4,20,40][k];rangeSel={a:Math.max(0,Qall.length-n),b:Qall.length-1};syncSlider();draw();};});
- document.getElementById('rfrom').onchange=()=>{const q=document.getElementById('rfrom').value.trim();const i=Qall.indexOf(q);if(i>=0){rangeSel.a=Math.min(i,rangeSel.b);syncSlider();draw();}};
- document.getElementById('rto').onchange=()=>{const q=document.getElementById('rto').value.trim();const i=Qall.indexOf(q);if(i>=0){rangeSel.b=Math.max(i,rangeSel.a);syncSlider();draw();}};
- document.getElementById('idx').onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();stateToHash();};document.getElementById('qoqdelta').onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();stateToHash();};document.getElementById('yoydelta').onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();stateToHash();};document.getElementById('roll4q').onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();stateToHash();};document.getElementById('sharemode').onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();stateToHash();};document.getElementById('normbyassets').onchange=()=>{try{localStorage.setItem('ffiec_call_normbyassets',document.getElementById('normbyassets').checked?'1':'0');}catch(_){}if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}if(document.getElementById('normbyassets').checked)scheduleRecompute();else{draw();stateToHash();}};{const nde=document.getElementById('normden');if(nde)nde.onchange=()=>{window._normDenCd=nde.value;try{localStorage.setItem('ffiec_call_normden',nde.value);}catch(_){}if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}if(document.getElementById('normbyassets')?.checked)scheduleRecompute();else stateToHash();};};{const stackEl=document.getElementById('stackedmode');if(stackEl)stackEl.onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();stateToHash();};}{const lcEl=document.getElementById('linkcharts');if(lcEl){lcEl.checked=_linkCharts;lcEl.onchange=()=>{_linkCharts=lcEl.checked;try{localStorage.setItem('ffiec_call_linkcharts',_linkCharts?'1':'0');}catch(_){}if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}};}}{const il=document.getElementById('inlinelbls');if(il){il.checked=(window._inlineLbls!==false);il.onchange=()=>{window._inlineLbls=il.checked;try{localStorage.setItem('ffiec_call_inlinelbls',il.checked?'1':'0');}catch(_){}draw();stateToHash();};}}document.getElementById('reflineset').onclick=()=>{const v=parseFloat(document.getElementById('reflineval').value);if(!isNaN(v)){_reflineVal=v;_reflineLbl=document.getElementById('reflinelbl').value.trim()||String(v);}draw();};document.getElementById('reflineclr').onclick=()=>{_reflineVal=null;document.getElementById('reflineval').value='';document.getElementById('reflinelbl').value='';draw();};
+ // C7-6: a typed "From" date earlier than anything in the currently-loaded Qall most likely means
+ // the user wants pre-shard-boundary history that simply hasn't been fetched yet, not an invalid
+ // date — load the old shard once and retry the lookup, instead of silently no-op'ing on a valid
+ // FFIEC quarter-end string just because it isn't in memory yet.
+ document.getElementById('rfrom').onchange=async()=>{const q=document.getElementById('rfrom').value.trim();let i=Qall.indexOf(q);
+  if(i<0&&/^\d{4}-\d{2}-\d{2}$/.test(q)&&!oldLoaded&&!oldError&&OLD_PARTS.length&&(!Qall.length||q<Qall[0])){await ensureOldCall();i=Qall.indexOf(q);}
+  if(i>=0){rangeSel.a=Math.min(i,rangeSel.b);syncSlider();draw();}};
+ document.getElementById('rto').onchange=async()=>{const q=document.getElementById('rto').value.trim();let i=Qall.indexOf(q);
+  if(i<0&&/^\d{4}-\d{2}-\d{2}$/.test(q)&&!oldLoaded&&!oldError&&OLD_PARTS.length&&(!Qall.length||q<Qall[0])){await ensureOldCall();i=Qall.indexOf(q);}
+  if(i>=0){rangeSel.b=Math.max(i,rangeSel.a);syncSlider();draw();}};
+ document.getElementById('idx').onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();stateToHash();};document.getElementById('qoqdelta').onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();stateToHash();};document.getElementById('yoydelta').onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();stateToHash();};document.getElementById('roll4q').onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();stateToHash();};document.getElementById('sharemode').onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();stateToHash();};document.getElementById('normbyassets').onchange=()=>{try{localStorage.setItem('ffiec_call_normbyassets',document.getElementById('normbyassets').checked?'1':'0');}catch(_){}if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}if(document.getElementById('normbyassets').checked)scheduleRecompute();else{draw();stateToHash();}};{const nde=document.getElementById('normden');if(nde)nde.onchange=()=>{window._normDenCd=nde.value;try{localStorage.setItem('ffiec_call_normden',nde.value);}catch(_){}if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}if(document.getElementById('normbyassets')?.checked)scheduleRecompute();else stateToHash();};};{const stackEl=document.getElementById('stackedmode');if(stackEl)stackEl.onchange=()=>{if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}draw();stateToHash();};}{const lcEl=document.getElementById('linkcharts');if(lcEl){lcEl.checked=_linkCharts;lcEl.onchange=()=>{_linkCharts=lcEl.checked;try{localStorage.setItem('ffiec_call_linkcharts',_linkCharts?'1':'0');}catch(_){}if(_linkCharts){_applyLinkedTfm(_getLinkTfm());renderExtraChartsArea();}else{_restoreOwnTfm();renderExtraChartsArea();}};}}{const il=document.getElementById('inlinelbls');if(il){il.checked=(window._inlineLbls!==false);il.onchange=()=>{window._inlineLbls=il.checked;try{localStorage.setItem('ffiec_call_inlinelbls',il.checked?'1':'0');}catch(_){}draw();stateToHash();};}}/* C7-5: Reference line UX — Set now shows a small dismissible chip ("ref @ <value> ✕") next to the
+   buttons so the active state is visible without re-reading the inputs; Clear removes it. Underlying
+   draw logic (the dashed orange line + label baked into pane()'s SVG at _reflineVal/_reflineLbl) is
+   untouched — this only changes how the control communicates state. */
+function renderRefLineChip(){const c=document.getElementById('reflinechip');if(!c)return;if(_reflineVal==null){c.style.display='none';c.innerHTML='';return;}c.style.display='inline-flex';c.style.cssText='display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 8px;border-radius:10px;background:var(--head,#eef2f7);border:1px solid var(--border,#ccc);color:var(--fg,#14213d)';c.innerHTML=`ref @ ${_esc(_reflineLbl||String(_reflineVal))} <span id="reflinechip-x" style="cursor:pointer;font-weight:700;color:var(--muted,#8a93a3)">✕</span>`;const x=document.getElementById('reflinechip-x');if(x)x.onclick=()=>{_reflineVal=null;document.getElementById('reflineval').value='';document.getElementById('reflinelbl').value='';renderRefLineChip();draw();};}
+document.getElementById('reflineset').onclick=()=>{const v=parseFloat(document.getElementById('reflineval').value);if(!isNaN(v)){_reflineVal=v;_reflineLbl=document.getElementById('reflinelbl').value.trim()||String(v);}renderRefLineChip();draw();};document.getElementById('reflineclr').onclick=()=>{_reflineVal=null;document.getElementById('reflineval').value='';document.getElementById('reflinelbl').value='';renderRefLineChip();draw();};
  (function(){const sp=document.getElementById('railsplit');let drag=false;
   sp.addEventListener('mousedown',e=>{drag=true;e.preventDefault();document.body.style.userSelect='none';});
   window.addEventListener('mousemove',e=>{if(!drag)return;const w=Math.min(820,Math.max(300,e.clientX));document.documentElement.style.setProperty('--railw',w+'px');});
@@ -1315,8 +1408,9 @@ async function applyView(vid){const v=VIEWS.find(x=>x.id===vid);if(!v)return;
  for(const cid of ['qoqdelta','yoydelta','roll4q','sharemode','idx','stackedmode','normbyassets']){
    const el=document.getElementById(cid);if(el)el.checked=!!xf[cid];}
  if(xf.normden){const nd=document.getElementById('normden');if(nd)nd.value=xf.normden;}
- // (5) force an immediate (non-debounced) recompute so Qall is fresh — recompute() always resets
- // rangeSel to the full window, so the range preset below MUST run after it, not before.
+ // (5) force an immediate (non-debounced) recompute so Qall is fresh — recompute() picks its own
+ // default window (preserved selection or 10Y-back), so the view's explicit range preset below
+ // MUST run after it (not before) to win over that default.
  clearTimeout(_rcTimer);await recompute();
  const presetMap={'1Y':4,'5Y':20,'10Y':40};
  if(v.range&&v.range!=='All'&&presetMap[v.range]&&Qall.length){const n=presetMap[v.range];rangeSel={a:Math.max(0,Qall.length-n),b:Qall.length-1};}
@@ -1459,16 +1553,46 @@ async function recompute(){
    const probe=await Promise.all(active.filter(e=>e.id.startsWith('BANK:')).map(e=>seriesFor(e.id,measures[0]?.code)));
    if(probe.length&&probe.every(r=>!r.length)){await ensureOldCall();if(mySeq!==_rcSeq)return;}
  }
+ // C7-6: a shared link's q0 (from hashToState(), stashed since Qall wasn't populated yet at parse
+ // time) may name a quarter earlier than the eager shard's boundary — load the old shard before
+ // computing series so that quarter is actually resolvable, not just resolvable-after-the-fact.
+ if(window._pendingQ0Q1&&!oldLoaded&&!oldError&&OLD_PARTS.length){
+   const _pq0=window._pendingQ0Q1[0];
+   if(/^\d{4}/.test(_pq0)&&+_pq0.slice(0,4)<SHARD_BOUNDARY_JS){await ensureOldCall();if(mySeq!==_rcSeq)return;}
+ }
  const out=[];let ci=0;
  for(const m of measures)for(const e of active){if(mySeq!==_rcSeq)return;const blocked=isRawPct(m.code)&&isAggScope(e.id);
    const rows=blocked?[]:await seriesFor(e.id,m.code);if(mySeq!==_rcSeq)return;
    const mlbl=fullCap(m.code)||m.label;
    const label=`${e.label} · ${mlbl}`+(blocked?' (n/a — % cell, not summable across entities)':'');
-   out.push({label,pct:m.pct,rows,color:COLORS[ci++%COLORS.length],eid:e.id});}
+   /* C7-8: sid = stable series identifier (entity id + measure code), independent of the rendered
+      label text — two series can legitimately share a label (same caption via different code
+      variants, or a code + its DERIV alias) but must never be treated as the same series for
+      per-series UI state (e.g. dual-axis assignment). */
+   out.push({label,pct:m.pct,rows,color:COLORS[ci++%COLORS.length],eid:e.id,code:m.code,sid:e.id+'::'+m.code});}
  lastSeries=out;
  const qs=new Set();for(const s of out)for(const r of s.rows)qs.add(r[0]);
  _assetRows.clear();const _ndEl=document.getElementById('normden');const _ndCd=_ndEl?_ndEl.value:'COMB2170';window._normDenCd=_ndCd;for(const e of active){if(mySeq!==_rcSeq)return;const ar=await seriesFor(e.id,_ndCd);_assetRows.set(e.id,Object.fromEntries(ar.map(r=>[r[0],r[1]])));}
- Qall=[...qs].sort(); rangeSel={a:0,b:Math.max(0,Qall.length-1)}; syncSlider(); await recomputeExtraCharts(); draw();stateToHash();}
+ // C7-6: preserve the user's chosen date WINDOW (not raw indices, since Qall can grow/shrink when
+ // measures/entities change) across recompute — re-anchor by quarter string when both edges of the
+ // prior selection still exist in the new Qall; otherwise fall back to a 10Y-back default window
+ // (NOT "everything currently loaded", which used to silently default to the eager-shard boundary
+ // once Call was sharded). '📅 Older data'/the All preset are still one click away either way.
+ const _prevFromQ=Qall.length?Qall[rangeSel.a]:null,_prevToQ=Qall.length?Qall[rangeSel.b]:null;
+ Qall=[...qs].sort();
+ // C7-6: a shared link's q0/q1 (stashed by hashToState() when Qall was still empty) takes priority
+ // over both the preserved-selection and the 10Y-back default — this is the ONE-TIME application on
+ // first successful recompute after page load; consumed then cleared so later recomputes (entity/
+ // measure changes) fall through to the normal preserve-or-10Y-default logic below.
+ if(window._pendingQ0Q1){
+   const[_pq0,_pq1]=window._pendingQ0Q1;const _pa=Qall.indexOf(_pq0),_pb=Qall.indexOf(_pq1);
+   window._pendingQ0Q1=null;
+   if(_pa>=0&&_pb>=0){rangeSel={a:Math.min(_pa,_pb),b:Math.max(_pa,_pb)};syncSlider();await recomputeExtraCharts();draw();stateToHash();return;}
+ }
+ const _reA=_prevFromQ?Qall.indexOf(_prevFromQ):-1,_reB=_prevToQ?Qall.indexOf(_prevToQ):-1;
+ if(_reA>=0&&_reB>=0){rangeSel={a:Math.min(_reA,_reB),b:Math.max(_reA,_reB)};}
+ else{rangeSel={a:Math.max(0,Qall.length-40),b:Math.max(0,Qall.length-1)};} // 40 quarters = 10Y back
+ syncSlider(); await recomputeExtraCharts(); draw();stateToHash();}
 function syncSlider(){const n=Qall.length;const w=document.getElementById('sliderwrap');
  if(n<2){w.style.display='none';return;}w.style.display='flex';
  for(const id of['r0','r1']){const el=document.getElementById(id);el.min=0;el.max=n-1;}
@@ -1479,6 +1603,11 @@ let _slideRAF=null;
 function onSlide(){let a=+document.getElementById('r0').value,b=+document.getElementById('r1').value;
  rangeSel={a:Math.min(a,b),b:Math.max(a,b)};
  document.getElementById('rfrom').value=Qall[rangeSel.a];document.getElementById('rto').value=Qall[rangeSel.b];
+ // C7-6: dragging the range slider to its left edge (index 0) means the user is reaching for older
+ // history — if the pre-2018 shard hasn't loaded yet, index 0 is only the eager-shard boundary, not
+ // real "oldest data". Load it once (same guard idiom as openLeague/rreset) and let the slider/Qall
+ // extend automatically; this fires once per drag-to-edge, not on every tick.
+ if(rangeSel.a===0&&!oldLoaded&&!oldError&&OLD_PARTS.length)ensureOldCall();
  if(_slideRAF)return; // coalesce rapid native `input` ticks into at most one redraw per animation frame
  _slideRAF=requestAnimationFrame(()=>{_slideRAF=null;draw();});}
 function initWidthResize(id,lsKey){const el=document.getElementById(id);if(!el)return;
@@ -1531,11 +1660,18 @@ function draw(){const host=document.getElementById('panes');
  let html='';
  let dualAxis=window._dualAxis||false;
  if(!window._axisRight)window._axisRight=new Set();
+ /* C7-8: dual-axis assignment was keyed by rendered LABEL text (window._axisRight.has(s.label)) —
+    two series can legitimately share an identical label (same caption reached via different code
+    variants, or a code + its DERIV alias for the same entity) and checking one would silently flip
+    BOTH to the right axis. Rekey by the stable per-series id (entity id + measure code) threaded
+    through lastSeries as s.sid; fall back to label only if sid is somehow absent (defensive, should
+    not happen for any series that passed through recompute()). */
+ const _axKey=s=>s.sid||s.label;
  const hasDol=workSeries.some(s=>!s.pct),hasPct=workSeries.some(s=>s.pct);
  if(hasDol&&hasPct){
-   const axisUI=dualAxis?workSeries.map((s,i)=>`<label style="font-size:12px;white-space:nowrap;margin-right:6px"><input type="checkbox" class="ax-right" data-i="${i}" ${window._axisRight.has(s.label)?'checked':''}> <span style="color:${s.color}">${(s.label||'').slice(0,30)}</span> → right</label>`).join(''):'';
+   const axisUI=dualAxis?workSeries.map((s,i)=>`<label style="font-size:12px;white-space:nowrap;margin-right:6px"><input type="checkbox" class="ax-right" data-i="${i}" ${window._axisRight.has(_axKey(s))?'checked':''}> <span style="color:${s.color}">${(s.label||'').slice(0,30)}</span> → right</label>`).join(''):'';
    html+=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><button class="sec pane-toggle" id="axistoggle">${dualAxis?'⊞ Split panes':'⊟ Dual axis'}</button>${axisUI}</div>`;
-   if(dualAxis){const leftS=workSeries.filter(s=>!window._axisRight.has(s.label));const rightS=workSeries.filter(s=>window._axisRight.has(s.label));const lFilt=leftS.length?leftS:workSeries.filter(s=>!s.pct);const rFilt=rightS.length?rightS:workSeries.filter(s=>s.pct);html+=paneDual(lFilt.map(s=>({...s,rows:s.rows.filter(r=>ws.has(r[0]))})),rFilt.map(s=>({...s,rows:s.rows.filter(r=>ws.has(r[0]))})),win);}
+   if(dualAxis){const leftS=workSeries.filter(s=>!window._axisRight.has(_axKey(s)));const rightS=workSeries.filter(s=>window._axisRight.has(_axKey(s)));const lFilt=leftS.length?leftS:workSeries.filter(s=>!s.pct);const rFilt=rightS.length?rightS:workSeries.filter(s=>s.pct);html+=paneDual(lFilt.map(s=>({...s,rows:s.rows.filter(r=>ws.has(r[0]))})),rFilt.map(s=>({...s,rows:s.rows.filter(r=>ws.has(r[0]))})),win);}
    else{for(const [unit,arr] of groups){if(!arr.length)continue;const w=arr.map(s=>({...s,rows:s.rows.filter(r=>ws.has(r[0]))}));html+=pane(w,unit==='percent',unit,win,stackedOn&&unit==='$ thousands');}}}
  else{for(const [unit,arr] of groups){if(!arr.length)continue;
    const w=arr.map(s=>({...s,rows:s.rows.filter(r=>ws.has(r[0]))}));html+=pane(w,unit==='percent',unit,win,stackedOn&&unit==='$ thousands');}}
@@ -1556,7 +1692,7 @@ function draw(){const host=document.getElementById('panes');
  if(window._pinnedQ){document.querySelectorAll(`#panes .qband[data-q="${window._pinnedQ}"]`).forEach(g=>g.classList.add('qband-pinned'));}
  if(lastSeries.length>0&&!lastSeries.some(s=>s.rows.some(r=>ws.has(r[0])))){host.innerHTML+=`<div style="text-align:center;padding:16px 8px 4px;font-size:14px;color:var(--muted,#9aa3b2)">No data available in the selected date range — try expanding the range or selecting <b>All</b>.</div>`;}
  const atb=document.getElementById('axistoggle');if(atb)atb.onclick=()=>{window._dualAxis=!window._dualAxis;draw();};
- document.querySelectorAll('.ax-right').forEach(cb=>cb.onchange=()=>{const s=workSeries[+cb.dataset.i];if(!s)return;if(cb.checked)window._axisRight.add(s.label);else window._axisRight.delete(s.label);draw();});
+ document.querySelectorAll('.ax-right').forEach(cb=>cb.onchange=()=>{const s=workSeries[+cb.dataset.i];if(!s)return;const k=_axKey(s);if(cb.checked)window._axisRight.add(k);else window._axisRight.delete(k);draw();});
  const kpiSelEl=document.getElementById('kpisel'),kpiSelRow=document.getElementById('kpiselrow');
  if(lastSeries.length>1){kpiSelRow.style.display='';const pv=kpiSelEl.value;kpiSelEl.innerHTML=lastSeries.map((s,i)=>`<option value="${i}">${s.label||s.id||('Series '+(i+1))}</option>`).join('');if(pv&&+pv<lastSeries.length)kpiSelEl.value=pv;}else{kpiSelRow.style.display='none';kpiSelEl.innerHTML='';}
  const kpiIdx=lastSeries.length>1?(+kpiSelEl.value||0):0;
@@ -1600,10 +1736,27 @@ function draw(){const host=document.getElementById('panes');
   for(const {s,sLast,sQoq,sYoy,sTot,sQR,sYR,sTR} of snapRows){const dot=`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${s.color};margin-right:5px"></span>`;sh+=`<tr><td style="text-align:left;padding:3px 6px">${dot}${s.label}</td><td style="padding:3px 6px;text-align:right">${fmtUnit(sLast,s.pct)}</td><td class="${cls(sQoq)}" style="padding:3px 6px;text-align:right">${arr(sQoq)}${sQR!=null?` <span class="muted" style="font-size:12px">${fmtDelta(sQR,s.pct)}</span>`:''}</td><td class="${cls(sYoy)}" style="padding:3px 6px;text-align:right">${arr(sYoy)}${sYR!=null?` <span class="muted" style="font-size:12px">${fmtDelta(sYR,s.pct)}</span>`:''}</td><td class="${cls(sTot)}" style="padding:3px 6px;text-align:right">${arr(sTot)}${sTR!=null?` <span class="muted" style="font-size:12px">${fmtDelta(sTR,s.pct)}</span>`:''}</td></tr>`;}
   snapEl.innerHTML=sh+'</tbody></table>';
  }else if(snapEl){snapEl.innerHTML='';} const _aBtn=document.getElementById('addchartbtn');if(_aBtn)_aBtn.style.display='';const _lLbl=document.getElementById('linkcharts-lbl');if(_lLbl)_lLbl.style.display='';drawExtraCharts();}
-function pane(series,pct,unit,win,stacked){const W=1080,pad=64,n=win.length;const _gut=16;const _vbw=W+_gut;const _pinned=window._chartW>40&&window._chartH>40;let H=_pinned?Math.round(_vbw*window._chartH/window._chartW):300;H=Math.max(260,Math.min(2800,H));const _svgsty=(_pinned?'width:100%;height:100%':'width:100%;height:auto')+';display:block';
+/* C7-1/C7-2: `staticOpts` (optional 6th arg) renders a SELF-CONTAINED variant for anything that
+   leaves the main document — report trend charts, Print/PDF, ⬇ HTML, SVG export. When set:
+   - forceLight:true ignores DK() entirely (light palette always, regardless of on-screen theme —
+     the popout/print window has no idea what theme was active, and half the "dots on black" bug
+     was light-theme-appropriate colors being computed as DARK hex because DK() read the live
+     document at render time).
+   - noInteractive:true omits the hover crosshair bands (.qband/.reveal) and per-point .pt circles
+     entirely. Those rely ENTIRELY on the main stylesheet (svg circle.pt{fill-opacity:0} / .qband
+     .reveal{opacity:0}) to stay invisible until hovered — a document that doesn't carry that
+     stylesheet (any popout/downloaded HTML/exported SVG) renders them fully opaque forever, which
+     is the actual "dots on black" root cause (sparklines never had this problem because they use a
+     single inline-styled <polyline>, no CSS-dependent classed elements at all).
+   - legend:true appends a proper bottom legend (swatch + series name) built from `series` — none of
+     pane()'s callers currently pass a legend, so static exports were missing one entirely.
+   Every existing call site (draw(), drawExtraChart(), paneDual() companions) omits the 6th arg and
+   is BYTE-IDENTICAL to before. */
+function pane(series,pct,unit,win,stacked,staticOpts){const so=staticOpts||null;const W=1080,pad=64,n=win.length;const _gut=16;const _vbw=W+_gut;const _pinned=!so&&window._chartW>40&&window._chartH>40;let H=_pinned?Math.round(_vbw*window._chartH/window._chartW):(so?340:300);H=Math.max(260,Math.min(2800,H));const _svgsty=(_pinned?'width:100%;height:100%':'width:100%;height:auto')+';display:block';
+ const _dk=so?(so.forceLight?false:DK()):DK();
  const xi=Object.fromEntries(win.map((q,i)=>[q,i]));
  let mn=Infinity,mx=-Infinity;for(const s of series)for(const r of s.rows){mn=Math.min(mn,r[1]);mx=Math.max(mx,r[1]);}
- if(!isFinite(mn)){const aC=DK()?'#9aa3b2':'#5a6478';return `<div class="chartbox"><svg viewBox="0 0 ${_vbw} ${H}" preserveAspectRatio="none" style="${_svgsty}" xmlns="http://www.w3.org/2000/svg"><text x="${(_vbw/2).toFixed(0)}" y="${(H/2).toFixed(0)}" font-size="16" fill="${aC}" text-anchor="middle" dominant-baseline="middle">No data available for this entity / date range</text></svg></div>`;}
+ if(!isFinite(mn)){const aC=_dk?'#9aa3b2':'#5a6478';return `<div class="chartbox"><svg viewBox="0 0 ${_vbw} ${H}" preserveAspectRatio="none" style="${_svgsty}" xmlns="http://www.w3.org/2000/svg"><rect width="${_vbw}" height="${H}" fill="${_dk?'#0f1825':'#fff'}"></rect><text x="${(_vbw/2).toFixed(0)}" y="${(H/2).toFixed(0)}" font-size="16" fill="${aC}" text-anchor="middle" dominant-baseline="middle">No data available for this entity / date range</text></svg></div>`;}
  // In stacked mode scale to total; otherwise anchor at zero baseline
  if(stacked){mn=0;const tots={};for(const q of win)tots[q]=0;for(const s of series){const m=Object.fromEntries(s.rows.map(r=>[r[0],r[1]]));for(const q of win)tots[q]+=(m[q]??0);}mx=Math.max(...Object.values(tots),0);}
  else{if(unit==='$ thousands'&&mn>0)mn=0;if(unit==='percent'){if(mn>0)mn=0;if(mx<0)mx=0;}}
@@ -1611,15 +1764,16 @@ function pane(series,pct,unit,win,stacked){const W=1080,pad=64,n=win.length;cons
  const rg=(mx-mn)||1;
  const X=i=>pad+i*(W-2*pad)/Math.max(1,n-1),Y=v=>H-pad-(v-mn)/rg*(H-2*pad);
  const f=v=>unit==='percent'?v.toFixed(2)+'%':unit==='index'?v.toFixed(0):fmtUnit(v,false);
- const gC=DK()?'#243044':'#eef2f7',aC=DK()?'#9aa3b2':'#5a6478',tC=DK()?'#e6e9ef':'#14213d';
+ const gC=_dk?'#243044':'#eef2f7',aC=_dk?'#9aa3b2':'#5a6478',tC=_dk?'#e6e9ef':'#14213d';
+ const bgRect=so?`<rect x="0" y="0" width="${_vbw}" height="${H}" fill="${_dk?'#0f1825':'#fff'}"></rect>`:'';
  // gridlines at min / mid / max, with a distinct zero line whenever 0 falls inside the range
  const ticks=[...new Set([mn,(mn+mx)/2,mx])];
  let tk=ticks.map(v=>`<line x1="${pad}" y1="${Y(v)}" x2="${W-pad}" y2="${Y(v)}" stroke="${gC}"></line><text x="8" y="${Y(v)+4}" font-size="11" fill="${aC}">${f(v)}</text>`).join('');
- if(mn<0&&mx>0){const zC=DK()?'#6b7689':'#9aa3b2';tk+=`<line x1="${pad}" y1="${Y(0)}" x2="${W-pad}" y2="${Y(0)}" stroke="${zC}" stroke-width="1.5"></line><text x="8" y="${Y(0)+4}" font-size="11" fill="${zC}">${unit==='percent'?'0%':'0'}</text>`;}
- const recC=DK()?'rgba(217,119,6,0.09)':'rgba(217,119,6,0.07)';
+ if(mn<0&&mx>0){const zC=_dk?'#6b7689':'#9aa3b2';tk+=`<line x1="${pad}" y1="${Y(0)}" x2="${W-pad}" y2="${Y(0)}" stroke="${zC}" stroke-width="1.5"></line><text x="8" y="${Y(0)+4}" font-size="11" fill="${zC}">${unit==='percent'?'0%':'0'}</text>`;}
+ const recC=_dk?'rgba(217,119,6,0.09)':'rgba(217,119,6,0.07)';
  for(const [rs,re,rl] of RECESSIONS){const i0=win.findIndex(q=>q>=rs);const i1=win.reduceRight((a,q,i)=>a<0&&q<=re?i:a,-1);if(i0<0||i1<0||i0>i1)continue;const rx=X(i0),rx2=X(i1);tk+=`<rect x="${rx.toFixed(1)}" y="${pad}" width="${Math.max(2,rx2-rx).toFixed(1)}" height="${H-2*pad}" fill="${recC}"></rect><text x="${((rx+rx2)/2).toFixed(1)}" y="${pad-3}" font-size="8" fill="#d97706" text-anchor="middle" opacity=".7">${rl}</text>`;}
  if(_reflineVal!=null&&_reflineVal>=mn&&_reflineVal<=mx){const ry=Y(_reflineVal).toFixed(1);tk+=`<line x1="${pad}" y1="${ry}" x2="${W-pad}" y2="${ry}" stroke="#e07a1f" stroke-width="1.5" stroke-dasharray="5 3"></line><text x="${pad+4}" y="${+ry-4}" font-size="9" fill="#e07a1f">${_reflineLbl||_reflineVal}</text>`;}
- const dotC=DK()?'#0f1825':'#fff';
+ const dotC=_dk?'#0f1825':'#fff';
  const byQ={};   // win-index -> {x, q, items:[{cy,color,label,val}]} for nearest-X hover snapping
  let areas='',paths='',pts='',slbls='',_el=[];
  if(stacked){
@@ -1641,7 +1795,7 @@ function pane(series,pct,unit,win,stacked){const W=1080,pad=64,n=win.length;cons
  }else{
  for(const s of series){let p='',firstCx,lastCx,lastCy;s.rows.forEach((r,k)=>{const cx=X(xi[r[0]]).toFixed(1),cy=Y(r[1]).toFixed(1);if(k===0)firstCx=cx;lastCx=cx;lastCy=cy;p+=(k?'L':'M')+cx+' '+cy+' ';
    const qi=xi[r[0]];(byQ[qi]=byQ[qi]||{x:+cx,q:r[0],items:[]}).items.push({cy:+cy,color:s.color,label:s.label,val:f(r[1])});
-   pts+=`<circle class="pt" cx="${cx}" cy="${cy}" r="1.5" fill="${s.color}" stroke="${dotC}" stroke-width="1"></circle>`;});
+   if(!(so&&so.noInteractive))pts+=`<circle class="pt" cx="${cx}" cy="${cy}" r="1.5" fill="${s.color}" stroke="${dotC}" stroke-width="1"></circle>`;});
    if(s.rows.length>1){const by=Y(Math.max(mn,0)).toFixed(1);areas+=`<path d="${p}L${lastCx} ${by} L${firstCx} ${by} Z" fill="${s.color}" fill-opacity="0.12" stroke="none"></path>`;}
    paths+=`<path d="${p}" fill="none" stroke="${s.color}" stroke-width="2"></path>`;
    if(lastCx!=null){const pts2=s.label.split(' \xb7 ');const nE=active.length,nM=measures.length;const sl=(nE>1&&nM===1?pts2[0]:(nE===1&&nM>1?short(pts2.slice(1).join(' \xb7 ')):short(s.label))).slice(0,34);_el.push({x:+lastCx+5,y:+lastCy+4,sl:sl,color:s.color});}}
@@ -1650,23 +1804,39 @@ function pane(series,pct,unit,win,stacked){const W=1080,pad=64,n=win.length;cons
  // to its neighbors, so hovering ANYWHERE in that vertical band (any distance, any height) snaps
  // the marker(s) + tooltip to that quarter. Pure SVG+CSS so it is instant. Multi-series: every
  // series with a point at the quarter gets its own marker and a line in the shared tooltip.
- const _bi=Object.keys(byQ).map(Number).sort((a,b)=>a-b); let bands='';
- _bi.forEach((qi,k)=>{const Q=byQ[qi],xc=Q.x;
-   const left=k===0?0:(byQ[_bi[k-1]].x+xc)/2, right=k===_bi.length-1?W:(xc+byQ[_bi[k+1]].x)/2;
-   let mk=`<line class="reveal" x1="${xc.toFixed(1)}" y1="${pad}" x2="${xc.toFixed(1)}" y2="${H-pad}" stroke="${aC}" stroke-width="1" stroke-dasharray="2 2"></line>`;
-   for(const it of Q.items)mk+=`<circle class="reveal" cx="${xc.toFixed(1)}" cy="${it.cy.toFixed(1)}" r="4" fill="${it.color}" stroke="${dotC}" stroke-width="1.5"></circle>`;
-   bands+=`<g class="qband" data-q="${Q.q}"><rect class="hit" x="${left.toFixed(1)}" y="0" width="${(right-left).toFixed(1)}" height="${H}"></rect>${mk}</g>`;});
+ // Skipped entirely for static exports (so.noInteractive) — hover has no meaning on a static image
+ // and these elements are exactly what rendered permanently-visible ("dots on black") without the
+ // main stylesheet's .qband/.reveal{opacity:0} rules to hide them.
+ let bands='';
+ if(!(so&&so.noInteractive)){
+   const _bi=Object.keys(byQ).map(Number).sort((a,b)=>a-b);
+   _bi.forEach((qi,k)=>{const Q=byQ[qi],xc=Q.x;
+     const left=k===0?0:(byQ[_bi[k-1]].x+xc)/2, right=k===_bi.length-1?W:(xc+byQ[_bi[k+1]].x)/2;
+     let mk=`<line class="reveal" x1="${xc.toFixed(1)}" y1="${pad}" x2="${xc.toFixed(1)}" y2="${H-pad}" stroke="${aC}" stroke-width="1" stroke-dasharray="2 2"></line>`;
+     for(const it of Q.items)mk+=`<circle class="reveal" cx="${xc.toFixed(1)}" cy="${it.cy.toFixed(1)}" r="4" fill="${it.color}" stroke="${dotC}" stroke-width="1.5"></circle>`;
+     bands+=`<g class="qband" data-q="${Q.q}"><rect class="hit" x="${left.toFixed(1)}" y="0" width="${(right-left).toFixed(1)}" height="${H}"></rect>${mk}</g>`;});
+ }
  const want=Math.min(8,n),ix=[...new Set(Array.from({length:want},(_,k)=>Math.round(k*(n-1)/Math.max(1,want-1))))];
  const lb=ix.map(i=>{const a=i===0?'start':(i===n-1?'end':'middle');return `<text x="${X(i)}" y="${H-pad+18}" font-size="10" fill="${aC}" text-anchor="${a}">${win[i]}</text>`;}).join('');
  slbls=''; // labels moved to #lbl-overlay overlay
- return `<div class="chartbox"><svg viewBox="0 0 ${_vbw} ${H}" preserveAspectRatio="none" style="${_svgsty}" data-pl="${pad}" data-pw="${W-2*pad}" xmlns="http://www.w3.org/2000/svg">${tk}${areas}${paths}${pts}${slbls}${lb}<text x="14" y="18" font-size="13" fill="${tC}">${unit==='$ thousands'?'$':unit}</text>${bands}</svg></div>`;}
+ // Static-export legend: swatch + series name row(s) below the plot area, inline-styled only (no
+ // CSS classes) so it renders correctly with zero dependency on the destination document's <style>.
+ let legendHtml='',legendExtraH=0;
+ if(so&&so.legend&&series.length){
+   const rowH=16,cols=Math.min(3,series.length),rows=Math.ceil(series.length/cols);legendExtraH=rows*rowH+10;
+   legendHtml=series.map((s,i)=>{const cx2=pad+(i%cols)*((W-2*pad)/cols),cy2=H+18+Math.floor(i/cols)*rowH;
+     return `<circle cx="${cx2}" cy="${cy2-4}" r="4" fill="${s.color}"></circle><text x="${cx2+9}" y="${cy2}" font-size="11" fill="${tC}">${_esc(s.label)}</text>`;}).join('');
+   H+=legendExtraH;
+ }
+ return `<div class="chartbox"><svg viewBox="0 0 ${_vbw} ${H}" preserveAspectRatio="none" style="${_svgsty}" data-pl="${pad}" data-pw="${W-2*pad}" xmlns="http://www.w3.org/2000/svg">${bgRect}${tk}${areas}${paths}${pts}${slbls}${lb}<text x="14" y="18" font-size="13" fill="${tC}">${unit==='$ thousands'?'$':unit}</text>${bands}${legendHtml}</svg></div>`;}
 // ---- extra charts ----
 let _extraCharts=[],_nextChartId=1;window._addToChartId=null;
 let _linkCharts=false;try{_linkCharts=localStorage.getItem('ffiec_call_linkcharts')==='1';}catch(_){}
 function _getLinkTfm(){const _nde=document.getElementById('normden');return{idx:!!(document.getElementById('idx')?.checked),qoqdelta:!!(document.getElementById('qoqdelta')?.checked),yoydelta:!!(document.getElementById('yoydelta')?.checked),roll4q:!!(document.getElementById('roll4q')?.checked),sharemode:!!(document.getElementById('sharemode')?.checked),normByAssets:!!(document.getElementById('normbyassets')?.checked),normDen:_nde?_nde.value:'COMB2170',stacked:!!(document.getElementById('stackedmode')?.checked)};}
-function _applyLinkedTfm(tfm){['idx','qoqdelta','yoydelta','roll4q','sharemode','normbyassets','stackedmode'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=!!(id==='normbyassets'?tfm.normByAssets:id==='stackedmode'?tfm.stacked:tfm[id]);});if(tfm.normDen){const nde=document.getElementById('normden');if(nde&&nde.value!==tfm.normDen){nde.value=tfm.normDen;window._normDenCd=tfm.normDen;try{localStorage.setItem('ffiec_call_normden',tfm.normDen);}catch(_){}}}  _extraCharts.forEach(c=>{c.transforms={...c.transforms,...tfm};});}
+function _applyLinkedTfm(tfm){['idx','qoqdelta','yoydelta','roll4q','sharemode','normbyassets','stackedmode'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=!!(id==='normbyassets'?tfm.normByAssets:id==='stackedmode'?tfm.stacked:tfm[id]);});if(tfm.normDen){const nde=document.getElementById('normden');if(nde&&nde.value!==tfm.normDen){nde.value=tfm.normDen;window._normDenCd=tfm.normDen;try{localStorage.setItem('ffiec_call_normden',tfm.normDen);}catch(_){}}}  /* C7-8: snapshot each chart's own transforms ONCE per link-engagement (before the first clobber) so unlink can restore them; guarded by _ownTfm so repeated linked onchange calls don't re-snapshot an already-linked state over the real pre-link one */ _extraCharts.forEach(c=>{if(!c._ownTfm)c._ownTfm={...c.transforms};c.transforms={...c.transforms,...tfm};});}
+function _restoreOwnTfm(){/* C7-8: unlink — restore each extra chart's own pre-link transforms (if a snapshot exists) and clear the snapshot */ _extraCharts.forEach(c=>{if(c._ownTfm){c.transforms=c._ownTfm;c._ownTfm=null;}});}
 function _applyLinkedPin(q){window._pinnedQ=q;document.querySelectorAll('#panes .qband').forEach(g=>{g.classList.remove('qband-pinned');if(q&&g.dataset.q===q)g.classList.add('qband-pinned');});_extraCharts.forEach(c=>{c._pinnedQ=q;document.querySelectorAll(`#ec-${c.id} .qband`).forEach(g=>{g.classList.remove('qband-pinned');if(q&&g.dataset.q===q)g.classList.add('qband-pinned');});});}
-function addChart(){const id=_nextChartId++;_extraCharts.push({id,measures:[],lastSeries:[],transforms:{normByAssets:false,stacked:false,idx:false,qoqdelta:false,yoydelta:false,roll4q:false,sharemode:false,inlineLbls:false},_pinnedQ:null,_idxBase:null,_hovQ:null,_hovTx:null,_hovTy:null});renderExtraChartsArea();}
+function addChart(){const id=_nextChartId++;_extraCharts.push({id,measures:[],lastSeries:[],transforms:{normByAssets:false,stacked:false,idx:false,qoqdelta:false,yoydelta:false,roll4q:false,sharemode:false,inlineLbls:false},_ownTfm:null,_pinnedQ:null,_idxBase:null,_hovQ:null,_hovTx:null,_hovTy:null});renderExtraChartsArea();}
 function removeChart(id){_extraCharts=_extraCharts.filter(c=>c.id!==id);if(window._addToChartId===id)window._addToChartId=null;renderExtraChartsArea();}
 function setChartTarget(id){window._addToChartId=(window._addToChartId===id)?null:id;document.querySelectorAll('.ec-target-btn').forEach(b=>{b.style.background='';b.style.color='';});if(window._addToChartId!=null){const b=document.getElementById('ec-tgt-'+window._addToChartId);if(b){b.style.background='var(--acc,#1d4ed8)';b.style.color='#fff';}}if(window._addToChartId!=null)showToast('Click tree items to add to Chart '+(window._addToChartId+1),'warn');}
 window.addChart=addChart;window.removeChart=removeChart;window.setChartTarget=setChartTarget;
@@ -1680,7 +1850,32 @@ if(chart.transforms.yoydelta){const dol=chart.lastSeries.filter(s=>!s.pct);if(do
 if(chart.transforms.roll4q){const dol=chart.lastSeries.filter(s=>!s.pct);if(dol.length){const allQ=new Set(Qall);const base=ecQoqOn?deltaSeries(dol,allQ,prevQtr):dol;const w=roll4qSeries(base,ws,ecQoqOn);html+=pane(w,false,'$ thousands',win);}}
 if(chart.transforms.sharemode){const dol=chart.lastSeries.filter(s=>!s.pct);if(dol.length>=2){const perM=Math.max(1,active.length);const chunks=[];for(let i=0;i<dol.length;i+=perM)chunks.push(dol.slice(i,i+perM));const w=chunks.flatMap(g=>g.length>=2?shareSeries(g,ws):[]);if(w.length)html+=`<div class="idx-pane"><div style="font-size:12px;color:var(--muted,#9aa3b2);padding:2px 14px">Share % — composition across selected entities</div>${pane(w,true,'percent',win,stackedOn)}<div style="font-size:11px;color:var(--muted,#9aa3b2);padding:0 14px 6px">Share of reporting entities that quarter (non-reporters excluded)</div></div>`;}}}finally{measures=_m;}host.innerHTML=html;renderEcLegend(chart);if(chart._pinnedQ){document.querySelectorAll(`#ec-${chart.id} .qband[data-q="${chart._pinnedQ}"]`).forEach(g=>g.classList.add('qband-pinned'));}}
 function exportSeries(){if(!window._exp){showToast('Nothing to export.');return;}dl2(window._exp.head,window._exp.body,'series');}
-function exportChartSVG(){const svgs=[...document.querySelectorAll('#panes svg')];if(!svgs.length){showToast('No chart to export.');return;}let y=0;const bg=DK()?'#0f1825':'#fff';const gs=svgs.map(s=>{const vb=(s.getAttribute('viewBox')||'0 0 1080 300').split(' ').map(Number);const H=vb[3]||300;const g=`<g transform="translate(0,${y})">${s.innerHTML}</g>`;y+=H+8;return g;});const total=Math.max(y-8,1);const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 ${total}" width="1080" height="${total}"><rect width="1080" height="${total}" fill="${bg}"/>${gs.join('')}</svg>`;const a=document.createElement('a');a.href='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);a.download='chart.svg';a.click();}
+/* C7-2: SVG export must reproduce what's on screen (lines, not stray dots) AND survive completely
+   outside the document — a standalone .svg file opened in a viewer/embedded in a slide deck carries
+   NONE of this page's <style>, so the same "circle.pt / .qband .reveal only hidden by CSS" problem
+   that broke Print/PDF (C7-1) applies here too. Rather than recompute every draw() branch (dual-axis,
+   index, QoQ/YoY, share, stacked...) a second time, this sanitizes the ALREADY-RENDERED live SVG
+   markup: drop every element that depended on stylesheet rules to stay invisible (.pt circles, the
+   whole .qband hover-band group), force a light background (picked per spec — light is the safer
+   default for anything printed/embedded; the theme choice is noted here), and append a swatch+name
+   legend built from the same lastSeries the chart is currently showing. Axis/gridlines/quarter labels
+   were already inline-colored (computed via DK() at render time) and ride along unchanged. */
+function _sanitizeSvgForExport(svgEl){
+  const clone=svgEl.cloneNode(true);
+  clone.querySelectorAll('circle.pt').forEach(el=>el.remove());
+  clone.querySelectorAll('.qband').forEach(el=>el.remove());
+  return clone;}
+function exportChartSVG(){const svgs=[...document.querySelectorAll('#panes svg')];if(!svgs.length){showToast('No chart to export.');return;}
+ let y=0;const bg='#fff'; // C7-2: force LIGHT background regardless of on-screen theme (documented choice — a standalone SVG has no theme context of its own, light is the safer default for print/slides/embedding)
+ const gs=svgs.map(s=>{const clean=_sanitizeSvgForExport(s);const vb=(s.getAttribute('viewBox')||'0 0 1080 300').split(' ').map(Number);const H=vb[3]||300;const g=`<g transform="translate(0,${y})">${clean.innerHTML}</g>`;y+=H+8;return g;});
+ // Legend: one swatch+label row per series in lastSeries (the same data driving #panes right now).
+ const legendRowH=16,legendCols=Math.min(3,Math.max(1,lastSeries.length)),legendRows=Math.ceil(lastSeries.length/legendCols);
+ const legendH=lastSeries.length?legendRows*legendRowH+16:0;
+ const legendItems=lastSeries.map((s,i)=>{const cx=24+(i%legendCols)*340,cy=y+18+Math.floor(i/legendCols)*legendRowH;
+   const lbl=_esc(s.label||'');return `<circle cx="${cx}" cy="${cy-4}" r="4" fill="${s.color}"></circle><text x="${cx+9}" y="${cy}" font-size="12" fill="#14213d">${lbl}</text>`;}).join('');
+ const total=Math.max(y-8,1)+legendH;
+ const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 ${total}" width="1080" height="${total}"><rect width="1080" height="${total}" fill="${bg}"/>${gs.join('')}${legendItems}</svg>`;
+ const a=document.createElement('a');a.href='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);a.download='chart.svg';a.click();}
 function paneDual(dol,pct,win){const W=1080,pad=64,padR=80,n=win.length;const _gut=16;const _vbw=W+_gut;const _pinned=window._chartW>40&&window._chartH>40;let H=_pinned?Math.round(_vbw*window._chartH/window._chartW):300;H=Math.max(260,Math.min(2800,H));const _svgsty=(_pinned?'width:100%;height:100%':'width:100%;height:auto')+';display:block';const xi=Object.fromEntries(win.map((q,i)=>[q,i]));
  let mn0=Infinity,mx0=-Infinity;for(const s of dol)for(const r of s.rows){mn0=Math.min(mn0,r[1]);mx0=Math.max(mx0,r[1]);}
  let mn1=Infinity,mx1=-Infinity;for(const s of pct)for(const r of s.rows){mn1=Math.min(mn1,r[1]);mx1=Math.max(mx1,r[1]);}
@@ -1918,10 +2113,24 @@ async function openReport(entityId){
   document.getElementById('rptbody').innerHTML=await buildReport(entityId,nm,latestQ,qtrsRes.map(r=>r.quarter_end).reverse());
  }catch(e){document.getElementById('rptbody').innerHTML='<p style="color:#c0392b;padding:20px">Report error: '+e+'</p>';}}
 async function buildReport(entityId,nm,latestQ,qtrs){
+ // OPEN-C (2026-07-02, parquet-probe-verified): the C7-8 fetch list below (P793/7206/7274/7205
+ // family) was ALL DEAD post-2014-12-31 — every one of those 14 codes returns zero rows for every
+ // filer in the panel from 2015-Q1 onward. That C7-8 fix reasoned from MDRM dictionary captions/
+ // date-ranges only (which claim validity through 12/31/9999) and never checked actual filed rows —
+ // a dictionary validity window is not proof of live filing. Verified replacement (broad, live
+ // through 2026-03-31): CET1 $ = RCFAP859/RCOAP859, Tier 1 $ = RCFA8274/RCOA8274, Total capital $ =
+ // RCFA3792/RCOA3792, RWA $ (denominator for all three) = RCFAA223/RCOAA223 (NOT RCONA223, dead
+ // Basel-I code, max_q=2000-12-31). Hand-verified @2026-03-31: TD Bank NA (497404) RCFAP859=
+ // 38,437,426 / RCFA8274=38,437,426 / RCFA3792=41,069,997 / RCFAA223=210,255,706 -> CET1=18.2813%,
+ // Tier1=18.2813%, Total RBC=19.5334%. JPM (852218) RCFA8274=295,758,000 / RCFAA223=1,961,368,325 /
+ // RCFA3792=318,780,000 -> Tier1=15.0792%, Total RBC=16.2529%; JPM CET1 (RCFAP859) is genuinely
+ // NOT reported by this filer since 2020-Q1 (real per-filer gap, not a coalesce bug) -> notReported
+ // is correct there. Old ratio-form codes are NOT wired below (post-2014 they'd never resolve);
+ // ratios are computed live from the $ components instead — see cet1/tier1/totRbc below.
  const kpiCodes=['RCFD2170','RCON2170','RCFD2122','RCON2122','RCFD2200','RCON2200',
   'RCFD3210','RCON3210','RIAD4340','RIAD4074','RIAD4079','RIAD4093',
   'RIAD4635','RIAD4605','RCFD3123','RCON3123','RCFD1403','RCON1403','RCFD1406','RCON1406','RCFD1407','RCON1407',
-  'RCOAP793','RCFAP793','RCON7274','RCOA7205','RCFA7205','RCON7205'];
+  'RCFAP859','RCOAP859','RCFA8274','RCOA8274','RCFA3792','RCOA3792','RCFAA223','RCOAA223'];
  const qList=qtrs.map(q=>`'${q}'`).join(',');
  const cList=kpiCodes.map(c=>`'${c}'`).join(',');
  const data=(await conn.query(`SELECT mdrm,quarter_end,value FROM t WHERE entity_id='${entityId}' AND quarter_end IN (${qList}) AND mdrm IN (${cList})`)).toArray();
@@ -1938,9 +2147,24 @@ async function buildReport(entityId,nm,latestQ,qtrs){
  const npl30=getV(['RCFD1406','RCON1406']),npl90=getV(['RCFD1407','RCON1407']),nona=getV(['RCFD1403','RCON1403']);
  const npl=(npl30!=null||npl90!=null||nona!=null)?((npl30||0)+(npl90||0)+(nona||0)):null;
  const noncur=(npl90!=null||nona!=null)?((npl90||0)+(nona||0)):null;
- // Capital: coalesce without RCOAH036 (confirmed absent from Call parquet)
- const cet1=getV(['RCOAP793','RCFAP793','RCON7274']);
- const tier1=getV(['RCOA7205','RCFA7205','RCON7205']);
+ // OPEN-C (2026-07-02 probe): CET1/Tier1/Total RBC are now COMPUTED from live $ components, not
+ // read as a reported ratio field — the reported-ratio codes (P793/7206/7274/7205, the old C7-8
+ // wiring above) died panel-wide after 2014-12-31 (verified: zero rows any filer, any quarter,
+ // 2015-Q1 onward). Numerators: CET1 capital = RCFAP859 ?? RCOAP859 ("COMMON EQUITY TIER 1 CAPITAL",
+ // the final/adjusted figure — NOT RCFAP742, which is only the common-stock-plus-surplus
+ // sub-component and would understate CET1 if used alone). Tier 1 capital = RCFA8274 ?? RCOA8274.
+ // Total capital = RCFA3792 ?? RCOA3792. Denominator (all three): risk-weighted assets =
+ // RCFAA223 ?? RCOAA223 (NOT RCONA223 — dead Basel-I-era code, max_q=2000-12-31). No pre-2015
+ // legacy fallback is wired: CET1 is a Basel III/2015+ concept with no earlier predecessor, so a
+ // filer reporting neither RCFAP859 nor RCOAP859 (e.g. JPMorgan Chase Bank 852218, which stopped
+ // filing RCFAP859 after 2019-12-31) genuinely does not report CET1 — notReported:true is correct.
+ const cet1Num=getV(['RCFAP859','RCOAP859']);
+ const tier1Num=getV(['RCFA8274','RCOA8274']);
+ const totCapNum=getV(['RCFA3792','RCOA3792']);
+ const rwa=getV(['RCFAA223','RCOAA223']);
+ const cet1=(cet1Num!=null&&rwa!=null&&rwa>0)?100*cet1Num/rwa:null;
+ const tier1=(tier1Num!=null&&rwa!=null&&rwa>0)?100*tier1Num/rwa:null;
+ const totRbc=(totCapNum!=null&&rwa!=null&&rwa>0)?100*totCapNum/rwa:null;
  const ann=(n,d)=>n!=null&&d!=null&&d>0?100*n/d*(4/qnl):null;
  const roa=ann(ni,assets),roe=ann(ni,eq),nim=ann(nii,assets);
  const eff=(nii!=null&&niinc!=null&&niexp!=null&&(nii+niinc)>0)?100*niexp/(nii+niinc):null;
@@ -1948,22 +2172,74 @@ async function buildReport(entityId,nm,latestQ,qtrs){
  const nco=(loans&&coff!=null&&rec!=null)?ann(coff-rec,loans):null;
  const rescov=noncur&&alll!=null&&noncur>0?100*alll/noncur:null;
  const alllPct=loans&&alll!=null&&loans>0?100*alll/loans:null;
- let assetRank=null,assetCount=null;
- try{
-  const rk=(await conn.query(`SELECT COUNT(*) n FROM t WHERE mdrm='RCFD2170' AND quarter_end='${latestQ}' AND kind='bank' AND value>=${assets??0}`)).toArray();
-  const ct=(await conn.query(`SELECT COUNT(*) n FROM t WHERE mdrm='RCFD2170' AND quarter_end='${latestQ}' AND kind='bank'`)).toArray();
-  assetRank=Number(rk[0]?.n??0);assetCount=Number(ct[0]?.n??0);
- }catch{}
- // Peer percentile bars
+ // FIX-1 (2026-07-02, percentile-universe unification): the header rank and the KPI-card percentile
+ // badges used to be computed by TWO different queries with TWO different formulas — header queried
+ // raw 'RCFD2170' only (missing RCON-only 041/051 filers from the universe) via a >= -count "rank",
+ // percentile = round((1-rank/count)*100); the card queried the same raw code via a separate <=
+ // -count query, percentile = round(100*count(<=ev)/tot). Same universe, incompatible formulas, so a
+ // bank could show "Rank #13 of 50 (74th %ile)" in the header and "76th %ile" on the Total Assets
+ // card for the IDENTICAL underlying value. Root cause: two independent ad-hoc queries instead of one
+ // shared helper. FIX: peerStats() below is the SINGLE source for both. Universe = every individual
+ // filer (kind='bank') reporting a coalesced (COMB-style: RCFD??RCON??RIAD) value for the code that
+ // quarter — reuses the same perFilerValues() coalesce logic the league table already trusts, so
+ // RCON-only 041/051 filers are correctly included (previously silently excluded from both header AND
+ // card). Formula = standard percentile rank, rank 1 (largest/best-by-value) => 100th %ile, rank N
+ // (smallest/worst-by-value) => 0th %ile: pct = round((1-(rank-1)/(count-1))*100), guarded for
+ // count<=1. This single formula/universe pair now backs BOTH the header "Rank #x of N (yth %ile)"
+ // string AND every KPI card's percentile badge — they will always agree for the same code+quarter.
+ // FIX-6 (2026-07-02, ratio-card badge scale fix — adversarial-confirmed blocker): ROA/NIM/NCO cards
+ // display an ANNUALIZED RATIO (%) but their percentile badges were ranking the RAW DOLLAR numerator
+ // codes (RIAD4340 net income $, RIAD4074 NII $, RIAD4635 gross charge-offs $) against peers — a size
+ // proxy masquerading as a performance percentile (a huge but mediocre-margin bank would out-rank a
+ // small high-margin one purely on $ scale). Fixed by routing these badges through peerStats() against
+ // the matching DERIV ratio codes (D_ROA/D_NIM/D_NCO_LOANS, all annualize:true; also D_ROE and D_EFF,
+ // found live in DERIV{} on inspection — ROE's badge was previously hardcoded pc:null and Efficiency's
+ // percentile would otherwise have needed the same raw-$ fix, so both get wired here too) instead of
+ // the raw $ codes, passing each card's own already-computed annualized-% value (roa/roe/nim/nco/eff)
+ // as the comparison value. Scale-match trace (read, not assumed): perFilerValues()'s non-hybrid DERIV
+ // branch computes val=100*num/den, then if d.annualize multiplies by 4/qn (qn=quarter-in-year from
+ // quarter_end) — IDENTICAL formula/scale to this file's local ann()=100*n/d*(4/qnl) below (D_ROA/ROE/
+ // NIM/NCO) and to eff=100*niexp/(nii+niinc) (D_EFF, no annualize on either side — also matches).
+ const _peerCache={};
+ async function peerStats(code,val){
+  if(val==null)return{rank:null,count:null,pct:null};
+  if(!(code in _peerCache)){
+   try{const map=(await perFilerValues(code,[latestQ]))[latestQ]||new Map();
+    _peerCache[code]=[...map.values()].filter(v=>v!=null);
+   }catch{_peerCache[code]=[];}
+  }
+  const arr=_peerCache[code];const count=arr.length;if(!count)return{rank:null,count:null,pct:null};
+  const rank=arr.filter(v=>v>=val).length||1;
+  const pct=count>1?Math.round((1-(rank-1)/(count-1))*100):100;
+  return{rank,count,pct};
+ }
+ const assetStats=await peerStats('COMB2170',assets);
+ const assetRank=assetStats.rank,assetCount=assetStats.count;
+ // Peer percentile bars. OPEN-C: RCOAP793/RCOA7206 (dead post-2014, see buildReport() top comment)
+ // dropped from this list — no replacement added. CET1/Tier1/Total RBC are now COMPUTED ratios
+ // (numerator $ ÷ RWA $), and RWA isn't peer-normalized here, so a raw-code percentile would be
+ // meaningless for them. Precedent: NPL card already ships with no percentile badge — same treatment
+ // for the capital cards. All entries now route through peerStats() (COMB-coalesced universe, same
+ // formula as the header) instead of the old raw-RCFD-only <= -count query.
+ // FIX-6: RIAD4340/RIAD4074/RIAD4635 REMOVED from this raw-code map — they were being used to badge
+ // the ROA/NIM/NCO ratio cards (a $ numerator ranked against $ peers, then slapped on a % ratio card:
+ // a size proxy, not a performance percentile). Size-metric $ cards (Total Assets/Loans/Deposits/
+ // Equity/Noncurrent $) still correctly rank on their own raw/COMB $ code — unaffected.
  const peerPctile={};
- try{
-  const peerCodes=['RCFD2170','RCFD2122','RCFD2200','RCFD3210','RIAD4340','RIAD4074','RCOAP793','RCOA7205','RCFD1403','RIAD4635'];
-  for(const code of peerCodes){const ev=V[code]?.[latestQ];if(ev==null)continue;
-   const res=(await conn.query(`SELECT COUNT(*) n FROM t WHERE mdrm='${code}' AND quarter_end='${latestQ}' AND kind='bank'`)).toArray();
-   const tot=Number(res[0]?.n||0);if(!tot)continue;
-   const lwr=(await conn.query(`SELECT COUNT(*) n FROM t WHERE mdrm='${code}' AND quarter_end='${latestQ}' AND kind='bank' AND value<=${ev}`)).toArray();
-   peerPctile[code]=Math.round(100*Number(lwr[0]?.n||0)/tot);}
- }catch{}
+ {const peerCodeMap={'RCFD2170':'COMB2170','RCFD2122':'COMB2122','RCFD2200':'COMB2200','RCFD3210':'COMB3210','RCFD1403':'COMB1403'};
+  for(const[rawCode,combCode] of Object.entries(peerCodeMap)){const ev=V[rawCode]?.[latestQ];if(ev==null)continue;
+   const st=await peerStats(combCode,ev);if(st.pct!=null)peerPctile[rawCode]=st.pct;}}
+ // FIX-6: ratio-card badges — rank the SAME annualized-% value the card displays (roa/roe/nim/nco,
+ // computed via ann() just above using the SAME formula/scale perFilerValues()'s DERIV+annualize
+ // branch uses: 100*num/den, then ×(4/qn) — traced, not assumed) against the D_* DERIV ratio universe,
+ // not the raw $ numerator. This makes the badge size-independent: a small, high-margin bank can now
+ // out-rank a much larger one on ROA/NIM/NCO percentile, as it should.
+ const roaStats=await peerStats('D_ROA',roa),roeStats=await peerStats('D_ROE',roe),
+       nimStats=await peerStats('D_NIM',nim),ncoStats=await peerStats('D_NCO_LOANS',nco),
+       // D_EFF exists too (plus:['4093'],den:['4074','4079'], no annualize) — IDENTICAL formula/scale
+       // to this file's local eff=100*niexp/(nii+niinc) two lines above. Efficiency card was wrongly
+       // assumed badge-less; it now gets the same size-independent treatment as ROA/NIM/NCO.
+       effStats=await peerStats('D_EFF',eff);
  const prevQ=qtrs.length>=2?qtrs[qtrs.length-2]:null,yoyQ=qtrs.length>=5?qtrs[qtrs.length-5]:null;
  const pctD=(a,b)=>(a!=null&&b!=null&&b!==0)?100*(a-b)/b:null;
  const aQoQ=pctD(assets,prevQ?getV(['RCFD2170','RCON2170'],prevQ):null);
@@ -1974,9 +2250,23 @@ async function buildReport(entityId,nm,latestQ,qtrs){
  const nplQoQ=pctD(nplRat,nplRatPrev);
  const fA=v=>v==null?'—':v>=1e9?'$'+(v/1e9).toFixed(1)+'T':v>=1e6?'$'+(v/1e6).toFixed(1)+'B':'$'+Math.round(v/1e3)+'M';
  const fP=v=>v==null?'—':v.toFixed(2)+'%';
- const fD=v=>v==null?'':v>=0?`<span style="color:#1b7f3b;font-size:12px"> ▲${v.toFixed(1)}%</span>`:`<span style="color:#c0392b;font-size:12px"> ▼${Math.abs(v).toFixed(1)}%</span>`;
- const pct=assetRank&&assetCount?Math.round((1-assetRank/assetCount)*100):null;
- const rnk=assetRank?`Rank #${assetRank} of ${assetCount}${pct!=null?' ('+pct+'th %ile)':''}`:null;
+ // FIX-2: ordSuffix (module-scope, see definition near coalesce()) — correct English ordinal suffix
+ // (1st/2nd/3rd/4th…11th/12th/13th special-cased). Previously percentile/rank strings hand-wrote
+ // `${p}th` unconditionally, producing "73th"/"82th"/"91th".
+ // FIX-3: direction-aware delta arrows. betterWhen: 'higher'|'lower'|'neutral' classifies each KPI so
+ // an arrow's color reflects GOOD/BAD, not merely up/down. 'lower' metrics (NPL/NCO/Efficiency): a
+ // decrease is good (green), an increase is bad (red) — the OLD fD() colored ALL increases green,
+ // so a rising NPL ratio (bad) used to render with a celebratory green ▲. 'neutral' size metrics
+ // (assets/loans/deposits/equity — growing or shrinking isn't inherently good or bad on its own)
+ // render in the muted foreground color (var(--fg2)) instead of red/green, since red/green implies a
+ // value judgment that doesn't apply to a pure size change.
+ const fD=(v,betterWhen)=>{if(v==null)return '';const bw=betterWhen||'higher';const up=v>=0;
+  const good=bw==='neutral'?null:(bw==='lower'?!up:up);
+  const color=good==null?'var(--fg2,#64748b)':(good?'#1b7f3b':'#c0392b');
+  const arrow=up?'▲':'▼';
+  return `<span style="color:${color};font-size:12px"> ${arrow}${Math.abs(v).toFixed(1)}%</span>`;};
+ const assetPct=assetStats.pct;
+ const rnk=assetRank?`Rank #${assetRank} of ${assetCount}${assetPct!=null?' ('+ordSuffix(assetPct)+' %ile)':''}`:null;
  const eid=entityId.startsWith('BANK:')?entityId.slice(5):entityId;
  const hdr=`<div style="border:1px solid var(--border,#ccc);border-radius:6px;padding:14px 18px;margin-bottom:14px;background:var(--head,#f7f8fc);color:var(--fg,#111)"><div style="font-size:20px;font-weight:700;color:var(--fg,#111)">${nm} <span title="All figures below use the combined convention: RCFD/RCON/RCFN filing variants coalesced into one value per code" style="font-size:11px;font-weight:600;color:#1b7f3b;background:#eaf6ee;border:1px solid #bfe3c9;border-radius:10px;padding:2px 8px;vertical-align:middle">Combined (RCFD+RCON+RCFN coalesced)</span></div><div class="muted" style="font-size:13px;margin-top:3px">RSSD ${eid} · Commercial Bank · FFIEC 031/041/051</div><div style="font-size:14px;margin-top:7px;color:var(--fg,#111)">As of ${latestQ}${assets!=null?' &nbsp;·&nbsp; Total assets: '+fA(assets):''}${rnk?' &nbsp;·&nbsp; '+rnk:''}</div></div>`;
  // per-quarter helpers for sparklines and trend charts
@@ -1985,38 +2275,64 @@ async function buildReport(entityId,nm,latestQ,qtrs){
  const ncoQ=q=>{const c=getV(['RIAD4635'],q),r=getV(['RIAD4605'],q),l=getV(['RCFD2122','RCON2122'],q);return c!=null&&r!=null&&l!=null&&l>0?100*(c-r)/l*(4/qnlQ(q)):null;};
  const effQ=q=>{const n=getV(['RIAD4074'],q),nc=getV(['RIAD4079'],q),x=getV(['RIAD4093'],q);return n!=null&&nc!=null&&x!=null&&(n+nc)>0?100*x/(n+nc):null;};
  const nplQ=q=>{const l=getV(['RCFD2122','RCON2122'],q);const np=(getV(['RCFD1403','RCON1403'],q)||0)+(getV(['RCFD1406','RCON1406'],q)||0)+(getV(['RCFD1407','RCON1407'],q)||0);return l&&l>0?100*np/l:null;};
- const pctileBar=(p)=>{if(p==null)return '';const c=p>=75?'#1b7f3b':p>=50?'#2980b9':p>=25?'#e67e22':'#c0392b';return `<div style="margin-top:4px"><div style="height:5px;background:var(--border,#e0e4ea);border-radius:3px;overflow:hidden"><div style="height:100%;width:${p}%;background:${c};border-radius:3px"></div></div><div style="font-size:11px;color:var(--fg2,#888);margin-top:1px">${p}th %ile among reporters</div></div>`;};
+ // OPEN-C: per-quarter computed capital ratio (numerator $ codes ÷ RWA $ codes), mirrors the
+ // latest-quarter cet1/tier1/totRbc computation above, for sparklines + the Capital Ratios trend chart.
+ const capRatQ=(ncodes,q)=>{const n=getV(ncodes,q),d=getV(['RCFAA223','RCOAA223'],q);return n!=null&&d!=null&&d>0?100*n/d:null;};
+ // FIX-4: percentile polarity. peerStats() always returns pct with 100=highest RAW VALUE. For a
+ // lower-is-better metric (NPL/NCO/Efficiency — a SMALLER value is the better outcome), displaying the
+ // raw pct meant a bank in the worst decile (highest NPL ratio) saw a celebratory "90th %ile" badge.
+ // pctileBar now takes betterWhen and inverts the DISPLAYED percentile (100-pct) for 'lower' metrics
+ // so 100th=best ALWAYS, for every metric — the colored bar-fill width follows the same displayed
+ // (possibly inverted) number, so the graphic and the badge never disagree with each other.
+ const pctileBar=(p,betterWhen)=>{if(p==null)return '';const disp=betterWhen==='lower'?100-p:p;const c=disp>=75?'#1b7f3b':disp>=50?'#2980b9':disp>=25?'#e67e22':'#c0392b';return `<div style="margin-top:4px"><div style="height:5px;background:var(--border,#e0e4ea);border-radius:3px;overflow:hidden"><div style="height:100%;width:${disp}%;background:${c};border-radius:3px"></div></div><div style="font-size:11px;color:var(--fg2,#888);margin-top:1px">${ordSuffix(disp)} %ile among reporters</div></div>`;};
  // "Why this number?" KPI trace — every entry uses the SAME local variables already rendered above (getV()-sourced),
  // never re-derived. kvV takes the SAME code list passed to getV() so the popover shows exactly which filing-variant codes were coalesced.
  const kvV=(codes,val,vt)=>({code:codes.join(' ?? '),cap:fullCap(codes[0])||codes[0],val:vt==='pct'?fP(val):fA(val)});
+ const INVERTED_NOTE=' (lower is better — percentile inverted so 100th=best)';
+ // FIX-3 betterWhen classification (documented per card): 'neutral' = pure size metrics (assets/
+ // loans/deposits/equity) — growth/shrinkage isn't inherently good or bad, so arrows render in the
+ // muted foreground color, not red/green. 'higher' = ROA/ROE/NIM/CET1/Tier1/Total RBC (more
+ // profitability/more capital cushion is better). 'lower' = Efficiency Ratio/NPL Ratio/NCO Rate (a
+ // smaller cost ratio or smaller delinquency/charge-off rate is better).
  const kpis=[
-  {lbl:'Total Assets',val:fA(assets),spk:sparkline(qtrs.map(q=>[q,getV(['RCFD2170','RCON2170'],q)]),false,COLORS[0]),qoq:aQoQ,yoy:aYoY,pc:peerPctile['RCFD2170'],
+  {lbl:'Total Assets',val:fA(assets),betterWhen:'neutral',spk:sparkline(qtrs.map(q=>[q,getV(['RCFD2170','RCON2170'],q)]),false,COLORS[0]),qoq:aQoQ,yoy:aYoY,pc:peerPctile['RCFD2170'],
    info:{title:'Total Assets',formula:'RCFD2170 ?? RCON2170 (coalesced, as reported)',terms:[kvV(['RCFD2170','RCON2170'],assets)],asof:latestQ}},
-  {lbl:'Total Loans',val:fA(loans),spk:sparkline(qtrs.map(q=>[q,getV(['RCFD2122','RCON2122'],q)]),false,COLORS[1]),qoq:null,yoy:null,pc:peerPctile['RCFD2122'],
+  {lbl:'Total Loans',val:fA(loans),betterWhen:'neutral',spk:sparkline(qtrs.map(q=>[q,getV(['RCFD2122','RCON2122'],q)]),false,COLORS[1]),qoq:null,yoy:null,pc:peerPctile['RCFD2122'],
    info:{title:'Total Loans',formula:'RCFD2122 ?? RCON2122 (coalesced, as reported)',terms:[kvV(['RCFD2122','RCON2122'],loans)],asof:latestQ}},
-  {lbl:'Total Deposits',val:fA(dep),spk:sparkline(qtrs.map(q=>[q,getV(['RCFD2200','RCON2200'],q)]),false,COLORS[2]),qoq:null,yoy:null,pc:peerPctile['RCFD2200'],
+  {lbl:'Total Deposits',val:fA(dep),betterWhen:'neutral',spk:sparkline(qtrs.map(q=>[q,getV(['RCFD2200','RCON2200'],q)]),false,COLORS[2]),qoq:null,yoy:null,pc:peerPctile['RCFD2200'],
    info:{title:'Total Deposits',formula:'RCFD2200 ?? RCON2200 (coalesced, as reported)',terms:[kvV(['RCFD2200','RCON2200'],dep)],asof:latestQ}},
-  {lbl:'Total Equity',val:fA(eq),spk:sparkline(qtrs.map(q=>[q,getV(['RCFD3210','RCON3210'],q)]),false,COLORS[3]),qoq:null,yoy:null,pc:peerPctile['RCFD3210'],
+  {lbl:'Total Equity',val:fA(eq),betterWhen:'neutral',spk:sparkline(qtrs.map(q=>[q,getV(['RCFD3210','RCON3210'],q)]),false,COLORS[3]),qoq:null,yoy:null,pc:peerPctile['RCFD3210'],
    info:{title:'Total Equity',formula:'RCFD3210 ?? RCON3210 (coalesced, as reported)',terms:[kvV(['RCFD3210','RCON3210'],eq)],asof:latestQ}},
-  {lbl:'ROA (ann.)',val:fP(roa),spk:sparkline(qtrs.map(q=>[q,annQ(['RIAD4340'],['RCFD2170','RCON2170'],q)]),true,COLORS[0]),qoq:null,yoy:null,pc:peerPctile['RIAD4340'],
-   info:{title:'ROA (annualized)',formula:'RIAD4340 ÷ (RCFD2170 ?? RCON2170) × 100 × (4/N)  [N = quarter number in fiscal year]',terms:[kvV(['RIAD4340'],ni),kvV(['RCFD2170','RCON2170'],assets)],asof:latestQ,note:`Annualization factor this quarter: 4/${qnl} (N=${qnl}).`}},
-  {lbl:'ROE (ann.)',val:fP(roe),spk:sparkline(qtrs.map(q=>[q,annQ(['RIAD4340'],['RCFD3210','RCON3210'],q)]),true,COLORS[1]),qoq:null,yoy:null,pc:null,
-   info:{title:'ROE (annualized)',formula:'RIAD4340 ÷ (RCFD3210 ?? RCON3210) × 100 × (4/N)',terms:[kvV(['RIAD4340'],ni),kvV(['RCFD3210','RCON3210'],eq)],asof:latestQ,note:`Annualization factor this quarter: 4/${qnl} (N=${qnl}).`}},
-  {lbl:'NIM % (approx.)',val:fP(nim),spk:sparkline(qtrs.map(q=>[q,annQ(['RIAD4074'],['RCFD2170','RCON2170'],q)]),true,COLORS[2]),qoq:null,yoy:null,pc:peerPctile['RIAD4074'],
-   info:{title:'NIM % (approx., annualized)',formula:'RIAD4074 ÷ (RCFD2170 ?? RCON2170) × 100 × (4/N)',terms:[kvV(['RIAD4074'],nii),kvV(['RCFD2170','RCON2170'],assets)],asof:latestQ,note:`Approximation: net interest income ÷ total assets (not average earning assets). Annualization factor: 4/${qnl}.`}},
-  {lbl:'Efficiency Ratio',val:fP(eff),spk:sparkline(qtrs.map(q=>[q,effQ(q)]),true,COLORS[3]),qoq:null,yoy:null,pc:null,
-   info:{title:'Efficiency Ratio',formula:'RIAD4093 ÷ (RIAD4074 + RIAD4079) × 100',terms:[kvV(['RIAD4093'],niexp),kvV(['RIAD4074'],nii),kvV(['RIAD4079'],niinc)],asof:latestQ}},
-  {lbl:'CET1 Ratio',val:fP(cet1),spk:sparkline(qtrs.map(q=>[q,getV(['RCOAP793','RCFAP793','RCON7274'],q)]),true,COLORS[4]),qoq:null,yoy:null,pc:peerPctile['RCOAP793'],
-   info:{title:'CET1 Ratio',formula:'RCOAP793 ?? RCFAP793 ?? RCON7274 (coalesced — as reported)',terms:[kvV(['RCOAP793','RCFAP793','RCON7274'],cet1,'pct')],asof:latestQ,note:'As-reported ratio (not recomputed). RCOA/RCFA are advanced-approach filing-variant prefixes.'}},
-  {lbl:'Tier 1 RBC',val:fP(tier1),spk:sparkline(qtrs.map(q=>[q,getV(['RCOA7205','RCFA7205','RCON7205'],q)]),true,COLORS[5]),qoq:null,yoy:null,pc:peerPctile['RCOA7205'],
-   info:{title:'Tier 1 RBC Ratio',formula:'RCOA7205 ?? RCFA7205 ?? RCON7205 (coalesced — as reported)',terms:[kvV(['RCOA7205','RCFA7205','RCON7205'],tier1,'pct')],asof:latestQ,note:'As-reported ratio (not recomputed).'}},
-  {lbl:'NPL Ratio',val:fP(nplRat),spk:sparkline(qtrs.map(q=>[q,nplQ(q)]),true,COLORS[6]),qoq:nplQoQ,yoy:null,pc:null,
+  {lbl:'ROA (ann.)',val:fP(roa),betterWhen:'higher',spk:sparkline(qtrs.map(q=>[q,annQ(['RIAD4340'],['RCFD2170','RCON2170'],q)]),true,COLORS[0]),qoq:null,yoy:null,pc:roaStats.pct,
+   info:{title:'ROA (annualized)',formula:'RIAD4340 ÷ (RCFD2170 ?? RCON2170) × 100 × (4/N)  [N = quarter number in fiscal year]',terms:[kvV(['RIAD4340'],ni),kvV(['RCFD2170','RCON2170'],assets)],asof:latestQ,note:`Annualization factor this quarter: 4/${qnl} (N=${qnl}). Percentile badge ranks the annualized ROA % itself (D_ROA), not the raw net-income dollar amount.`}},
+  {lbl:'ROE (ann.)',val:fP(roe),betterWhen:'higher',spk:sparkline(qtrs.map(q=>[q,annQ(['RIAD4340'],['RCFD3210','RCON3210'],q)]),true,COLORS[1]),qoq:null,yoy:null,pc:roeStats.pct,
+   info:{title:'ROE (annualized)',formula:'RIAD4340 ÷ (RCFD3210 ?? RCON3210) × 100 × (4/N)',terms:[kvV(['RIAD4340'],ni),kvV(['RCFD3210','RCON3210'],eq)],asof:latestQ,note:`Annualization factor this quarter: 4/${qnl} (N=${qnl}). Percentile badge ranks the annualized ROE % itself (D_ROE), not the raw net-income dollar amount.`}},
+  {lbl:'NIM % (approx.)',val:fP(nim),betterWhen:'higher',spk:sparkline(qtrs.map(q=>[q,annQ(['RIAD4074'],['RCFD2170','RCON2170'],q)]),true,COLORS[2]),qoq:null,yoy:null,pc:nimStats.pct,
+   info:{title:'NIM % (approx., annualized)',formula:'RIAD4074 ÷ (RCFD2170 ?? RCON2170) × 100 × (4/N)',terms:[kvV(['RIAD4074'],nii),kvV(['RCFD2170','RCON2170'],assets)],asof:latestQ,note:`Approximation: net interest income ÷ total assets (not average earning assets). Annualization factor: 4/${qnl}. Percentile badge ranks the annualized NIM % itself (D_NIM), not the raw NII dollar amount.`}},
+  {lbl:'Efficiency Ratio',val:fP(eff),betterWhen:'lower',spk:sparkline(qtrs.map(q=>[q,effQ(q)]),true,COLORS[3]),qoq:null,yoy:null,pc:effStats.pct,
+   info:{title:'Efficiency Ratio',formula:'RIAD4093 ÷ (RIAD4074 + RIAD4079) × 100',terms:[kvV(['RIAD4093'],niexp),kvV(['RIAD4074'],nii),kvV(['RIAD4079'],niinc)],asof:latestQ,note:'Percentile badge ranks the efficiency ratio % itself (D_EFF), not the raw non-interest-expense dollar amount.'}},
+  {lbl:'CET1 Ratio',val:fP(cet1),betterWhen:'higher',notReported:cet1==null,spk:sparkline(qtrs.map(q=>[q,capRatQ(['RCFAP859','RCOAP859'],q)]),true,COLORS[4]),qoq:null,yoy:null,pc:null,
+   info:{title:'CET1 Ratio',formula:'(RCFAP859 ?? RCOAP859) ÷ (RCFAA223 ?? RCOAA223) × 100  [computed — CET1 capital ÷ risk-weighted assets]',terms:[kvV(['RCFAP859','RCOAP859'],cet1Num),kvV(['RCFAA223','RCOAA223'],rwa)],asof:latestQ,note:'Computed from as-reported $ components (RC-R I item 21 ÷ item 33), not a reported ratio field — the legacy reported-ratio code (P793) died panel-wide after 2014-12-31. No pre-2015 fallback exists: CET1 is a Basel III/2015+ concept with no earlier predecessor code, so a blank here means this filer genuinely does not report CET1 capital (e.g. JPMorgan Chase Bank stopped filing RCFAP859 after 2019-12-31), not a data gap. No percentile badge: peerPctile only ranks a single raw code, and this is now a computed ratio.'}},
+  {lbl:'Tier 1 RBC',val:fP(tier1),betterWhen:'higher',notReported:tier1==null,spk:sparkline(qtrs.map(q=>[q,capRatQ(['RCFA8274','RCOA8274'],q)]),true,COLORS[5]),qoq:null,yoy:null,pc:null,
+   info:{title:'Tier 1 RBC Ratio',formula:'(RCFA8274 ?? RCOA8274) ÷ (RCFAA223 ?? RCOAA223) × 100  [computed — Tier 1 capital ÷ risk-weighted assets]',terms:[kvV(['RCFA8274','RCOA8274'],tier1Num),kvV(['RCFAA223','RCOAA223'],rwa)],asof:latestQ,note:'Computed from as-reported $ components (RC-R I item 26 ÷ item 33), not a reported ratio field — the legacy reported-ratio codes (7205/7206/7274) died panel-wide after 2014-12-31. No percentile badge: peerPctile only ranks a single raw code, and this is now a computed ratio.'}},
+  {lbl:'Total RBC Ratio',val:fP(totRbc),betterWhen:'higher',notReported:totRbc==null,spk:sparkline(qtrs.map(q=>[q,capRatQ(['RCFA3792','RCOA3792'],q)]),true,COLORS[6]),qoq:null,yoy:null,pc:null,
+   info:{title:'Total Risk-Based Capital Ratio',formula:'(RCFA3792 ?? RCOA3792) ÷ (RCFAA223 ?? RCOAA223) × 100  [computed — Total capital ÷ risk-weighted assets]',terms:[kvV(['RCFA3792','RCOA3792'],totCapNum),kvV(['RCFAA223','RCOAA223'],rwa)],asof:latestQ,note:'Computed from as-reported $ components (RC-R I item 30 ÷ item 33). Added alongside CET1/Tier1 since the same verified $ components make it available. No percentile badge, for the same reason as CET1/Tier1.'}},
+  {lbl:'NPL Ratio',val:fP(nplRat),betterWhen:'lower',spk:sparkline(qtrs.map(q=>[q,nplQ(q)]),true,COLORS[6]),qoq:nplQoQ,yoy:null,pc:null,
    info:{title:'NPL Ratio',formula:'Σ(RCFD/RCON 1406+1407+1403) ÷ (RCFD2122 ?? RCON2122) × 100',terms:[kvV(['RCFD1406','RCON1406'],npl30),kvV(['RCFD1407','RCON1407'],npl90),kvV(['RCFD1403','RCON1403'],nona),kvV(['RCFD2122','RCON2122'],loans)],asof:latestQ}},
-  {lbl:'NCO Rate (ann.)',val:fP(nco),spk:sparkline(qtrs.map(q=>[q,ncoQ(q)]),true,COLORS[7]),qoq:null,yoy:null,pc:peerPctile['RIAD4635'],
-   info:{title:'NCO Rate (annualized)',formula:'(RIAD4635 − RIAD4605) ÷ (RCFD2122 ?? RCON2122) × 100 × (4/N)',terms:[kvV(['RIAD4635'],coff),kvV(['RIAD4605'],rec),kvV(['RCFD2122','RCON2122'],loans)],asof:latestQ,note:`Annualization factor this quarter: 4/${qnl} (N=${qnl}).`}},
+  {lbl:'NCO Rate (ann.)',val:fP(nco),betterWhen:'lower',spk:sparkline(qtrs.map(q=>[q,ncoQ(q)]),true,COLORS[7]),qoq:null,yoy:null,pc:ncoStats.pct,
+   info:{title:'NCO Rate (annualized)',formula:'(RIAD4635 − RIAD4605) ÷ (RCFD2122 ?? RCON2122) × 100 × (4/N)',terms:[kvV(['RIAD4635'],coff),kvV(['RIAD4605'],rec),kvV(['RCFD2122','RCON2122'],loans)],asof:latestQ,note:`Annualization factor this quarter: 4/${qnl} (N=${qnl}). Percentile badge ranks the annualized NCO rate % itself (D_NCO_LOANS), not the raw gross charge-off dollar amount.`}},
  ];
+ // FIX-4 note-append: every card whose pc badge or narrative could show a percentile AND is
+ // betterWhen:'lower' gets the inversion disclosure appended to its ⓘ note (NCO Rate has both a pc
+ // badge and betterWhen:'lower'; NPL/Efficiency have no pc badge today but get the note too since the
+ // percentile convention applies uniformly the moment either card ever gains one).
+ for(const k of kpis){if(k.betterWhen==='lower'){k.info=k.info||{};k.info.note=(k.info.note||'')+INVERTED_NOTE;}}
  window._rptKpiInfo=kpis.map(k=>k.info||null);
- const cards=kpis.map((k,ki)=>`<div style="border:1px solid var(--border,#ccc);border-radius:6px;padding:10px 14px;min-width:148px;display:inline-block;vertical-align:top;margin:4px"><div style="font-size:12px;color:var(--fg2,#666);font-weight:600;letter-spacing:.3px;text-transform:uppercase">${k.lbl}${k.info?` <span class="kpi-info" data-ki="${ki}" title="Why this number?">ⓘ</span>`:''}</div><div style="font-size:26px;font-weight:700;line-height:1.1;margin-top:4px">${k.val}</div><div style="min-height:14px;margin-top:2px">${fD(k.qoq)}${k.yoy!=null?' &nbsp;YoY:'+fD(k.yoy):''}</div>${k.spk||''}${pctileBar(k.pc)}</div>`).join('');
+ // C7-8 (updated OPEN-C): a bare "—" doesn't tell an analyst WHY a KPI is blank (data gap in range?
+ // filer genuinely doesn't report this component?). Cards can set notReported:true (CET1/Tier1/Total
+ // RBC — whose $ numerator components are legitimately absent for some filers, e.g. JPM's CET1) to
+ // swap the dash for a small muted caption instead of leaving it ambiguous.
+ const cards=kpis.map((k,ki)=>`<div style="border:1px solid var(--border,#ccc);border-radius:6px;padding:10px 14px;min-width:148px;display:inline-block;vertical-align:top;margin:4px"><div style="font-size:12px;color:var(--fg2,#666);font-weight:600;letter-spacing:.3px;text-transform:uppercase">${k.lbl}${k.info?` <span class="kpi-info" data-ki="${ki}" title="Why this number?">ⓘ</span>`:''}</div><div style="font-size:26px;font-weight:700;line-height:1.1;margin-top:4px">${k.val}</div>${(k.val==='—'&&k.notReported)?`<div style="font-size:11px;color:var(--fg2,#999);margin-top:-2px;font-style:italic">not reported by this filer</div>`:''}<div style="min-height:14px;margin-top:2px">${fD(k.qoq,k.betterWhen)}${k.yoy!=null?' &nbsp;YoY:'+fD(k.yoy,k.betterWhen):''}</div>${k.spk||''}${pctileBar(k.pc,k.betterWhen)}</div>`).join('');
  const kpiSec=`<h3 style="font-size:14px;font-weight:600;margin:0 0 6px">Key Metrics — as of ${latestQ}</h3><div style="margin-bottom:14px">${cards}</div>`;
  // reserve coverage panel
  const resSec=alll!=null?`<div style="display:inline-block;vertical-align:top;border:1px solid var(--border,#ccc);border-radius:6px;padding:10px 14px;min-width:240px;margin-bottom:14px"><div style="font-size:13px;font-weight:600;margin-bottom:6px">Allowance / Reserve Coverage</div><table style="font-size:13px;border-collapse:collapse;width:100%"><tr><td style="padding:3px 0">ALLL / Total Loans</td><td style="text-align:right;font-weight:700">${fP(alllPct)}</td></tr><tr><td style="padding:3px 0">ALLL / Noncurrent Loans</td><td style="text-align:right;font-weight:700">${fP(rescov)}</td></tr><tr><td style="padding:3px 0">Noncurrent Loans</td><td style="text-align:right;font-weight:700">${noncur!=null?fA(noncur):'—'}</td></tr></table><div class="muted" style="font-size:11px;margin-top:6px">Noncurrent = 90+ days past due + nonaccrual (excludes 30–89 day past-due).</div></div>`:'';
@@ -2027,12 +2343,20 @@ async function buildReport(entityId,nm,latestQ,qtrs){
   {t:'Loans & Deposits',s:[mkS(qtrs.map(q=>[q,getV(['RCFD2122','RCON2122'],q)]),COLORS[1],'Loans'),mkS(qtrs.map(q=>[q,getV(['RCFD2200','RCON2200'],q)]),COLORS[2],'Deposits')],u:'$ thousands'},
   {t:'ROA & ROE (ann. %)',s:[mkS(qtrs.map(q=>[q,annQ(['RIAD4340'],['RCFD2170','RCON2170'],q)]),COLORS[0],'ROA'),mkS(qtrs.map(q=>[q,annQ(['RIAD4340'],['RCFD3210','RCON3210'],q)]),COLORS[1],'ROE')],u:'percent'},
   {t:'NIM & Efficiency (%)',s:[mkS(qtrs.map(q=>[q,annQ(['RIAD4074'],['RCFD2170','RCON2170'],q)]),COLORS[2],'NIM'),mkS(qtrs.map(q=>[q,effQ(q)]),COLORS[3],'Efficiency')],u:'percent'},
-  {t:'Capital Ratios (%)',s:[mkS(qtrs.map(q=>[q,getV(['RCOAP793','RCFAP793','RCON7274'],q)]),COLORS[4],'CET1'),mkS(qtrs.map(q=>[q,getV(['RCOA7205','RCFA7205','RCON7205'],q)]),COLORS[5],'Tier 1')],u:'percent'},
+  // OPEN-C: computed (component $ ÷ RWA $) via capRatQ, not the dead reported-ratio codes.
+  {t:'Capital Ratios (%)',s:[mkS(qtrs.map(q=>[q,capRatQ(['RCFAP859','RCOAP859'],q)]),COLORS[4],'CET1'),mkS(qtrs.map(q=>[q,capRatQ(['RCFA8274','RCOA8274'],q)]),COLORS[5],'Tier 1'),mkS(qtrs.map(q=>[q,capRatQ(['RCFA3792','RCOA3792'],q)]),COLORS[6],'Total RBC')],u:'percent'},
   {t:'Credit Quality (%)',s:[mkS(qtrs.map(q=>[q,nplQ(q)]),COLORS[6],'NPL %'),mkS(qtrs.map(q=>[q,ncoQ(q)]),COLORS[7],'NCO %')],u:'percent'},
  ];
- const trendCells=trends.map(t=>{if(!t.s.some(s=>s.rows.length>0))return '';const svg=pane(t.s,false,t.u,qtrs);return svg?`<div style="min-width:0"><div style="font-size:13px;font-weight:600;color:var(--fg2,#666);margin-bottom:3px">${t.t}</div>${svg}</div>`:''}).filter(Boolean);
- const trendSec=trendCells.length?`<h3 style="font-size:14px;font-weight:600;margin:14px 0 6px">Trends — last ${qtrs.length} quarters</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">${trendCells.join('')}</div>`:'';
- const nar=buildNarrative({nm,latestQ,assets,assetRank,assetCount,aQoQ,aYoY,roa,roe,cet1,eff,nplRat,nplQoQ,rescov,nco,form:'FFIEC Call'});
+ // C7-1/C7-7: report trend charts render via the static-export path (pane(...,staticOpts)) — forced
+ // light palette + legend + no interactive dot/hover markup — because this HTML is captured verbatim
+ // into Print/PDF (rptPrint), ⬇ HTML (rpt-html handler), and stays live in the on-screen modal too;
+ // it must look correct in ALL THREE contexts, not just the modal (which is why plain pane() — main-
+ // chart/extra-chart only — was the wrong choice here). Empty-series panels are dropped BEFORE
+ // calling pane() (t.s.some(...)>0 check) so no black/empty chart boxes ever reach the grid — the
+ // .filter(Boolean) below then lets CSS grid auto-reflow fill the gap instead of leaving a hole.
+ const trendCells=trends.map(t=>{if(!t.s.some(s=>s.rows.length>0))return '';const svg=pane(t.s,false,t.u,qtrs,false,{forceLight:true,noInteractive:true,legend:true});return svg?`<div class="rpt-trend-cell" style="min-width:0"><div style="font-size:13px;font-weight:600;color:var(--fg2,#666);margin-bottom:3px">${t.t}</div>${svg}</div>`:''}).filter(Boolean);
+ const trendSec=trendCells.length?`<h3 style="font-size:14px;font-weight:600;margin:14px 0 6px">Trends — last ${qtrs.length} quarters</h3><div class="rpt-trend-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:14px">${trendCells.join('')}</div>`:'';
+ const nar=buildNarrative({nm,latestQ,assets,assetRank,assetCount,assetPct,aQoQ,aYoY,roa,roe,cet1,eff,nplRat,nplQoQ,rescov,nco,form:'FFIEC Call'});
  return hdr+kpiSec+resSec+trendSec+`<h3 style="font-size:14px;font-weight:600;margin:14px 0 6px">Summary</h3>`+nar;}
 function sparkline(rows,pct,color){
  const W=120,H=40;if(!rows||rows.every(r=>r[1]==null))return '';
@@ -2047,12 +2371,15 @@ function sparkline(rows,pct,color){
  const fill=`4,${H-4} ${pts} ${X(li).toFixed(1)},${H-4}`;
  return `<svg width="120" height="40" style="display:block;margin-top:4px"><polygon points="${fill}" fill="${color||COLORS[0]}" fill-opacity=".12"/><polyline points="${pts}" fill="none" stroke="${color||COLORS[0]}" stroke-width="1.5"/></svg>`;}
 function buildNarrative(d){
- const {nm,latestQ,assets,assetRank,assetCount,aQoQ,aYoY,roa,roe,cet1,eff,nplRat,nplQoQ,rescov,nco,form}=d;
+ const {nm,latestQ,assets,assetRank,assetCount,assetPct,aQoQ,aYoY,roa,roe,cet1,eff,nplRat,nplQoQ,rescov,nco,form}=d;
  const fA=v=>v==null?null:v>=1e9?'$'+(v/1e9).toFixed(1)+'T':v>=1e6?'$'+(v/1e6).toFixed(1)+'B':'$'+Math.round(v/1e3)+'M';
  const fP=v=>v==null?null:v.toFixed(2)+'%';
- const pct=assetRank&&assetCount?Math.round((1-assetRank/assetCount)*100):null;
+ // FIX-1/FIX-2: assetPct is now passed in from buildReport()'s peerStats() (same universe/formula as
+ // the header rank + KPI card badges — no independent recompute here), and rendered via ordSuffix()
+ // so the narrative never reads "73th percentile" again.
+ const pct=assetPct;
  const grTxt=aYoY!=null?(aYoY>5?` Assets grew ${aYoY.toFixed(1)}% year-over-year.`:aYoY<-5?` Assets contracted ${Math.abs(aYoY).toFixed(1)}% year-over-year.`:' Asset levels were stable year-over-year.'):'';
- const p1=`${nm} is a commercial bank with ${fA(assets)||'undisclosed assets'} as of ${latestQ}${assetRank?`, ranking #${assetRank} of ${assetCount} ${form||'FFIEC Call'} filers${pct!=null?' ('+pct+'th percentile)':''}`:''}.${grTxt}`;
+ const p1=`${nm} is a commercial bank with ${fA(assets)||'undisclosed assets'} as of ${latestQ}${assetRank?`, ranking #${assetRank} of ${assetCount} ${form||'FFIEC Call'} filers${pct!=null?' ('+ordSuffix(pct)+' percentile)':''}`:''}.${grTxt}`;
  const roaD=roa==null?null:roa<0?'reporting a net loss':roa<0.5?'modestly profitable':roa<1.0?'adequately profitable':roa<1.5?'solidly profitable':'strongly profitable';
  const cetD=cet1==null?null:cet1<8?'approaching minimum capital thresholds':cet1<10?'meeting minimum requirements':cet1<12?'well-capitalized':'strongly capitalized';
  const effD=eff==null?null:eff<55?'highly efficient':eff<65?'within the industry norm':eff<75?'moderately inefficient':'carrying an above-average cost structure';
@@ -2071,11 +2398,26 @@ function buildNarrative(d){
  if(ncoD&&nco!=null)p3p.push(`Net charge-offs ran at an annualized rate of ${fP(nco)}, indicating ${ncoD}.`);
  const p3=p3p.join(' ')||null;
  return [p1,p2,p3].filter(Boolean).map(p=>`<p style="line-height:1.6;margin:6px 0">${p}</p>`).join('');}
+/* C7-1: Print/PDF popout — forces a full light-theme token set + color-scheme:light regardless of
+   the on-screen theme (the report's trend-chart SVGs already force light via pane()'s staticOpts;
+   this covers everything else in #rptbody — KPI cards, headers, tables — which use var(--fg,...)/
+   var(--head,...) etc. with light fallbacks already, but pinning the vars here removes any ambiguity
+   and matches what "force a light theme for print/PDF/HTML export" asks for explicitly). The
+   svg circle.pt / .qband hide rules are defensive belt-and-suspenders — pane()'s staticOpts already
+   omits those elements from report trend charts entirely, but this keeps the popout safe if any
+   other SVG (e.g. a future addition) is ever captured into rptbody without going through pane(). */
 function rptPrint(){
  const content=document.getElementById('rptbody').innerHTML;
  const title=document.getElementById('rpt-title').textContent;
  const w=window.open('','_blank','width=900,height=700');if(!w)return;
- w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+title+' Tear Sheet<\/title><style>*{box-sizing:border-box}:root{--border:#ccc;--head:#f7f8fc;--fg2:#555}.muted{color:#555}body{font-family:-apple-system,Segoe UI,sans-serif;font-size:13px;color:#1a202c;margin:24px 32px}svg{display:block}h3{font-size:14px;margin:12px 0 4px}p{margin:6px 0}@media print{body{margin:0}}<\/style><\/head><body>'+content+'<p style="margin-top:32px;font-size:12px;color:#888">Data: public FFIEC\/FRB filings · Generated '+new Date().toISOString().slice(0,10)+'<\/p><script>window.onload=()=>window.print();<\/script><\/body><\/html>');
+ w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+title+' Tear Sheet<\/title><style>'
+  +':root{color-scheme:light;--border:#ccc;--head:#f7f8fc;--fg:#111;--fg2:#555;--bg:#fff;--bg2:#f7f9fb;--muted:#555}'
+  +'*{box-sizing:border-box}body{font-family:-apple-system,Segoe UI,sans-serif;font-size:13px;color:#1a202c;background:#fff;margin:24px 32px}'
+  +'.muted{color:#555}svg{display:block;background:#fff}svg circle.pt{display:none}.qband{display:none}'
+  +'.rpt-trend-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:14px}'
+  +'.rpt-trend-cell{break-inside:avoid;page-break-inside:avoid;min-width:0}'
+  +'h3{font-size:14px;margin:12px 0 4px}p{margin:6px 0}@media print{body{margin:0}}'
+  +'<\/style><\/head><body>'+content+'<p style="margin-top:32px;font-size:12px;color:#888">Data: public FFIEC\/FRB filings · Generated '+new Date().toISOString().slice(0,10)+'<\/p><script>window.onload=()=>window.print();<\/script><\/body><\/html>');
  w.document.close();}
 // ---- export builder (V2) ----
 const _eb={entities:[],scope:'all',scheds:new Set(),codes:new Set(),fromQ:null,toQ:null,fmt:'long'};
