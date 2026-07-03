@@ -299,6 +299,34 @@ body:not(.dark) #whytip{--tip-bg:#fff;--tip-fg:#14213d;border-color:#cdd5e0;box-
 body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td{background:#0f2f1c!important}.lgon-row .lglink{font-weight:600}
 #pbar{position:fixed;top:0;left:0;height:3px;width:0%;background:var(--accent,#1b7f3b);transition:width .3s ease,opacity .4s ease;z-index:10000;pointer-events:none}
 @media print{body{background:#fff!important;color:#000!important}.rail,.railsplit,#pbar,button,.modal,#charttip,header .buttons{display:none!important}.main{margin:0!important;padding:0!important}svg{break-inside:avoid;max-width:100%!important}body.dark{background:#fff!important;color:#000!important}.cards{flex-wrap:wrap!important}h1,h2{color:#000!important}}
+/* C8-A M0-1: conservative responsive floor. Zero effect above 1100px (every rule below is scoped
+   inside a max-width media query; none touch the unscoped .app/.rail/.cards/.slider rules the desktop
+   analyst view relies on). ≤1100px: the rail/main grid collapses to a single column (rail stacks above
+   main in normal flow, no longer squeezed into a fixed side column) and the EXISTING Pop-out/Detach
+   toggle (#popout — already does rail.classList.toggle('floating') + app.classList.toggle('popped'),
+   no new JS needed) becomes the overlay affordance for anyone who wants the rail floating instead of
+   inline — .rail.floating was already a fixed/draggable/resizable overlay box, just made a bit narrower
+   here so it fits comfortably at this width. The rail is NEVER display:none by default — #popout itself
+   lives inside .railtabs inside .rail, so hiding the rail by default would hide the only control that
+   reveals it again; the safe default is "stacked inline," with floating as an opt-in upgrade. Toolbar
+   buttons and KPI cards wrap 2-across. ≤700px: cards go 1-across and the control clusters (.slider/
+   .ctl-cluster rows) stack vertically instead of wrapping into a dense grid. */
+@media (max-width:1100px){
+ .app{grid-template-columns:1fr}
+ #railsplit{display:none}
+ .rail{max-height:46vh}
+ .rail.floating{max-height:80vh;width:min(360px,88vw)}
+ .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .cards .card{min-width:0}
+ .row,.modalhead{row-gap:8px}
+}
+@media (max-width:700px){
+ .cards{grid-template-columns:1fr}
+ .slider{flex-direction:column;align-items:stretch}
+ .ctl-cluster{border-right:none;border-bottom:1px solid var(--border,#e3e8ef);padding:4px 0 8px}
+ .ctl-cluster:last-child{border-bottom:none}
+ input,#ent,#pname{min-width:0;width:100%}
+}
 </style></head><body class="dark">
 <div id="pbar"></div><div id="formulatip" style="display:none"></div><div id="whytip" style="display:none"></div>
 <header><button id="theme">☀ Light</button><h1>FFIEC Call Report Dashboard</h1>
@@ -614,7 +642,10 @@ function roll4qSeries(srcSeries,ws,baseIsQoq){return srcSeries.map(s=>{const rw=
 // shareSeries: per-quarter composition — each entity's $ value as % of the sum across the given
 // group of entity-series for that quarter. Only meaningful for 2+ entities on non-pct measures.
 function shareSeries(group,ws){const rows=group.map(s=>Object.fromEntries(s.rows));const qs=[...ws];return group.map((s,gi)=>{const rr=qs.map(q=>{let tot=0,any=false;for(const rm of rows){const v=rm[q];if(v!=null){tot+=v;any=true;}}const mine=rows[gi][q];return [q,(any&&tot!==0&&mine!=null)?100*mine/tot:null];}).filter(r=>r[1]!=null);return {...s,rows:rr,pct:true,label:s.label+' — share of total'};});}
-const fmtUnit=(v,pct)=>v==null?'—':pct?(+v).toFixed(2)+'%':(Math.abs(v)>=1e9?(v/1e6).toLocaleString(undefined,{maximumFractionDigits:0})+' B':Math.abs(v)>=1e6?(v/1e3).toLocaleString(undefined,{maximumFractionDigits:0})+' M':Number(v).toLocaleString()+' k');
+/* C8-A M0-2: fmtUnit now matches fA's canonical $-scale/notation exactly ($X.XT/$X.XB/$XM, 1 decimal,
+   $ prefix) so the same underlying value never renders two different scales across KPI cards vs Entity
+   Report. Values are stored in $ thousands throughout, hence the 1e9/1e6 thresholds. */
+const fmtUnit=(v,pct)=>v==null?'—':pct?(+v).toFixed(2)+'%':(Math.abs(v)>=1e9?'$'+(v/1e9).toFixed(1)+'T':Math.abs(v)>=1e6?'$'+(v/1e6).toFixed(1)+'B':'$'+Math.round(v/1e3)+'M');
 
 let db,conn,lbl2id=new Map(),id2lbl=new Map(),HIER=null,treeBuilt=false,sqlC=[],sqlR=[],ALLQ=[];
 const SUB_AGG_DESCS={
@@ -798,7 +829,11 @@ function resolveEnt(){const v=document.getElementById('ent').value.trim();
  if(lbl2id.has(v))return {id:lbl2id.get(v),label:v};
  if(v.replace(/^★\s*/,'') in peers){const n=v.replace(/^★\s*/,'');return {id:'PEER:'+n,label:'★ '+n};}
  if(/^(ALL|031|041|051|SIZE_)/i.test(v)){const id=v.toUpperCase()==='ALL'?'ALL':v;return {id,label:id};}
- const m=v.match(/(\d{3,})/);if(m){const id='BANK:'+m[1];return {id,label:id2lbl.get(id)||id};}return null;}
+ /* C8-A C-5: digit-fallback now only resolves if the matched RSSD actually exists in the roster
+    (id2lbl) — previously any 3+ digit run anywhere in the typed text built a BANK: id and returned it
+    unconditionally (falling back to labeling with the raw id when unknown), silently "resolving" to a
+    nonexistent entity instead of behaving like the existing no-match case. */
+ const m=v.match(/(\d{3,})/);if(m){const id='BANK:'+m[1];if(id2lbl.has(id))return {id,label:id2lbl.get(id)};}return null;}
 function expand(id){if(id&&id.startsWith('PEER:')){const n=id.slice(5);return peers[n]||[];}return [id];}
 function coalesce(map,base){return map['COMB'+base]??map['RCFD'+base]??map['RCON'+base]??map['RIAD'+base]??map['RCFA'+base]??map['RCFW'+base]??map['RCOA'+base]??map['RCOW'+base]??map['RCFN'+base];}
 // FIX-2: ordSuffix — correct English ordinal suffix (1st/2nd/3rd/4th…, with 11th/12th/13th special-
@@ -1709,7 +1744,9 @@ function draw(){const host=document.getElementById('panes');
  const qoq=pctChg(last,prev),yoy=pctChg(last,yr),tot=pctChg(last,f0);
  const cls=x=>x==null?'':(x>=0?'up':'dn'),arr=x=>x==null?'—':((x>=0?'▲ ':'▼ ')+Math.abs(x).toFixed(1)+'%');
  const qoqRaw=last!=null&&prev!=null?last-prev:null,yoyRaw=last!=null&&yr!=null?last-yr:null,totRaw=last!=null&&f0!=null?last-f0:null;
- const absChg=(d)=>{if(d==null)return '';const s=d>=0?'+':'−';const a=Math.abs(d);if(prim.pct)return `${s}${a.toFixed(2)} pp`;if(a>=1e9)return `${s}${(a/1e6).toLocaleString(undefined,{maximumFractionDigits:0})} B`;if(a>=1e6)return `${s}${(a/1e3).toLocaleString(undefined,{maximumFractionDigits:0})} M`;return `${s}${a.toLocaleString()} k`;};
+ /* C8-A M0-2: delta formatter now shares fmtUnit/fA's $-scale thresholds (1e9/1e6, $ prefix) instead of
+    the old mismatched /1e6-labeled-"B" scale, so a card's delta never disagrees with its own level value. */
+ const absChg=(d)=>{if(d==null)return '';const s=d>=0?'+':'−';const a=Math.abs(d);if(prim.pct)return `${s}${a.toFixed(2)} pp`;if(a>=1e9)return `${s}$${(a/1e9).toFixed(1)}T`;if(a>=1e6)return `${s}$${(a/1e6).toFixed(1)}B`;return `${s}$${Math.round(a/1e3)}M`;};
  const hasAgg=active.some(a=>isAggScope(a.id));
  const aggNote=hasAgg?`<div style="font-size:13px;color:#d97706;padding:4px 0 2px" title="Dollar figures for aggregate/charter-type/size entities are Σ of individual filer values — ratios (%) are Σnumerator/Σdenominator, not averages">⚠ You're viewing an aggregate (ALL/size bucket/peer group): dollar totals are summed across banks; percentages are recomputed from the summed numerator ÷ summed denominator, not averaged.</div>`:'';
  document.getElementById('cards').innerHTML=
@@ -1730,7 +1767,8 @@ function draw(){const host=document.getElementById('panes');
  window._exp={head,body:expBody};
  const snapEl=document.getElementById('snapshot');
  if(lastSeries.length>1&&snapEl){
-  const fmtDelta=(d,isPct)=>{if(d==null)return '';const sg=d>=0?'+':'−';const a=Math.abs(d);if(isPct)return `${sg}${a.toFixed(2)} pp`;if(a>=1e9)return `${sg}${(a/1e6).toLocaleString(undefined,{maximumFractionDigits:0})} B`;if(a>=1e6)return `${sg}${(a/1e3).toLocaleString(undefined,{maximumFractionDigits:0})} M`;return `${sg}${a.toLocaleString()} k`;};
+  /* C8-A M0-2: same $-scale unification as absChg above. */
+  const fmtDelta=(d,isPct)=>{if(d==null)return '';const sg=d>=0?'+':'−';const a=Math.abs(d);if(isPct)return `${sg}${a.toFixed(2)} pp`;if(a>=1e9)return `${sg}$${(a/1e9).toFixed(1)}T`;if(a>=1e6)return `${sg}$${(a/1e6).toFixed(1)}B`;return `${sg}$${Math.round(a/1e3)}M`;};
   const snapRows=lastSeries.map(s=>{const sR=s.rows.filter(r=>ws.has(r[0]));const sLast=sR.length?sR[sR.length-1][1]:null,sLastQ=sR.length?sR[sR.length-1][0]:null;const sMap=Object.fromEntries(sR.map(r=>[r[0],r[1]]));const sPQ=sLastQ?prevQtr(sLastQ):null,sYQ=sLastQ?yoyQtr(sLastQ):null;const sPrev=(sPQ&&sPQ in sMap)?sMap[sPQ]:null,sYr=(sYQ&&sYQ in sMap)?sMap[sYQ]:null;const sF0=sR.length?sR[0][1]:null;const sQoq=pctChg(sLast,sPrev),sYoy=pctChg(sLast,sYr),sTot=pctChg(sLast,sF0);const sQR=sLast!=null&&sPrev!=null?sLast-sPrev:null,sYR=sLast!=null&&sYr!=null?sLast-sYr:null,sTR=sLast!=null&&sF0!=null?sLast-sF0:null;return {s,sLast,sQoq,sYoy,sTot,sQR,sYR,sTR};});
   let sh=`<table style="width:100%;margin-top:8px;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:3px 6px">Entity</th><th style="padding:3px 6px">Latest</th><th style="padding:3px 6px">QoQ</th><th style="padding:3px 6px">YoY</th><th style="padding:3px 6px">Total Δ</th></tr></thead><tbody>`;
   for(const {s,sLast,sQoq,sYoy,sTot,sQR,sYR,sTR} of snapRows){const dot=`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${s.color};margin-right:5px"></span>`;sh+=`<tr><td style="text-align:left;padding:3px 6px">${dot}${s.label}</td><td style="padding:3px 6px;text-align:right">${fmtUnit(sLast,s.pct)}</td><td class="${cls(sQoq)}" style="padding:3px 6px;text-align:right">${arr(sQoq)}${sQR!=null?` <span class="muted" style="font-size:12px">${fmtDelta(sQR,s.pct)}</span>`:''}</td><td class="${cls(sYoy)}" style="padding:3px 6px;text-align:right">${arr(sYoy)}${sYR!=null?` <span class="muted" style="font-size:12px">${fmtDelta(sYR,s.pct)}</span>`:''}</td><td class="${cls(sTot)}" style="padding:3px 6px;text-align:right">${arr(sTot)}${sTR!=null?` <span class="muted" style="font-size:12px">${fmtDelta(sTR,s.pct)}</span>`:''}</td></tr>`;}
@@ -2070,7 +2108,11 @@ async function renderForm(){const ids=fentIds();if(!ids.length)return;const fq=w
  const r=(await conn.query(`SELECT quarter_end,mdrm,SUM(value) v FROM t WHERE entity_id IN (${sqlList(ids)}) AND quarter_end IN (${sqlList(cols)}) GROUP BY quarter_end,mdrm`)).toArray();
  const val={};for(const x of r){(val[x.mdrm]=val[x.mdrm]||{})[String(x.quarter_end)]=Number(x.v);}
  const body=document.getElementById('formbody');body.innerHTML='';window._fr=[];window._fcols=colsDesc;
- const hd=document.createElement('div');hd.className='frow';hd.style.cssText=`font-weight:700;position:sticky;top:0;z-index:2;background:${DK()?'#161e2b':'#fff'}`;
+ /* C8-A C-16: was a runtime DK()?-ternary baking a literal hex into inline style (safe today only by
+    coincidence, since .modal{display:none} in @media print hides #formmodal entirely and rptPrint/
+    ⬇HTML only ever read #rptbody — but a latent landmine if either of those assumptions ever changes).
+    var(--bg) resolves correctly for both themes via the existing :root/body.dark cascade with zero JS. */
+ const hd=document.createElement('div');hd.className='frow';hd.style.cssText=`font-weight:700;position:sticky;top:0;z-index:2;background:var(--bg,#fff)`;
  hd.innerHTML=`<span class="lab">Item</span>`+colsDesc.map(q=>`<span class="vcell">${q.slice(0,7)}</span>`).join('');
  body.appendChild(hd);
  const keys=[...FORM_ORDER.filter(k=>HIER[k]),...Object.keys(HIER).filter(k=>SCHED_NAMES[k]&&!FORM_ORDER.includes(k))];
@@ -2091,8 +2133,12 @@ function renderFormNodes(container,nodes,colsDesc,val){for(const nd of nodes){co
 function exportForm(){if(!window._fr||!window._fr.length){showToast('Nothing to export.');return;}
  dl2(['schedule','item','mdrm','caption',...(window._fcols||[])],window._fr,'callreport');}
 
-function dl2(c,rows,nm){if(!rows.length){showToast('Nothing to export.');return;}const e=v=>{v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
- const lines=[c.join(',')].concat(rows.map(r=>r.map(e).join(',')));const bl=new Blob([lines.join('\n')],{type:'text/csv'});
+/* C8-A M0-3: UTF-8 BOM prefix (Excel-on-Windows mis-renders non-ASCII, e.g. en-dashes/foreign legal
+   names, without it) + escaper now also quotes bare \r (previously only ,"\n triggered quoting). This
+   is the single dl2() choke point for every CSV export path (main series, league, export builder, SQL,
+   form/callreport) — one fix covers all of them. */
+function dl2(c,rows,nm){if(!rows.length){showToast('Nothing to export.');return;}const e=v=>{v=v==null?'':String(v);return /[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+ const lines=[c.join(',')].concat(rows.map(r=>r.map(e).join(',')));const bl=new Blob(['﻿',lines.join('\n')],{type:'text/csv'});
  const a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download='ffiec_call_'+nm+'.csv';a.click();}
 // ---- entity report (V2) ----
 async function openReport(entityId){

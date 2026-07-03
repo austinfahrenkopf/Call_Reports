@@ -201,6 +201,34 @@ body:not(.dark) #whytip{--tip-bg:#fff;--tip-fg:#14213d;border-color:#cdd5e0;box-
 body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td{background:#0f2f1c!important}.lgon-row .lglink{font-weight:600}
 #pbar{position:fixed;top:0;left:0;height:3px;width:0%;background:var(--accent,#1b7f3b);transition:width .3s ease,opacity .4s ease;z-index:10000;pointer-events:none}
 @media print{body{background:#fff!important;color:#000!important}.rail,.railsplit,#pbar,button,.modal,#charttip,header .buttons{display:none!important}.main{margin:0!important;padding:0!important}svg{break-inside:avoid;max-width:100%!important}body.dark{background:#fff!important;color:#000!important}.cards{flex-wrap:wrap!important}h1,h2{color:#000!important}}
+/* C8-A M0-1: conservative responsive floor. Zero effect above 1100px (every rule below is scoped
+   inside a max-width media query; none touch the unscoped .app/.rail/.cards/.slider rules the desktop
+   analyst view relies on). ≤1100px: the rail/main grid collapses to a single column (rail stacks above
+   main in normal flow, no longer squeezed into a fixed side column) and the EXISTING Pop-out/Detach
+   toggle (#popout — already does rail.classList.toggle('floating') + app.classList.toggle('popped'),
+   no new JS needed) becomes the overlay affordance for anyone who wants the rail floating instead of
+   inline — .rail.floating was already a fixed/draggable/resizable overlay box, just made a bit narrower
+   here so it fits comfortably at this width. The rail is NEVER display:none by default — #popout itself
+   lives inside .railtabs inside .rail, so hiding the rail by default would hide the only control that
+   reveals it again; the safe default is "stacked inline," with floating as an opt-in upgrade. Toolbar
+   buttons and KPI cards wrap 2-across. ≤700px: cards go 1-across and the control clusters (.slider/
+   .ctl-cluster rows) stack vertically instead of wrapping into a dense grid. */
+@media (max-width:1100px){
+ .app{grid-template-columns:1fr}
+ #railsplit{display:none}
+ .rail{max-height:46vh}
+ .rail.floating{max-height:80vh;width:min(360px,88vw)}
+ .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .cards .card{min-width:0}
+ .row,.modalhead{row-gap:8px}
+}
+@media (max-width:700px){
+ .cards{grid-template-columns:1fr}
+ .slider{flex-direction:column;align-items:stretch}
+ .ctl-cluster{border-right:none;border-bottom:1px solid var(--border,#e3e8ef);padding:4px 0 8px}
+ .ctl-cluster:last-child{border-bottom:none}
+ input,#ent,#pname{min-width:0;width:100%}
+}
 </style></head><body class="dark">
 <div id="pbar"></div><div id="formulatip" style="display:none"></div><div id="whytip" style="display:none"></div>
 <header><button id="theme">☀ Light</button><h1>FFIEC Call Report Dashboard</h1>
@@ -340,7 +368,7 @@ body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td
 SELECT quarter_end, value FROM t WHERE entity_id='ALL' AND mdrm='COMB2170' ORDER BY quarter_end;</textarea>
    <div style="margin-top:8px"><button id="runsql" class="sec">Run</button> <button id="sqlcsv" class="sec">Export result</button></div>
    <div id="sqlout"></div></details>
-  <div class="credit">Built by Austin Fahrenkopf &middot; data: public FFIEC filings &middot; Built 2026-07-02 22:39</div>
+  <div class="credit">Built by Austin Fahrenkopf &middot; data: public FFIEC filings &middot; Built 2026-07-03 17:39</div>
  </div>
 </div>
 <div id="formmodal" class="modal" style="display:none"><div class="modalbox">
@@ -402,7 +430,7 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.0
 const PARTS=['ffiec_call_recent_2018_2026.parquet'], OLD_PARTS=['ffiec_call_old_1976_2017.parquet'];
 const SHARD_BOUNDARY_JS=2018; // C7-6: JS-side mirror of the Python SHARD_BOUNDARY constant (year), for q0-vs-shard comparisons
 const EMPTY_CODES=new Set(["RCFA3128", "RCFAH036", "RCFAH311", "RCFAJJ30", "RCFAJJ31", "RCFAJJ32", "RCFAKX77", "RCFAKX78", "RCFAKX80", "RCFAKX83", "RCFALB58", "RCFALB59", "RCFALB61", "RCFAP851", "RCFAP853", "RCFD4088", "RCFDA345", "RCFDA346", "RCFDB569", "RCFDB667", "RCFDB700", "RCFDB766", "RCFDB784", "RCFDB867", "RCFDF587", "RCFDF599", "RCFDF615", "RCFDF616", "RCFDF633", "RCFDF657", "RCFDF660", "RCFDF682", "RCFDF684", "RCFDF685", "RCFDF688", "RCFDF689", "RCFDF696", "RCFDG334", "RCFDG344", "RCFDG345", "RCFDG352", "RCFDG353", "RCFDG429", "RCFDG444", "RCFDG449", "RCFDG484", "RCFDG485", "RCFDG527", "RCFDG528", "RCFDG530", "RCFDG537", "RCFDG557", "RCFDG562", "RCFDG581", "RCFDG582", "RCFDG583", "RCFDG584", "RCFDG585", "RCFDG586", "RCFDG587", "RCFDG588", "RCFDG589", "RCFDG590", "RCFDG614", "RCFDG616", "RCFDG634", "RCFDH174", "RCFDH175", "RCFDH270", "RCFDH273", "RCFDH274", "RCFDH275", "RCFDH276", "RCFDH277", "RCFDH278", "RCFDH281", "RCFDH282", "RCFDH283", "RCFDH284", "RCFDH290", "RCFDHJ75", "RCFDHJ77", "RCFDHJ78", "RCFDHJ79", "RCFDHJ81", "RCFDHJ83", "RCFDHJ85", "RCFDHJ87", "RCFDHJ93", "RCFDHJ95", "RCFDHJ99", "RCFDHT65", "RCFDHT68", "RCFDHU11", "RCFDHU16", "RCFDHU17", "RCFDJ449", "RCFDJ984", "RCFDJ991", "RCFDJ992", "RCFDJJ32", "RCFDK010", "RCFDK015", "RCFDK016", "RCFDK021", "RCFDK023", "RCFDK031", "RCFDK093", "RCFDK095", "RCFDK096", "RCFDK097", "RCFDK134", "RCFDK135", "RCFDK136", "RCFDK167", "RCFDK185", "RCFDK199", "RCFDK200", "RCFDK212", "RCFDK283", "RCFDK284", "RCFDK656", "RCFDK657", "RCFDK658", "RCFDK659", "RCFDK663", "RCFDK664", "RCFDK665", "RCFDK666", "RCFDK667", "RCFDK668", "RCFDK671", "RCFDK673", "RCFDK674", "RCFDK675", "RCFDM738", "RCFDM964", "RCFDM965", "RCFDM966", "RCFDM967", "RCFDM968", "RCFDM969", "RCFDM970", "RCFDM971", "RCFDM972", "RCFDM973", "RCFDM974", "RCFDM975", "RCFDM976", "RCFDM977", "RCFDM978", "RCFDM979", "RCFDM980", "RCFDM981", "RCFDM982", "RCFDM983", "RCFDM984", "RCFDM985", "RCFDM986", "RCFDM987", "RCFDM988", "RCFDM989", "RCFDM990", "RCFDM991", "RCFDM992", "RCFDM993", "RCFDM994", "RCFDM995", "RCFDM996", "RCFDM997", "RCFDM998", "RCFDM999", "RCFDN001", "RCFDN002", "RCFDN003", "RCFDN004", "RCFDN005", "RCFDN006", "RCFDN007", "RCFDN008", "RCFDN009", "RCFDN010", "RCFDN011", "RCFDN012", "RCFDN013", "RCFDN014", "RCFDN015", "RCFDN016", "RCFDN017", "RCFDN018", "RCFDN019", "RCFDN020", "RCFDN021", "RCFDN022", "RCFDN023", "RCFDN024", "RCFDN025", "RCFDN026", "RCFDN027", "RCFDN028", "RCFDN029", "RCFDN030", "RCFDN040", "RCFDN041", "RCFDN042", "RCFDN043", "RCFDN044", "RCFDN045", "RCFDN046", "RCFDN047", "RCFDN048", "RCFDN049", "RCFDN050", "RCFDN051", "RCFDN052", "RCFDN053", "RCFDN054", "RCFDN055", "RCFDN056", "RCFDN057", "RCFDN058", "RCFDN059", "RCFDN060", "RCFDN061", "RCFDN062", "RCFDN063", "RCFDN064", "RCFDN065", "RCFDN066", "RCFDN067", "RCFDN068", "RCFDN069", "RCFDN070", "RCFDN071", "RCFDN072", "RCFDN073", "RCFDN074", "RCFDN075", "RCFDN076", "RCFDN077", "RCFDN078", "RCFDN079", "RCFDN080", "RCFDN081", "RCFDN082", "RCFDN083", "RCFDN084", "RCFDN085", "RCFDN086", "RCFDN087", "RCFDN088", "RCFDN089", "RCFDN090", "RCFDN091", "RCFDN092", "RCFDN093", "RCFDN094", "RCFDN095", "RCFDN096", "RCFDN097", "RCFDN098", "RCFDN099", "RCFDN100", "RCFDN101", "RCFDN102", "RCFDN103", "RCFDN104", "RCFDN105", "RCFDN106", "RCFDN107", "RCFDN108", "RCFDN109", "RCFDN110", "RCFDN111", "RCFDN112", "RCFDN113", "RCFDN114", "RCFDN115", "RCFDN116", "RCFDN117", "RCFDN118", "RCFDN119", "RCFDN120", "RCFDN121", "RCFDN122", "RCFDN123", "RCFDN124", "RCFDN125", "RCFDN126", "RCFDN127", "RCFDN128", "RCFDS406", "RCFDS425", "RCFDS514", "RCFDS541", "RCFNK260", "RCFNK289", "RCFNK290", "RCFNK292", "RCFWH312", "RCFWP851", "RCFWP853", "RCFWP854", "RCOAH036", "RCOAH311", "RCOAKX78", "RCOAKX83", "RCON4088", "RCON9224", "RCONA345", "RCONA346", "RCONB569", "RCONB700", "RCONB732", "RCONB766", "RCONB769", "RCONB779", "RCONB784", "RCONB787", "RCONB788", "RCONB867", "RCONC401", "RCONF605", "RCONF615", "RCONF616", "RCONF626", "RCONF633", "RCONF649", "RCONF654", "RCONF659", "RCONF660", "RCONF684", "RCONFT00", "RCONFT03", "RCONFT06", "RCONFT07", "RCONFT09", "RCONFT11", "RCONFT13", "RCONFT16", "RCONFT17", "RCONG334", "RCONG344", "RCONG345", "RCONG424", "RCONG429", "RCONG434", "RCONG439", "RCONG440", "RCONG441", "RCONG444", "RCONG445", "RCONG446", "RCONG449", "RCONG450", "RCONG451", "RCONG454", "RCONG455", "RCONG459", "RCONG463", "RCONG464", "RCONG517", "RCONG527", "RCONG528", "RCONG529", "RCONG587", "RCONG588", "RCONG634", "RCONH187", "RCONH270", "RCONH275", "RCONH276", "RCONH289", "RCONHJ78", "RCONHJ79", "RCONHJ81", "RCONHJ83", "RCONHJ86", "RCONHJ87", "RCONHT63", "RCONHT65", "RCONHT66", "RCONHT68", "RCONJ449", "RCONJ985", "RCONJ988", "RCONJ990", "RCONJ991", "RCONJ994", "RCONK003", "RCONK004", "RCONK007", "RCONK010", "RCONK015", "RCONK016", "RCONK019", "RCONK020", "RCONK021", "RCONK023", "RCONK025", "RCONK034", "RCONK091", "RCONK092", "RCONK095", "RCONK096", "RCONK097", "RCONK124", "RCONK134", "RCONK135", "RCONK185", "RCONK199", "RCONK200", "RCONK212", "RCONK283", "RCONK284", "RCONK285", "RCONK656", "RCONK659", "RCONK663", "RCONK664", "RCONK665", "RCONK666", "RCONK667", "RCONK668", "RCONK673", "RCONK674", "RCONK675", "RCONL135", "RCONL191", "RCONL192", "RCONLG24", "RCONLG25", "RCONM964", "RCONM965", "RCONM966", "RCONM967", "RCONM968", "RCONM969", "RCONM970", "RCONM971", "RCONM972", "RCONM973", "RCONM974", "RCONM975", "RCONM976", "RCONM977", "RCONM978", "RCONM979", "RCONM980", "RCONM981", "RCONM982", "RCONM983", "RCONM984", "RCONM985", "RCONM986", "RCONM987", "RCONM988", "RCONM989", "RCONM990", "RCONM991", "RCONM992", "RCONM993", "RCONM994", "RCONM995", "RCONM996", "RCONM997", "RCONM998", "RCONM999", "RCONN001", "RCONN002", "RCONN003", "RCONN004", "RCONN005", "RCONN006", "RCONN007", "RCONN008", "RCONN009", "RCONN010", "RCONN011", "RCONN012", "RCONN013", "RCONN014", "RCONN015", "RCONN016", "RCONN017", "RCONN018", "RCONN019", "RCONN020", "RCONN021", "RCONN022", "RCONN023", "RCONN024", "RCONN025", "RCONN026", "RCONN027", "RCONN028", "RCONN029", "RCONN030", "RCONN040", "RCONN041", "RCONN042", "RCONN043", "RCONN044", "RCONN045", "RCONN046", "RCONN047", "RCONN048", "RCONN049", "RCONN050", "RCONN051", "RCONN052", "RCONN053", "RCONN054", "RCONN055", "RCONN056", "RCONN057", "RCONN058", "RCONN059", "RCONN060", "RCONN061", "RCONN062", "RCONN063", "RCONN064", "RCONN065", "RCONN066", "RCONN067", "RCONN068", "RCONN069", "RCONN070", "RCONN071", "RCONN072", "RCONN073", "RCONN074", "RCONN075", "RCONN076", "RCONN077", "RCONN078", "RCONN079", "RCONN080", "RCONN081", "RCONN082", "RCONN083", "RCONN084", "RCONN085", "RCONN086", "RCONN087", "RCONN088", "RCONN089", "RCONN090", "RCONN091", "RCONN092", "RCONN093", "RCONN094", "RCONN095", "RCONN096", "RCONN097", "RCONN098", "RCONN099", "RCONN100", "RCONN101", "RCONN102", "RCONN103", "RCONN104", "RCONN105", "RCONN106", "RCONN107", "RCONN108", "RCONN109", "RCONN110", "RCONN111", "RCONN112", "RCONN113", "RCONN114", "RCONN115", "RCONN116", "RCONN117", "RCONN118", "RCONN119", "RCONN120", "RCONN121", "RCONN122", "RCONN123", "RCONN124", "RCONN125", "RCONN126", "RCONN127", "RCONN128", "RCONN512", "RCONN514", "RCONN515", "RCONN516", "RCONN517", "RCONN518", "RCONN519", "RCONN520", "RCONN521", "RCONP752", "RCONS514", "RCONS541", "RCONS599", "RCONS608", "RCONS612", "RCONS614", "RCONS616", "RCONS618", "RCONS619", "RCONS620", "RCOWH312", "RIADB772", "TEXT4086", "TEXT6373", "TEXT6980", "TEXT8901", "TEXT8902", "TEXT9116", "TEXTB926", "TEXTB962", "TEXTB963", "TEXTB964", "TEXTC366", "TEXTC367", "TEXTC368", "TEXTC369", "TEXTC370", "TEXTC371", "TEXTC372", "TEXTC373", "TEXTC374", "TEXTC375", "TEXTC437", "TEXTC438", "TEXTC439", "TEXTC440", "TEXTC441", "TEXTC442", "TEXTC443", "TEXTC444", "TEXTC445", "TEXTC446", "TEXTC490", "TEXTC491", "TEXTC492", "TEXTC493", "TEXTC494", "TEXTC495", "TEXTC496", "TEXTC870", "TEXTC871", "TEXTC872", "TEXTC873", "TEXTC874", "TEXTC875", "TEXTC876", "TEXTC877", "TEXTC878", "TEXTC879", "TEXTF657", "TEXTF658", "TEXTFT42", "TEXTFT43", "TEXTFT44", "TEXTFT45"]);
-const BUILD_TS='2026-07-02 22:39';
+const BUILD_TS='2026-07-03 17:39';
 const st=m=>document.getElementById('status').textContent=m;
 const _pb=document.getElementById('pbar');const pbar=pct=>{if(!_pb)return;_pb.style.width=pct+'%';if(pct>=100){setTimeout(()=>{_pb.style.opacity='0';setTimeout(()=>{_pb.style.display='none';},400);},300);}};
 let _reflineVal=null,_reflineLbl='';
@@ -516,7 +544,10 @@ function roll4qSeries(srcSeries,ws,baseIsQoq){return srcSeries.map(s=>{const rw=
 // shareSeries: per-quarter composition — each entity's $ value as % of the sum across the given
 // group of entity-series for that quarter. Only meaningful for 2+ entities on non-pct measures.
 function shareSeries(group,ws){const rows=group.map(s=>Object.fromEntries(s.rows));const qs=[...ws];return group.map((s,gi)=>{const rr=qs.map(q=>{let tot=0,any=false;for(const rm of rows){const v=rm[q];if(v!=null){tot+=v;any=true;}}const mine=rows[gi][q];return [q,(any&&tot!==0&&mine!=null)?100*mine/tot:null];}).filter(r=>r[1]!=null);return {...s,rows:rr,pct:true,label:s.label+' — share of total'};});}
-const fmtUnit=(v,pct)=>v==null?'—':pct?(+v).toFixed(2)+'%':(Math.abs(v)>=1e9?(v/1e6).toLocaleString(undefined,{maximumFractionDigits:0})+' B':Math.abs(v)>=1e6?(v/1e3).toLocaleString(undefined,{maximumFractionDigits:0})+' M':Number(v).toLocaleString()+' k');
+/* C8-A M0-2: fmtUnit now matches fA's canonical $-scale/notation exactly ($X.XT/$X.XB/$XM, 1 decimal,
+   $ prefix) so the same underlying value never renders two different scales across KPI cards vs Entity
+   Report. Values are stored in $ thousands throughout, hence the 1e9/1e6 thresholds. */
+const fmtUnit=(v,pct)=>v==null?'—':pct?(+v).toFixed(2)+'%':(Math.abs(v)>=1e9?'$'+(v/1e9).toFixed(1)+'T':Math.abs(v)>=1e6?'$'+(v/1e6).toFixed(1)+'B':'$'+Math.round(v/1e3)+'M');
 
 let db,conn,lbl2id=new Map(),id2lbl=new Map(),HIER=null,treeBuilt=false,sqlC=[],sqlR=[],ALLQ=[];
 const SUB_AGG_DESCS={
@@ -700,7 +731,11 @@ function resolveEnt(){const v=document.getElementById('ent').value.trim();
  if(lbl2id.has(v))return {id:lbl2id.get(v),label:v};
  if(v.replace(/^★\s*/,'') in peers){const n=v.replace(/^★\s*/,'');return {id:'PEER:'+n,label:'★ '+n};}
  if(/^(ALL|031|041|051|SIZE_)/i.test(v)){const id=v.toUpperCase()==='ALL'?'ALL':v;return {id,label:id};}
- const m=v.match(/(\d{3,})/);if(m){const id='BANK:'+m[1];return {id,label:id2lbl.get(id)||id};}return null;}
+ /* C8-A C-5: digit-fallback now only resolves if the matched RSSD actually exists in the roster
+    (id2lbl) — previously any 3+ digit run anywhere in the typed text built a BANK: id and returned it
+    unconditionally (falling back to labeling with the raw id when unknown), silently "resolving" to a
+    nonexistent entity instead of behaving like the existing no-match case. */
+ const m=v.match(/(\d{3,})/);if(m){const id='BANK:'+m[1];if(id2lbl.has(id))return {id,label:id2lbl.get(id)};}return null;}
 function expand(id){if(id&&id.startsWith('PEER:')){const n=id.slice(5);return peers[n]||[];}return [id];}
 function coalesce(map,base){return map['COMB'+base]??map['RCFD'+base]??map['RCON'+base]??map['RIAD'+base]??map['RCFA'+base]??map['RCFW'+base]??map['RCOA'+base]??map['RCOW'+base]??map['RCFN'+base];}
 // FIX-2: ordSuffix — correct English ordinal suffix (1st/2nd/3rd/4th…, with 11th/12th/13th special-
@@ -1611,7 +1646,9 @@ function draw(){const host=document.getElementById('panes');
  const qoq=pctChg(last,prev),yoy=pctChg(last,yr),tot=pctChg(last,f0);
  const cls=x=>x==null?'':(x>=0?'up':'dn'),arr=x=>x==null?'—':((x>=0?'▲ ':'▼ ')+Math.abs(x).toFixed(1)+'%');
  const qoqRaw=last!=null&&prev!=null?last-prev:null,yoyRaw=last!=null&&yr!=null?last-yr:null,totRaw=last!=null&&f0!=null?last-f0:null;
- const absChg=(d)=>{if(d==null)return '';const s=d>=0?'+':'−';const a=Math.abs(d);if(prim.pct)return `${s}${a.toFixed(2)} pp`;if(a>=1e9)return `${s}${(a/1e6).toLocaleString(undefined,{maximumFractionDigits:0})} B`;if(a>=1e6)return `${s}${(a/1e3).toLocaleString(undefined,{maximumFractionDigits:0})} M`;return `${s}${a.toLocaleString()} k`;};
+ /* C8-A M0-2: delta formatter now shares fmtUnit/fA's $-scale thresholds (1e9/1e6, $ prefix) instead of
+    the old mismatched /1e6-labeled-"B" scale, so a card's delta never disagrees with its own level value. */
+ const absChg=(d)=>{if(d==null)return '';const s=d>=0?'+':'−';const a=Math.abs(d);if(prim.pct)return `${s}${a.toFixed(2)} pp`;if(a>=1e9)return `${s}$${(a/1e9).toFixed(1)}T`;if(a>=1e6)return `${s}$${(a/1e6).toFixed(1)}B`;return `${s}$${Math.round(a/1e3)}M`;};
  const hasAgg=active.some(a=>isAggScope(a.id));
  const aggNote=hasAgg?`<div style="font-size:13px;color:#d97706;padding:4px 0 2px" title="Dollar figures for aggregate/charter-type/size entities are Σ of individual filer values — ratios (%) are Σnumerator/Σdenominator, not averages">⚠ You're viewing an aggregate (ALL/size bucket/peer group): dollar totals are summed across banks; percentages are recomputed from the summed numerator ÷ summed denominator, not averaged.</div>`:'';
  document.getElementById('cards').innerHTML=
@@ -1632,7 +1669,8 @@ function draw(){const host=document.getElementById('panes');
  window._exp={head,body:expBody};
  const snapEl=document.getElementById('snapshot');
  if(lastSeries.length>1&&snapEl){
-  const fmtDelta=(d,isPct)=>{if(d==null)return '';const sg=d>=0?'+':'−';const a=Math.abs(d);if(isPct)return `${sg}${a.toFixed(2)} pp`;if(a>=1e9)return `${sg}${(a/1e6).toLocaleString(undefined,{maximumFractionDigits:0})} B`;if(a>=1e6)return `${sg}${(a/1e3).toLocaleString(undefined,{maximumFractionDigits:0})} M`;return `${sg}${a.toLocaleString()} k`;};
+  /* C8-A M0-2: same $-scale unification as absChg above. */
+  const fmtDelta=(d,isPct)=>{if(d==null)return '';const sg=d>=0?'+':'−';const a=Math.abs(d);if(isPct)return `${sg}${a.toFixed(2)} pp`;if(a>=1e9)return `${sg}$${(a/1e9).toFixed(1)}T`;if(a>=1e6)return `${sg}$${(a/1e6).toFixed(1)}B`;return `${sg}$${Math.round(a/1e3)}M`;};
   const snapRows=lastSeries.map(s=>{const sR=s.rows.filter(r=>ws.has(r[0]));const sLast=sR.length?sR[sR.length-1][1]:null,sLastQ=sR.length?sR[sR.length-1][0]:null;const sMap=Object.fromEntries(sR.map(r=>[r[0],r[1]]));const sPQ=sLastQ?prevQtr(sLastQ):null,sYQ=sLastQ?yoyQtr(sLastQ):null;const sPrev=(sPQ&&sPQ in sMap)?sMap[sPQ]:null,sYr=(sYQ&&sYQ in sMap)?sMap[sYQ]:null;const sF0=sR.length?sR[0][1]:null;const sQoq=pctChg(sLast,sPrev),sYoy=pctChg(sLast,sYr),sTot=pctChg(sLast,sF0);const sQR=sLast!=null&&sPrev!=null?sLast-sPrev:null,sYR=sLast!=null&&sYr!=null?sLast-sYr:null,sTR=sLast!=null&&sF0!=null?sLast-sF0:null;return {s,sLast,sQoq,sYoy,sTot,sQR,sYR,sTR};});
   let sh=`<table style="width:100%;margin-top:8px;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:3px 6px">Entity</th><th style="padding:3px 6px">Latest</th><th style="padding:3px 6px">QoQ</th><th style="padding:3px 6px">YoY</th><th style="padding:3px 6px">Total Δ</th></tr></thead><tbody>`;
   for(const {s,sLast,sQoq,sYoy,sTot,sQR,sYR,sTR} of snapRows){const dot=`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${s.color};margin-right:5px"></span>`;sh+=`<tr><td style="text-align:left;padding:3px 6px">${dot}${s.label}</td><td style="padding:3px 6px;text-align:right">${fmtUnit(sLast,s.pct)}</td><td class="${cls(sQoq)}" style="padding:3px 6px;text-align:right">${arr(sQoq)}${sQR!=null?` <span class="muted" style="font-size:12px">${fmtDelta(sQR,s.pct)}</span>`:''}</td><td class="${cls(sYoy)}" style="padding:3px 6px;text-align:right">${arr(sYoy)}${sYR!=null?` <span class="muted" style="font-size:12px">${fmtDelta(sYR,s.pct)}</span>`:''}</td><td class="${cls(sTot)}" style="padding:3px 6px;text-align:right">${arr(sTot)}${sTR!=null?` <span class="muted" style="font-size:12px">${fmtDelta(sTR,s.pct)}</span>`:''}</td></tr>`;}
@@ -1972,7 +2010,11 @@ async function renderForm(){const ids=fentIds();if(!ids.length)return;const fq=w
  const r=(await conn.query(`SELECT quarter_end,mdrm,SUM(value) v FROM t WHERE entity_id IN (${sqlList(ids)}) AND quarter_end IN (${sqlList(cols)}) GROUP BY quarter_end,mdrm`)).toArray();
  const val={};for(const x of r){(val[x.mdrm]=val[x.mdrm]||{})[String(x.quarter_end)]=Number(x.v);}
  const body=document.getElementById('formbody');body.innerHTML='';window._fr=[];window._fcols=colsDesc;
- const hd=document.createElement('div');hd.className='frow';hd.style.cssText=`font-weight:700;position:sticky;top:0;z-index:2;background:${DK()?'#161e2b':'#fff'}`;
+ /* C8-A C-16: was a runtime DK()?-ternary baking a literal hex into inline style (safe today only by
+    coincidence, since .modal{display:none} in @media print hides #formmodal entirely and rptPrint/
+    ⬇HTML only ever read #rptbody — but a latent landmine if either of those assumptions ever changes).
+    var(--bg) resolves correctly for both themes via the existing :root/body.dark cascade with zero JS. */
+ const hd=document.createElement('div');hd.className='frow';hd.style.cssText=`font-weight:700;position:sticky;top:0;z-index:2;background:var(--bg,#fff)`;
  hd.innerHTML=`<span class="lab">Item</span>`+colsDesc.map(q=>`<span class="vcell">${q.slice(0,7)}</span>`).join('');
  body.appendChild(hd);
  const keys=[...FORM_ORDER.filter(k=>HIER[k]),...Object.keys(HIER).filter(k=>SCHED_NAMES[k]&&!FORM_ORDER.includes(k))];
@@ -1993,8 +2035,12 @@ function renderFormNodes(container,nodes,colsDesc,val){for(const nd of nodes){co
 function exportForm(){if(!window._fr||!window._fr.length){showToast('Nothing to export.');return;}
  dl2(['schedule','item','mdrm','caption',...(window._fcols||[])],window._fr,'callreport');}
 
-function dl2(c,rows,nm){if(!rows.length){showToast('Nothing to export.');return;}const e=v=>{v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
- const lines=[c.join(',')].concat(rows.map(r=>r.map(e).join(',')));const bl=new Blob([lines.join('\n')],{type:'text/csv'});
+/* C8-A M0-3: UTF-8 BOM prefix (Excel-on-Windows mis-renders non-ASCII, e.g. en-dashes/foreign legal
+   names, without it) + escaper now also quotes bare \r (previously only ,"\n triggered quoting). This
+   is the single dl2() choke point for every CSV export path (main series, league, export builder, SQL,
+   form/callreport) — one fix covers all of them. */
+function dl2(c,rows,nm){if(!rows.length){showToast('Nothing to export.');return;}const e=v=>{v=v==null?'':String(v);return /[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+ const lines=[c.join(',')].concat(rows.map(r=>r.map(e).join(',')));const bl=new Blob(['﻿',lines.join('\n')],{type:'text/csv'});
  const a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download='ffiec_call_'+nm+'.csv';a.click();}
 // ---- entity report (V2) ----
 async function openReport(entityId){
