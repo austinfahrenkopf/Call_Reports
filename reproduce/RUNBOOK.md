@@ -4,9 +4,16 @@ Quarterly panel of U.S. commercial banks (FFIEC 031/041/051 filers above the too
 threshold) plus ALL / charter-type / size-bucket aggregates, 1976 Q1 → present, free public data.
 New here? Read `../GLOSSARY.md` first, and `../DID_I_BREAK_IT.md` before pushing any change.
 
-**State as of 2026-07-02:** see `REPRODUCE_VERIFIED.md` for the commit SHA this kit was last
-clean-room-verified against. Golden: RCFD2170=4,016,571,000 @ 2026-03-31 (JPMorgan Chase Bank NA
-RSSD 852218). EMPTY_CODES baseline: **662** (see CONTEXT.md for the 675→662 history).
+**State as of v1.0 (2026-07-10):** the kit's code/data files match the v1.0 release exactly (see
+the header of `REPRODUCE_VERIFIED.md`; the last full clean-room run remains 2026-07-02). Golden:
+RCFD2170=4,016,571,000 @ 2026-03-31 (JPMorgan Chase Bank NA RSSD 852218). EMPTY_CODES baseline:
+**662** (see CONTEXT.md for the 675→662 history).
+
+**Self-verify (v1.0, no rebuild needed):** from the repo root,
+`python reproduce/check_hierarchy_manifest.py call` checks the served `app/` schedule tree against
+`reproduce/expected_hierarchy_call.json` (the hand-audited, form-PDF-derived manifest: item
+membership + order + full multi-column code sequences) and must print
+`ALL COMPLETE SCHEDULES PASS`. Run it after any change to the hierarchy or app data.
 
 **Environment: Python 3.12.** `pip install -r requirements.txt` (versions pinned — the exact set
 the clean-room verification used).
