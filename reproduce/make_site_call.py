@@ -950,7 +950,11 @@ function refreshCalcPicklist(){
     h+=`<tr><td style="font-weight:700;padding:1px 8px 1px 0;color:var(--accent,#1b7f3b)">${AL[i]}</td><td style="color:var(--muted,#9aa3b2);padding:1px 8px 1px 0;font-family:monospace;font-size:12px">${m.code}</td><td style="color:var(--fg,#14213d)">${lbl}</td></tr>`;}
   tbody.innerHTML=h||'<tr><td colspan="3" style="color:var(--muted,#9aa3b2);font-style:italic">Add measures to the chart first, then open Custom formula.</td></tr>';}
 function getFormulasJson(){const out={};for(const[k,v]of Object.entries(USERCALC))out[k]=v;return JSON.stringify(out);}
-function applyFormulas(obj){let n=0;for(const[code,entry]of Object.entries(obj)){if(!code.startsWith('CALC_'))continue;if(!entry?.type||!entry?.lbl)continue;if(!USERCALC[code]){USERCALC[code]=entry;toggleMeasure(code,entry.lbl,!!entry.pct);n++;}}return n;}
+// C122-FORMULAS-FIX: an import must (1) upsert the definition and (2) re-add the CHIP when absent.
+// The old guard skipped the whole entry whenever USERCALC[code] already existed in memory — so
+// deleting a formula chip (✕) and re-loading the saved file silently restored nothing ("Loaded 0
+// formulas"). In-memory definitions still win over the file's (unchanged precedence).
+function applyFormulas(obj){let n=0;for(const[code,entry]of Object.entries(obj)){if(!code.startsWith('CALC_'))continue;if(!entry?.type||!entry?.lbl)continue;const def=USERCALC[code]||entry;if(!USERCALC[code])USERCALC[code]=entry;if(!measures.some(m=>m.code===code)){toggleMeasure(code,def.lbl,!!def.pct);n++;}}return n;}
 function saveFormulas(){const s=getFormulasJson();const b=new Blob([s],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='ffiec_call_formulas.json';a.click();URL.revokeObjectURL(u);showToast('Formulas downloaded as ffiec_call_formulas.json.','ok');try{localStorage.setItem('ffiec_call_formulas',s);}catch(_){}}
 function loadFormulas(){document.getElementById('calcImportFile').click();}
 function autoLoadFormulas(){try{const s=localStorage.getItem('ffiec_call_formulas');if(s)applyFormulas(JSON.parse(s));}catch{}}
