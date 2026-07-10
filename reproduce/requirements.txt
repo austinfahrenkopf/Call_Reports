@@ -1,17 +1,11 @@
 # FFIEC 031/041/051 Call Reports explorer — Python dependencies
-# Verified on Python 3.12 (the clean-room rebuild in REPRODUCE_VERIFIED.md used exactly these pins).
 # Install:  pip install -r requirements.txt
-#           playwright install chrome        # one-time, TIER 2 ONLY (data pipeline)
 #
-# Tier 1 (--html-only rebuild + validator) needs ONLY pandas + pyarrow.
-# pandas/pyarrow : parse FFIEC CDR bulk files, build/read the parquet panel
-# duckdb         : completeness/validator panel queries (Tier 1 — keep the env identical to the
-#                  clean-room-verified set even where a specific script degrades without it)
-# playwright     : real-Chrome downloader for Akamai-guarded FFIEC CDR endpoints (Tier 2)
-# requests       : fallback HTTP for non-guarded endpoints (Tier 2)
-# (the BROWSER uses DuckDB-WASM independently of the Python duckdb package)
-pandas==3.0.3
-pyarrow==24.0.0
-duckdb==1.5.4
-playwright==1.60.0
-requests==2.34.2
+# pandas/pyarrow : parse FFIEC CDR bulk download files, build/read the parquet panel
+# playwright     : real-Chrome downloader for Akamai-guarded FFIEC CDR endpoints
+# requests       : fallback HTTP for non-guarded endpoints
+# (DuckDB runs client-side as DuckDB-WASM in the browser — no Python duckdb needed here.)
+pandas>=2.0
+pyarrow>=12.0
+playwright>=1.40
+requests>=2.28

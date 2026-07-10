@@ -24,6 +24,173 @@ GOLDEN_RSSD=852218   # JPMorgan Chase Bank, N.A. (bank RSSD, not BHC)
 GOLDEN_CODES=("RCFD2170","RCON2170")  # individual bank rows use RCFD/RCON, not COMB
 RIAD_BASES=['4340','4635','4605','4230']   # income codes fixed by HIGH-1
 
+# ============================================================================
+# HIERARCHY ORDER / SANITY GATE (2026-07-08) — permanent structural gate
+# against the Call RI-E "scrambled schedule tree" defect class (owner review
+# finding 1, ORCHESTRATION_STATE.md 2026-07-08: RI-E rendered on the live DOM
+# as "2.b, 1.d, 2.c, 2.f, 2.g, 1.h.2…" — insertion order, not form order;
+# hand-confirmed again here directly against ffiec_call_hierarchy.json: RIE's
+# array starts item 2.b(order0) then 1.d(order1); RC starts 1.b(order0) then
+# 1.a(order1); RCRI's very first row is item 47.a). For every schedule array
+# in the built hierarchy JSON:
+#   (a) ORDER MONOTONIC — parsed item-number tuples must be non-decreasing in
+#       array order. Rows sharing an IDENTICAL item label (Call's matrix-
+#       column convention — e.g. RC-N repeats the SAME item across its
+#       past-due/90+/nonaccrual columns; no distinct column letters, unlike
+#       002/Y-9C) are equal, not decreasing, and allowed adjacent.
+#   (b) NO DUPLICATE item labels within a schedule, except an adjacent
+#       matrix/column-variant run (same rule as (a)) — a repeat of an item
+#       label AFTER other items appear in between is a real mis-nest.
+#   (c) SIBLING (letter/number) CONTIGUITY — sibling segments under one
+#       parent (1.a,1.b,1.c… or top-level 1,2,3…) must have no interior gap.
+#       BLOCKING only for schedules that have been audited against the form
+#       PDF (see _HIER_GATE_BLOCKING_SCHEDULES) — no Call schedule has been
+#       through that audit yet (tracked separately per ORCHESTRATION_STATE.md
+#       finding 1: "full per-schedule audit ×3 ... vs the form PDFs"), so it
+#       runs NOTE-only here. Promote a schedule to blocking (and add its
+#       exceptions) once audited.
+# Null/blank items are exempt from all three checks (free-text fields carry
+# no item number by design). This block is hand-ported identically to
+# FFIEC 002/validate_build_002.py and FR Y-9C/validate_build.py — the three
+# engines are clones with no shared module (CLAUDE.md), so the gate logic is
+# duplicated verbatim across all three; keep them in sync if this changes.
+# ============================================================================
+
+def _hier_item_key(item):
+    """Parse a form item label ('1','1.a','1.a.(1)','M.3') into a sortable
+    tuple: numeric segments -> int; single-letter segments -> lowercase;
+    'M' (Memoranda bucket) sorts after all numbered top-level items. A
+    parenthesized NUMERIC segment ('(1)','(2)') is class 2 — it sorts AFTER
+    a bare-letter sibling at the same position (e.g. '4.a' < '4.a.(1)' is
+    trivially true by tuple length, but '4.a' < '4.(1)' as SIBLINGS under
+    parent '4' also holds: letter=class1 < paren-digit=class2). A
+    parenthesized LETTER segment ('(A)') is unaffected by parens and stays
+    class 1, same as a bare letter. This 3-class scheme (0=bare digit <
+    1=alphabetic < 2=parenthesized numeric) matches build_hierarchy.py's
+    item_sort_key exactly (2026-07-08 re-review, finding 6 — build/validator
+    sort-class mismatch; hand-traced against ffiec_call_hierarchy.json: zero
+    schedules currently place a parenthesized-numeric item as a direct
+    sibling of a bare-letter item under the same parent, so this change does
+    not flip any currently-passing order comparison for Call). Returns None
+    for a null/blank item (the caller treats that row as exempt from all
+    three checks)."""
+    if not item: return None
+    s = str(item).strip()
+    if not s: return None
+    key = []
+    for i, raw in enumerate(s.split('.')):
+        p = raw.strip()
+        if not p: continue
+        # 2026-07-08 cycle-11 first-execution fix (ports the cycle-10 Y-9C multi-paren parse fix,
+        # owner-approved there; same false-positive class): one dot-segment can carry MULTIPLE
+        # paren groups. The cycle-11 generator's dot->double-paren pass 3 created this class in
+        # Call for the first time (RCK 6.a.(2)(a), RCL 1.e.(3)(a), RIBI 1.c.(2)(a) — all form-true
+        # runs verified against FFIEC031_202606_f.pdf). Previously '(2)(a)' fell through to the
+        # opaque class-2 branch and read as a key DECREASE after '(1)'. Parse each group with THIS
+        # validator's own class rules (paren-digit = class 2, per build_hierarchy.py's
+        # item_sort_key — NOT Y-9C's class-0 convention). Parse fix only; class scheme unchanged.
+        _groups = re.findall(r'\(([^()]+)\)', p) if (p.startswith('(') and p.endswith(')')) else []
+        if len(_groups) > 1:
+            for g in _groups:
+                if g.isdigit(): key.append((2, int(g), ''))
+                elif re.match(r'^[A-Za-z]$', g): key.append((1, 0, g.lower()))
+                else: key.append((2, 0, g.upper()))
+            continue
+        paren = p.startswith('(') and p.endswith(')')
+        inner = p[1:-1] if paren else p
+        if i == 0 and inner.upper() == 'M': key.append((9, 0, ''))
+        elif inner.isdigit(): key.append((2 if paren else 0, int(inner), ''))
+        elif re.match(r'^[A-Za-z]$', inner): key.append((1, 0, inner.lower()))
+        else: key.append((2, 0, inner.upper()))
+    return tuple(key)
+
+def _hier_parent(item):
+    parts = str(item).strip().split('.'); return '.'.join(parts[:-1])
+
+def _hier_last_seg(item):
+    p = str(item).strip().split('.')[-1].strip()
+    return p[1:-1] if (p.startswith('(') and p.endswith(')')) else p
+
+def _hierarchy_order_gate(hier_dict, exceptions, blocking_scheds):
+    """Runs checks (a) ORDER MONOTONIC, (b) NO DUPLICATE (both always
+    blocking, every schedule) and (c) SIBLING CONTIGUITY (blocking only for
+    schedules in blocking_scheds; NOTE elsewhere) against a built hierarchy
+    dict {schedule: [node,...]}. exceptions: {schedule: {parent_item:
+    {excused_last_segment,...}}}. Returns (fails, notes)."""
+    gfails = []; gnotes = []
+    for sched, nodes in hier_dict.items():
+        items = [((n.get('item') or '').strip() or None) for n in nodes]
+        keys = [_hier_item_key(it) for it in items]
+
+        prev_key = prev_item = None; order_bad = 0
+        for idx, (it, k) in enumerate(zip(items, keys)):
+            if k is None: continue
+            if prev_key is not None and k < prev_key and it != prev_item:
+                order_bad += 1
+                if order_bad <= 3:
+                    gfails.append(f"[HIER_ORDER] {sched}: item '{it}' (row {idx}) out of order after '{prev_item}'")
+            prev_key, prev_item = k, it
+        if order_bad > 3:
+            gfails.append(f"[HIER_ORDER] {sched}: {order_bad} total out-of-order item(s) (first 3 shown above)")
+
+        seen = set(); last_item = None; dup_bad = 0
+        for it in items:
+            if it is None: continue
+            if it != last_item:
+                if it in seen:
+                    dup_bad += 1
+                    if dup_bad <= 3:
+                        gfails.append(f"[HIER_DUP] {sched}: item '{it}' repeats non-adjacently (mis-nested duplicate)")
+                seen.add(it)
+            last_item = it
+        if dup_bad > 3:
+            gfails.append(f"[HIER_DUP] {sched}: {dup_bad} total non-adjacent duplicate item label(s) (first 3 shown above)")
+
+        by_parent = {}
+        for n, it in zip(nodes, items):
+            if it is None or n.get('col'): continue   # col:true = matrix column header, not a sequential sibling
+            parent = _hier_parent(it); last = _hier_last_seg(it)
+            by_parent.setdefault(parent, set()).add(last)
+        sched_exc = exceptions.get(sched, {}); blocking = sched in blocking_scheds
+        for parent, lasts in by_parent.items():
+            excused = sched_exc.get(parent, set())
+            letters = sorted({x.lower() for x in lasts if re.match(r'^[A-Za-z]$', x or '')})
+            if len(letters) >= 2:
+                lo, hi = ord(letters[0]), ord(letters[-1])
+                gap = {chr(c) for c in range(lo, hi + 1)} - set(letters) - {str(e).lower() for e in excused}
+                if gap:
+                    tag = 'HIER_GAP' if blocking else 'HIER_GAP_NOTE'
+                    (gfails if blocking else gnotes).append(f"[{tag}] {sched} parent '{parent or sched}': missing sibling letter(s) {sorted(gap)} between {letters[0]} and {letters[-1]}")
+            nums = sorted(int(x) for x in lasts if (x or '').isdigit())
+            if len(nums) >= 2:
+                lo, hi = nums[0], nums[-1]
+                excused_n = {int(e) for e in excused if str(e).isdigit()}
+                gapn = set(range(lo, hi + 1)) - set(nums) - excused_n
+                if gapn:
+                    tag = 'HIER_GAP' if blocking else 'HIER_GAP_NOTE'
+                    (gfails if blocking else gnotes).append(f"[{tag}] {sched} parent '{parent or sched}': missing sibling item(s) {sorted(gapn)} between {lo} and {hi}")
+    gnotes.append(f"[HIER_GATE] {len(hier_dict)} schedule(s) checked (order+dup blocking on all); "
+                  f"sibling-contiguity blocking on {sorted(blocking_scheds & set(hier_dict)) or '(none yet — NOTE-only pending audit)'}")
+    return gfails, gnotes
+
+# Per-schedule exceptions for check (c) — one line per excused gap, comment
+# cites the form/schedule so a future audit can verify it against the PDF.
+# {schedule: {parent_item: {excused_last_segment, ...}}}
+_HIER_GATE_EXCEPTIONS = {
+    # No Call schedule has been through the sibling-contiguity form-PDF audit
+    # yet (ORCHESTRATION_STATE.md 2026-07-08 finding 1 tracks that work
+    # separately from this gate). Add entries here as schedules get audited
+    # and move the schedule key into _HIER_GATE_BLOCKING_SCHEDULES below, e.g.:
+    #   'RIE': {'2': {'d'}},  # RI-E pXX: item 2.d "Not applicable" per form
+}
+# Schedules whose sibling-contiguity (check c) is BLOCKING (i.e. actually
+# audited against the form PDF). Empty for Call today; checks (a) ORDER and
+# (b) DUPLICATE above are unconditionally blocking on every schedule
+# regardless of this set — that is the primary defense against the RI-E
+# defect class and needs no PDF audit to be safe (it only asserts the
+# hierarchy is internally self-consistent).
+_HIER_GATE_BLOCKING_SCHEDULES = set()
+
 def main():
     fails=[]; notes=[]
 
@@ -149,6 +316,17 @@ def main():
         notes.append("[HIERARCHY_LINT] hierarchy_linter not found; structural check skipped")
     except Exception as e:
         notes.append(f"[HIERARCHY_LINT] structural check error ({e}); skipped")
+
+    # HIERARCHY ORDER / SANITY GATE — see _hierarchy_order_gate() above.
+    try:
+        if os.path.exists(HIER):
+            _hg_fails, _hg_notes = _hierarchy_order_gate(hier, _HIER_GATE_EXCEPTIONS, _HIER_GATE_BLOCKING_SCHEDULES)
+            fails.extend(_hg_fails); notes.extend(_hg_notes)
+        else:
+            notes.append("[HIER_GATE] hierarchy not loaded; order/sanity gate skipped")
+    except Exception as e:
+        fails.append(f"[HIER_GATE] gate crashed ({e}) — treated as a FAIL, not a skip: an order/dup/contiguity "
+                      f"gate that can silently no-op on error is worse than no gate at all")
 
     # COMPLETENESS GATE (bidirectional, era-aware, BLOCKING) — MISSING / SPURIOUS / SEQUENCE /
     # ERA_SEAM. See _completeness_gate.py for the full contract.
