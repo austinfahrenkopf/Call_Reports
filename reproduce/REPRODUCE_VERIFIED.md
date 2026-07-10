@@ -1,5 +1,11 @@
 # REPRODUCE_VERIFIED — clean-room rebuild record
 
+> **v1.0 (2026-07-10):** this reproduce/ kit was refreshed to the `v1.0` release (this repo `ebde14d`;
+> siblings FFIEC_002 `3b4c49f` · FRY9C `b81083e`) — every code/data file in the kit matches the v1.0
+> build exactly (strict push-gate hash-verified at release; app/ EMPTY_CODES baseline now 662).
+> The clean-room record below is the last full fresh-clone run (2026-07-02, M.1-cycle SHAs) and has
+> not yet been re-run at v1.0.
+
 **Verified: 2026-07-02, against commit `368d5ef`** (M.1 packaging cycle; app/ layout + self-contained kit).
 Sibling repos at this cycle: FFIEC_002 `256c108` · FRY9C `c92d60d`.
 
