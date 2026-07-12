@@ -270,15 +270,30 @@ def main():
     tree_path = os.path.join(PROJECT_ROOT, tree_rel)
     manifest_path = os.path.join(PROJECT_ROOT, manifest_rel)
 
-    # v1.0 kit mode (2026-07-10): this script also ships in each public repo's reproduce/ so the
-    # repos are SELF-VERIFYING. There the layout is <repo>/app/<hierarchy>.json (the served copy)
-    # + <repo>/reproduce/expected_hierarchy_<engine>.json (next to this script). Fall back to that
-    # layout when the workshop paths don't exist — same checks, run against the served tree.
+    # v1.0 kit mode (2026-07-10): this script also ships in each public repo so the repos are
+    # SELF-VERIFYING. Two kit layouts exist historically:
+    #   v1.0.x flat kit:      <repo>/reproduce/<this script> + manifest NEXT TO the script,
+    #                         tree at <repo>/app/ (= PROJECT_ROOT/app since PROJECT_ROOT is
+    #                         one dir above the script).
+    #   cycle-15 ROOT DIET:   <repo>/reproduce/tools/<this script> + manifest in
+    #                         <repo>/reproduce/config/, tree still at <repo>/app/ (now TWO
+    #                         dirs above the script -- walk upward until app/ is found).
+    # Fall back when the workshop paths don't exist — same checks, run against the served tree.
     if not os.path.isfile(tree_path):
         _here = os.path.dirname(os.path.abspath(__file__))
-        kit_tree = os.path.join(PROJECT_ROOT, "app", os.path.basename(tree_rel))
-        kit_manifest = os.path.join(_here, os.path.basename(manifest_rel))
-        if os.path.isfile(kit_tree) and os.path.isfile(kit_manifest):
+        kit_tree = None
+        _walk = _here
+        for _ in range(4):  # script -> reproduce/tools -> reproduce -> repo root
+            _cand = os.path.join(_walk, "app", os.path.basename(tree_rel))
+            if os.path.isfile(_cand):
+                kit_tree = _cand
+                break
+            _walk = os.path.dirname(_walk)
+        kit_manifest = next(
+            (m for m in (os.path.join(_here, os.path.basename(manifest_rel)),
+                         os.path.join(_here, "..", "config", os.path.basename(manifest_rel)))
+             if os.path.isfile(m)), None)
+        if kit_tree and kit_manifest:
             tree_path, manifest_path = kit_tree, kit_manifest
             print(f"[kit mode] tree={tree_path}")
             print(f"[kit mode] manifest={manifest_path}")

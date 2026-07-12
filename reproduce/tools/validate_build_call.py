@@ -270,7 +270,10 @@ def main():
     #    blocking gate (Call has 100s of historical gaps across RCRII/RCL/RCB/RCQ/RCN/RCT).
     HERE=os.path.dirname(os.path.abspath(__file__))
     _bare=lambda c:(str(c)[4:] if len(str(c))==8 and str(c)[:2].isalpha() else str(c))
-    EXP=next((c for c in (os.path.join(HERE,"expected_items.json"),os.path.join(HERE,"..","expected_items.json")) if os.path.exists(c)),None)
+    # cycle-15 ROOT DIET (ratified D5): workspace-root expected_items.json deleted -- check
+    # self-disables here until batch-3 regenerates per-form manifests; ..\config\ keeps the KIT
+    # copy findable (repo layout: reproduce\tools\<this file> + reproduce\config\expected_items.json).
+    EXP=next((c for c in (os.path.join(HERE,"expected_items.json"),os.path.join(HERE,"..","expected_items.json"),os.path.join(HERE,"..","config","expected_items.json")) if os.path.exists(c)),None)
     if not EXP:
         notes.append("[COMPLETE2] no expected_items.json manifest found; schedule-completeness check skipped")
     elif not os.path.exists(HIER):
@@ -332,7 +335,9 @@ def main():
     # ERA_SEAM. See _completeness_gate.py for the full contract.
     try:
         import sys as _sys; _gbase=os.path.dirname(os.path.abspath(__file__))
-        for _p in (os.path.join(_gbase,'..'), _gbase):
+        # cycle-15 ROOT DIET: the shared gate lives in <root>\tools\ in the workspace; the kit
+        # ships a same-dir copy (covered by _gbase). Old root fallback kept for older checkouts.
+        for _p in (os.path.join(_gbase,'..','tools'), os.path.join(_gbase,'..'), _gbase):
             if _p not in _sys.path: _sys.path.insert(0,_p)
         from _completeness_gate import run_gate
         g_fails, g_notes = run_gate('call', hier, _gbase)

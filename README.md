@@ -20,13 +20,13 @@ Clone → serve the app folder (`cd app; python -m http.server 8001`) → open h
 
 ## Rebuild from source (Tier 1 — no browser automation needed)
 Requirements: Python 3.12, `pip install -r reproduce/requirements.txt` (pandas, pyarrow).
-See `reproduce/RUNBOOK.md` § Tier 1: rebuild `index.html` from the committed parquet + hierarchy, then follow DID_I_BREAK_IT.md.
+See `reproduce/RUNBOOK.md` § Tier 1: rebuild `index.html` from the committed parquet + hierarchy, then follow `reproduce/docs/DID_I_BREAK_IT.md`.
 
 ## Rebuild the DATA from scratch (Tier 2 — full pipeline)
 Needs real Chrome + Playwright (the FFIEC CDR endpoints are bot-guarded; plain HTTP clients are blocked and must not be used). See `reproduce/RUNBOOK.md` § Tier 2. Everything comes from free public sources: FFIEC CDR bulk downloads (2001+), Chicago Fed historical Call files (1976–2000), the Fed MDRM dictionary, and the blank form PDFs.
 
 ## Trust & verification
-Every number is traceable to public filings. Regression tripwires: a hand-verified golden cell (RCFD2170 = 4,016,571,000 @ 2026-03-31, JPMorgan Chase Bank NA — see GLOSSARY.md), `reproduce/validate_build_call.py`, an EMPTY_CODES count assertion (662 — see CONTEXT.md history), and REPRODUCE_VERIFIED.md documenting a clean-room rebuild. **This repo is self-verifying (v1.0):** `python reproduce/check_hierarchy_manifest.py call` checks the served `app/` schedule tree against `reproduce/expected_hierarchy_call.json` — the hand-audited, form-PDF-derived manifest (item membership, order, and full multi-column code sequences) — and must print `ALL COMPLETE SCHEDULES PASS`. Before changing anything, read GLOSSARY.md and DID_I_BREAK_IT.md.
+Every number is traceable to public filings. Regression tripwires: a hand-verified golden cell (RCFD2170 = 4,016,571,000 @ 2026-03-31, JPMorgan Chase Bank NA — see GLOSSARY.md), `reproduce/tools/validate_build_call.py`, an EMPTY_CODES count assertion (662 — see `reproduce/docs/CONTEXT.md` history), and `reproduce/docs/REPRODUCE_VERIFIED.md` documenting a clean-room rebuild. **This repo is self-verifying (v1.0):** `python reproduce/tools/check_hierarchy_manifest.py call` checks the served `app/` schedule tree against `reproduce/config/expected_hierarchy_call.json` — the hand-audited, form-PDF-derived manifest (item membership, order, and full multi-column code sequences) — and must print `ALL COMPLETE SCHEDULES PASS`. Before changing anything, read GLOSSARY.md and `reproduce/docs/DID_I_BREAK_IT.md`.
 
 ## License
 MIT (see LICENSE). The underlying data is U.S. government public-domain regulatory filings.

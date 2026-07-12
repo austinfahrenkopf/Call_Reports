@@ -1,11 +1,14 @@
 # CI for austinfahrenkopf/Call_Reports
 #
 # What this checks:
-#   1. reproduce/validate_build_call.py runs against the COMMITTED app/ + reproduce/ files.
-#      Verified present in this repo (2026-07-03): reproduce/ffiec_call_tool.parquet,
-#      reproduce/_completeness_gate.py, reproduce/expected_items.json, reproduce/hierarchy_linter.py.
-#      The validator imports _completeness_gate/hierarchy_linter from its own script directory
-#      (reproduce/ is on sys.path), so no repo-root copies are needed. The step is best-effort
+#   0. Root allowlist (cycle-15 ROOT DIET): the repo root carries ONLY the fixed entry set.
+#   1. reproduce/tools/validate_build_call.py runs against the COMMITTED app/ + reproduce/ files.
+#      Kit layout since v1.0.2 ROOT DIET: scripts in reproduce/tools/, data+config in
+#      reproduce/config/ (incl. ffiec_call_tool.parquet, expected_items.json), blank PDFs in
+#      reproduce/forms/, docs in reproduce/docs/. The validator resolves inputs from the CURRENT
+#      DIRECTORY (byte-identical copy of the workshop original), so the step runs with
+#      working-directory: reproduce/config; it imports _completeness_gate/hierarchy_linter from
+#      its own script directory (reproduce/tools/ is on sys.path). The step is best-effort
 #      (continue-on-error) because the validator also checks the built site tree, which mirrors
 #      the dev working-dir layout rather than this repo's app/ layout.
 #   2. An independent inline golden-cell assertion (does not depend on validate_build_call.py or
@@ -47,20 +50,32 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r reproduce/requirements.txt
 
+      - name: Root allowlist (cycle-15 ROOT DIET — a stray root file fails CI)
+        run: |
+          python - <<'PY'
+          import os, sys
+          allowed = {"README.md","GLOSSARY.md","LICENSE","index.html","app","reproduce",
+                     ".git",".github",".gitignore",".nojekyll"}
+          strays = sorted(e for e in os.listdir(".") if e not in allowed)
+          for s in strays:
+              print(f"::error::root entry {s!r} is not in the cycle-15 root allowlist — place it under reproduce/ or amend the allowlist deliberately")
+          sys.exit(1 if strays else 0)
+          PY
+
       - name: Repo layout sanity check
         # Call_Reports uses the app/ layout (root index.html redirect + app/index.html +
         # app/ffiec_call_recent_*.parquet + app/ffiec_call_old_*.parquet era shards).
         run: |
-          test -f reproduce/make_site_call.py || { echo "::error::reproduce/make_site_call.py not found — engine missing or repo layout changed"; exit 1; }
+          test -f reproduce/tools/make_site_call.py || { echo "::error::reproduce/tools/make_site_call.py not found — engine missing or repo layout changed"; exit 1; }
           test -d app || { echo "::error::app/ directory not found — expected committed parquet/hierarchy under app/"; exit 1; }
-          echo "Layout OK: reproduce/make_site_call.py + app/ present"
+          echo "Layout OK: reproduce/tools/make_site_call.py + app/ present"
 
       - name: Run validate_build_call.py (best-effort; site-tree checks may not apply to repo layout)
         id: validator
-        working-directory: reproduce
+        working-directory: reproduce/config
         continue-on-error: true
         run: |
-          python validate_build_call.py
+          python ../tools/validate_build_call.py
 
       - name: Report validator outcome
         run: |
