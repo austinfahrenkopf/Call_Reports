@@ -43,9 +43,10 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install pinned dependencies
-        # reproduce/requirements.txt carries exact == pins (verified clean-room in
-        # reproduce/REPRODUCE_VERIFIED.md on Python 3.12).
+      - name: Install dependencies
+        # reproduce/requirements.txt carries >= FLOOR specifiers, not exact pins (C15.1 comment
+        # truth-fix; exact pinning is an open decision - AQ-C15-1). The clean-room verification
+        # record lives at reproduce/docs/REPRODUCE_VERIFIED.md (Python 3.12).
         run: |
           python -m pip install --upgrade pip
           pip install -r reproduce/requirements.txt

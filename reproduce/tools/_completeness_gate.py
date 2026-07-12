@@ -74,15 +74,32 @@ def _lead_int(item):
     return int(m.group(1)) if m else None
 
 
+def _resolve_input(here_dir, name):
+    """C15.1 FIX (cycle-15 review catch, P2): here_dir is the calling validator's script dir.
+    In the WORKSHOP that is the form directory, where the exclusions JSON and panel live
+    adjacent -- first candidate wins, behavior unchanged. In the cycle-15 KIT layout the
+    validator lives in <repo>/reproduce/tools/ while data/config ship in
+    <repo>/reproduce/config/ -- without the ../config candidate the gate silently degraded
+    to its 'not found; skipped' note in ALL restructured kits (it DID run in the flat
+    v1.0.x kits; a gate that passes on a missing input set is the exact silent-no-op class
+    the root-diet contract targets)."""
+    for cand in (os.path.join(here_dir, name),
+                 os.path.join(here_dir, '..', 'config', name)):
+        if os.path.exists(cand):
+            return cand
+    return os.path.join(here_dir, name)  # canonical (missing) path for the skip note
+
+
 def run_gate(form_key, hier, here_dir):
-    """form_key in {'y9c','002','call'}; hier=loaded hierarchy dict; here_dir=form directory.
+    """form_key in {'y9c','002','call'}; hier=loaded hierarchy dict; here_dir=form directory
+    (workshop) or the kit validator's script dir (see _resolve_input).
     Returns (fails:list[str], notes:list[str])."""
     fails, notes = [], []
     cfg = CFG.get(form_key)
     if not cfg:
         return fails, [f"[GATE] unknown form_key {form_key!r}; gate skipped"]
 
-    excl_path = os.path.join(here_dir, cfg['excl'])
+    excl_path = _resolve_input(here_dir, cfg['excl'])
     if not os.path.exists(excl_path):
         return fails, [f"[GATE] {cfg['excl']} not found; completeness gate skipped"]
     excl = json.load(open(excl_path, encoding='utf-8'))
@@ -114,7 +131,7 @@ def run_gate(form_key, hier, here_dir):
     def in_hier(c): return c in hcodes or _bare(c) in hbare
 
     # ---- panel queries ----
-    panel = os.path.join(here_dir, cfg['panel'])
+    panel = _resolve_input(here_dir, cfg['panel'])   # C15.1: kit panel ships in ../config/
     active, ever, ever_bare = None, None, None
     con = None
     if os.path.exists(panel):
