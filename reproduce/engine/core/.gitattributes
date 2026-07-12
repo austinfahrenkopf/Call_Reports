@@ -1,0 +1,5 @@
+# declone-s1: pin the shared formatter core files to LF regardless of core.autocrlf.
+# The engines splice these in at build time and assert no CRLF (the RELEASE.ps1 P0
+# CRLF class); an autocrlf=true checkout would otherwise convert them and trip the
+# guard on a fresh clone / repro-kit rebuild.
+*.js text eol=lf

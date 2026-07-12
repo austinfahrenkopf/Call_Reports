@@ -638,7 +638,7 @@ const PCTC=new Set(['RCFA7204','RCFA7205','RCFA7206','RCFAH036','RCFAP793',
 'RCOA7204','RCOA7205','RCOA7206','RCOAH036','RCOAP793',
 'RCON7204','RCON7205','RCON7206','RCON7273','RCON7274','RCON7275',
 'RCOW7205','RCOW7206','RCOWP793']);
-const short=lbl=>{const i=lbl.indexOf('▸');return (i>=0?lbl.slice(i+1):lbl).replace(/\s*\(.*\)\s*$/,'').trim();};
+__DECLONE_CORE_SHORT__
 const NORM_DEN_LABELS={'COMB2170':'assets','COMB2122':'loans','COMB2200':'deposits','COMB3210':'equity'};
 function _esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 const sqlList=a=>a.map(x=>`'${String(x).replace(/'/g,"''")}'`).join(',');
@@ -676,7 +676,7 @@ function seriesBeginNote(series,win){if(!win||win.length<3)return '';const wIdx=
 /* C8-A M0-2: fmtUnit now matches fA's canonical $-scale/notation exactly ($X.XT/$X.XB/$XM, 1 decimal,
    $ prefix) so the same underlying value never renders two different scales across KPI cards vs Entity
    Report. Values are stored in $ thousands throughout, hence the 1e9/1e6 thresholds. */
-const fmtUnit=(v,pct)=>v==null?'—':pct?(+v).toFixed(2)+'%':(Math.abs(v)>=1e9?'$'+(v/1e9).toFixed(1)+'T':Math.abs(v)>=1e6?'$'+(v/1e6).toFixed(1)+'B':'$'+Math.round(v/1e3)+'M');
+__DECLONE_CORE_FMTUNIT__
 
 let db,conn,lbl2id=new Map(),id2lbl=new Map(),HIER=null,treeBuilt=false,sqlC=[],sqlR=[],ALLQ=[];
 const SUB_AGG_DESCS={
@@ -878,7 +878,7 @@ function coalesce(map,base){return map['COMB'+base]??map['RCFD'+base]??map['RCON
 // cased so it doesn't say "11st"). Module-scope (not buildReport()-local) so buildNarrative() — a
 // separate top-level function called from buildReport() but without closure access to its locals —
 // can use the same one everywhere a percentile/rank string renders (grep 'th %ile'/'th percentile').
-function ordSuffix(n){const a=Math.abs(n)%100;if(a>=11&&a<=13)return n+'th';switch(Math.abs(n)%10){case 1:return n+'st';case 2:return n+'nd';case 3:return n+'rd';default:return n+'th';}}
+__DECLONE_CORE_ORDSUFFIX__
 function searchHier(q){const q2=q.toLowerCase();const seen=new Set();const res=[];
  if(HIER)for(const sch of Object.keys(HIER))for(const r of (HIER[sch]||[])){
   if(!r.mdrm||seen.has(r.mdrm))continue;seen.add(r.mdrm);
@@ -2538,15 +2538,15 @@ async function buildReport(entityId,nm,latestQ,qtrs){
        // assumed badge-less; it now gets the same size-independent treatment as ROA/NIM/NCO.
        effStats=await peerStats('D_EFF',eff);
  const prevQ=qtrs.length>=2?qtrs[qtrs.length-2]:null,yoyQ=qtrs.length>=5?qtrs[qtrs.length-5]:null;
- const pctD=(a,b)=>(a!=null&&b!=null&&b!==0)?100*(a-b)/b:null;
+ __DECLONE_RPT_PCTD__
  const aQoQ=pctD(assets,prevQ?getV(['RCFD2170','RCON2170'],prevQ):null);
  const aYoY=pctD(assets,yoyQ?getV(['RCFD2170','RCON2170'],yoyQ):null);
  const lPrev=prevQ?getV(['RCFD2122','RCON2122'],prevQ):null;
  const nplPrev=prevQ?((getV(['RCFD1403','RCON1403'],prevQ)||0)+(getV(['RCFD1406','RCON1406'],prevQ)||0)+(getV(['RCFD1407','RCON1407'],prevQ)||0)):null;
  const nplRatPrev=lPrev&&nplPrev!=null&&lPrev>0?100*nplPrev/lPrev:null;
  const nplQoQ=pctD(nplRat,nplRatPrev);
- const fA=v=>v==null?'—':v>=1e9?'$'+(v/1e9).toFixed(1)+'T':v>=1e6?'$'+(v/1e6).toFixed(1)+'B':'$'+Math.round(v/1e3)+'M';
- const fP=v=>v==null?'—':v.toFixed(2)+'%';
+ __DECLONE_RPT_FA__
+ __DECLONE_RPT_FP__
  // FIX-2: ordSuffix (module-scope, see definition near coalesce()) — correct English ordinal suffix
  // (1st/2nd/3rd/4th…11th/12th/13th special-cased). Previously percentile/rank strings hand-wrote
  // `${p}th` unconditionally, producing "73th"/"82th"/"91th".
@@ -2563,7 +2563,7 @@ async function buildReport(entityId,nm,latestQ,qtrs){
   const arrow=up?'▲':'▼';
   return `<span style="color:${color};font-size:12px"> ${arrow}${Math.abs(v).toFixed(1)}%</span>`;};
  const assetPct=assetStats.pct;
- const rnk=assetRank?`Rank #${assetRank} of ${assetCount}${assetPct!=null?' ('+ordSuffix(assetPct)+' %ile)':''}`:null;
+ __DECLONE_RPT_RNK__
  const eid=entityId.startsWith('BANK:')?entityId.slice(5):entityId;
  const hdr=`<div style="border:1px solid var(--border,#ccc);border-radius:6px;padding:14px 18px;margin-bottom:14px;background:var(--head,#f7f8fc);color:var(--fg,#111)"><div style="font-size:20px;font-weight:700;color:var(--fg,#111)">${nm} <span title="All figures below use the combined convention: RCFD/RCON/RCFN filing variants coalesced into one value per code" style="font-size:11px;font-weight:600;color:#1b7f3b;background:#eaf6ee;border:1px solid #bfe3c9;border-radius:10px;padding:2px 8px;vertical-align:middle">Combined (RCFD+RCON+RCFN coalesced)</span></div><div class="muted" style="font-size:13px;margin-top:3px">RSSD ${eid} · Commercial Bank · FFIEC 031/041/051</div><div style="font-size:14px;margin-top:7px;color:var(--fg,#111)">As of ${latestQ}${assets!=null?' &nbsp;·&nbsp; Total assets: '+fA(assets):''}${rnk?' &nbsp;·&nbsp; '+rnk:''}</div></div>`;
  // per-quarter helpers for sparklines and trend charts
@@ -2581,7 +2581,7 @@ async function buildReport(entityId,nm,latestQ,qtrs){
  // pctileBar now takes betterWhen and inverts the DISPLAYED percentile (100-pct) for 'lower' metrics
  // so 100th=best ALWAYS, for every metric — the colored bar-fill width follows the same displayed
  // (possibly inverted) number, so the graphic and the badge never disagree with each other.
- const pctileBar=(p,betterWhen)=>{if(p==null)return '';const disp=betterWhen==='lower'?100-p:p;const c=disp>=75?'#1b7f3b':disp>=50?'#2980b9':disp>=25?'#e67e22':'#c0392b';return `<div style="margin-top:4px"><div style="height:5px;background:var(--border,#e0e4ea);border-radius:3px;overflow:hidden"><div style="height:100%;width:${disp}%;background:${c};border-radius:3px"></div></div><div style="font-size:11px;color:var(--fg2,#888);margin-top:1px">${ordSuffix(disp)} %ile among reporters</div></div>`;};
+ __DECLONE_RPT_PCTILEBAR__
  // "Why this number?" KPI trace — every entry uses the SAME local variables already rendered above (getV()-sourced),
  // never re-derived. kvV takes the SAME code list passed to getV() so the popover shows exactly which filing-variant codes were coalesced.
  const kvV=(codes,val,vt)=>({code:codes.join(' ?? '),cap:fullCap(codes[0])||codes[0],val:vt==='pct'?fP(val):fA(val)});
@@ -2674,8 +2674,8 @@ function sparkline(rows,pct,color){
  return `<svg width="120" height="40" style="display:block;margin-top:4px"><polygon points="${fill}" fill="${color||COLORS[0]}" fill-opacity=".12"/><polyline points="${pts}" fill="none" stroke="${color||COLORS[0]}" stroke-width="1.5"/></svg>`;}
 function buildNarrative(d){
  const {nm,latestQ,assets,assetRank,assetCount,assetPct,aQoQ,aYoY,roa,roe,cet1,eff,nplRat,nplQoQ,rescov,nco,form}=d;
- const fA=v=>v==null?null:v>=1e9?'$'+(v/1e9).toFixed(1)+'T':v>=1e6?'$'+(v/1e6).toFixed(1)+'B':'$'+Math.round(v/1e3)+'M';
- const fP=v=>v==null?null:v.toFixed(2)+'%';
+ __DECLONE_NAR_FA__
+ __DECLONE_NAR_FP__
  // FIX-1/FIX-2: assetPct is now passed in from buildReport()'s peerStats() (same universe/formula as
  // the header rank + KPI card badges — no independent recompute here), and rendered via ordSuffix()
  // so the narrative never reads "73th percentile" again.
@@ -3100,6 +3100,17 @@ init();
 </script></body></html>"""
 HTML=HTML.replace("__PARTS__", parts_js).replace("__OLD_PARTS__", old_parts_js).replace("__NODATA__", nodata_codes_js).replace("__BUILD_TS__", BUILD_TS).replace("__SHARD_BOUNDARY__", str(SHARD_BOUNDARY))
 # Atomic write + completeness check — this file has repeatedly been truncated by non-atomic writes.
+# ---- declone-s1: shared formatter cores spliced from ../engine/core (byte-identical, CWD-relative) ----
+def _declone_load(_fn):
+    with open(os.path.join('..','engine','core',_fn),'rb') as _cf: _cb=_cf.read()
+    if b'\r' in _cb: raise SystemExit('declone-s1: CRLF in core file '+_fn)
+    _ls=_cb.decode('utf-8').split('\n'); _d={}; _i=0
+    while _i<len(_ls):
+        if _ls[_i].startswith('//@ '): _d[_ls[_i][4:].strip()]=_ls[_i+1]; _i+=2
+        else: _i+=1
+    return _d
+_FC=_declone_load('formatters_core.js'); _FR=_declone_load('formatters_report.js'); _FN=_declone_load('formatters_narrative.js')
+HTML=HTML.replace("__DECLONE_CORE_SHORT__",_FC['short']).replace("__DECLONE_CORE_FMTUNIT__",_FC['fmtUnit']).replace("__DECLONE_CORE_ORDSUFFIX__",_FC['ordSuffix']).replace("__DECLONE_RPT_PCTD__",_FR['pctD']).replace("__DECLONE_RPT_FA__",_FR['fA']).replace("__DECLONE_RPT_FP__",_FR['fP']).replace("__DECLONE_RPT_RNK__",_FR['rnk']).replace("__DECLONE_RPT_PCTILEBAR__",_FR['pctileBar']).replace("__DECLONE_NAR_FA__",_FN['fA']).replace("__DECLONE_NAR_FP__",_FN['fP'])
 _out=os.path.join(SITE,"index.html"); _tmp=_out+".tmp"
 with open(_tmp,"w",encoding="utf-8") as _f: _f.write(HTML)
 os.replace(_tmp,_out)
