@@ -5043,11 +5043,6 @@
     "caption_hint": "FHLB advances, structured advances"
    },
    {
-    "item": "5.b",
-    "mdrm": "RCFDB571",
-    "caption_hint": "other borrowings, <=1yr remaining maturity"
-   },
-   {
     "item": "5.b.(1)(a)",
     "mdrm": "RCFDF060",
     "caption_hint": "other borrowed money, <=1yr repricing"
@@ -5066,6 +5061,11 @@
     "item": "5.b.(1)(d)",
     "mdrm": "RCFDF063",
     "caption_hint": "other borrowed money, >5yr repricing"
+   },
+   {
+    "item": "5.b.(2)",
+    "mdrm": "RCFDB571",
+    "caption_hint": "other borrowings <=1yr REMAINING maturity (subset of 5.b.(1)(a)); C13: was mis-itemed '5.b' (stale pre-2010 numbering) before the grid - form p.44 render, AUDIT_DEEP_v101 C-1"
    },
    {
     "item": "5.c",
@@ -5195,7 +5195,7 @@
    "legacy_null_item": "allowed"
   },
   "status": "COMPLETE",
-  "notes": "Independently verified against form PDF p.44-46 (RC-29..RC-31) via full-row audit (hierarchy_audit_call_B.md, pdftotext-sourced). Both prior collision defects confirmed fixed: RCONF064 correctly at 10.a (was bare fake '10'), RCFD2143 correctly at 2.d (RC-M's own intangibles total, ties to Schedule RC item 10 by shared MDRM code, was also colliding on bare '10'). Item 2.a/2.a.(1) (RCFD3164/RCFDA590, mortgage servicing assets and its fair-value sub-item) reformatted from the tree's internal dot-shorthand '2.a.1' to the form's own printed double-paren label '2.a.(1)' (PDF explicitly prints '(1) Estimated fair value...2.a.(1)') for consistency with this manifest's form-exact-label standard; structurally this was already a correct single parent/child pair, only the string format changed. Items 6/9/11/12 (private-label mutual funds, website interactivity, IRA/HSA trustee, custody/safekeeping) are genuine live 2026-vintage form items with real codes, correctly present in the items array; a stale sequence_exclusions.RCM doc entry (external file, not this manifest) claims these are gaps -- not true, verified against the PDF citations, no action needed here. Item 8 is a genuine reserved/not-applicable form slot, correctly absent. ~107 further legacy/duplicate-variant rows correctly excluded (item:null), not enumerated.",
+  "notes": "Independently verified against form PDF p.44-46 (RC-29..RC-31) via full-row audit (hierarchy_audit_call_B.md, pdftotext-sourced). Both prior collision defects confirmed fixed: RCONF064 correctly at 10.a (was bare fake '10'), RCFD2143 correctly at 2.d (RC-M's own intangibles total, ties to Schedule RC item 10 by shared MDRM code, was also colliding on bare '10'). Item 2.a/2.a.(1) (RCFD3164/RCFDA590, mortgage servicing assets and its fair-value sub-item) reformatted from the tree's internal dot-shorthand '2.a.1' to the form's own printed double-paren label '2.a.(1)' (PDF explicitly prints '(1) Estimated fair value...2.a.(1)') for consistency with this manifest's form-exact-label standard; structurally this was already a correct single parent/child pair, only the string format changed. Items 6/9/11/12 (private-label mutual funds, website interactivity, IRA/HSA trustee, custody/safekeeping) are genuine live 2026-vintage form items with real codes, correctly present in the items array; a stale sequence_exclusions.RCM doc entry (external file, not this manifest) claims these are gaps -- not true, verified against the PDF citations, no action needed here. Item 8 is a genuine reserved/not-applicable form slot, correctly absent. ~107 further legacy/duplicate-variant rows correctly excluded (item:null), not enumerated. C13 (audit P1-6 item 1, AUDIT_DEEP_v101 C-1): RCFDB571 was previously mis-itemed as bare '5.b' and sorted BEFORE the 5.b.(1)(a)-(d) maturity/repricing grid; confirmed against form_pages 44-46, p.44 rendered image (_verify/evidence/audit101_C_call_RCM_p44.png) — current form prints 5.b as a bare 'Other borrowings:' header, then the (1)(a)-(d) grid, then (2)=B571 ('Other borrowings with a REMAINING MATURITY of one year or less'). Corrected here to item 5.b.(2), positioned after 5.b.(1)(d) (RCFDF063) and before 5.c (RCFD3190); override applied via drop_codes+force_rows in ffiec_call_hierarchy_overrides.json — requires a hierarchy regen (build_hierarchy.py) to take effect in the served tree/ffiec_call_hierarchy.json.",
   "tree_fix_needed": "build_hierarchy.py / clean_glued_items() represents RCFDA590 (mortgage servicing assets fair value, RC-M item 2.a.(1)) via the internal dot-shorthand 'item=2.a.1' instead of the form's own double-paren label '2.a.(1)'. A prior Part-B reviewer adjudicated this as an acceptable internal convention rather than a bug, but for consistency with this manifest's form-exact-label standard used across all other schedules (root cause RC-4), the tree should also emit '2.a.(1)'."
  },
  "RCN": {

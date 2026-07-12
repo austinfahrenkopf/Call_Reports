@@ -686,7 +686,14 @@ const SUB_AGG_DESCS={
   // approach cols are mutually exclusive frameworks not summed) — no descriptor
 };
 const _fullCap=new Map();
-function _walkFC(nodes,parts,sch){for(const nd of nodes){if(!nd.placeholder&&!nd.derived&&!nd.header&&nd.code&&!/^(H:|SEC:|SUB:|EMPTY:)/.test(nd.code)){const cap=nd.caption||'';const anc=parts.filter(Boolean);_fullCap.set(nd.code,anc.length?anc.join(' — ')+' — '+cap:cap);}if(nd.header&&nd.code){const _sn=sch&&SCHED_NAMES[sch]?SCHED_NAMES[sch]:(parts.length?parts[0]:'');const _si=_sn.indexOf(' — ');const _sk=_si>=0?_sn.slice(0,_si):_sn;const _agg=sch?SUB_AGG_DESCS[sch]||'':'';const _cnt=(function c(n){let k=0;for(const x of(n.children||[])){if(x.header)k+=c(x);else if(x.code&&!x.placeholder&&!/^(H:|SEC:|SUB:|EMPTY:)/.test(x.code))k++;}return k;})(nd);if(_cnt>0){const _rl=_agg?_sk+' '+_agg+': '+(nd.caption||''):_sk?_sk+' '+(nd.caption||''):(nd.caption||'');_fullCap.set('SUB:'+nd.code,_rl);if(!/^(H:|SEC:|EMPTY:)/.test(nd.code)&&!_fullCap.has(nd.code))_fullCap.set(nd.code,_rl);}}if(nd.children&&nd.children.length)_walkFC(nd.children,nd.header?[...parts,nd.caption||'']:parts,sch);}}
+// C13-CAPTION-PRIMARY (audit G-2) / C13-CAPHOME (AUDIT_DEEP_v101 P1-VISUAL-1): first FORM_ORDER
+// occurrence = the code's primary home; last-wins previously mislabeled multi-home codes (COMB2170
+// captioned as RC-R II — Risk-Weighted Assets — TOTAL ASSETS instead of RC — Balance Sheet — TOTAL
+// ASSETS). _fullCap is FIRST-wins — a multi-home code
+// (e.g. COMB2170 in RC item 12 AND RC-R II item 11) labels KPI/table/export headers from its FIRST
+// FORM_ORDER occurrence (primary home), not whichever schedule was walked last. buildTree() clears
+// the map per rebuild so "first" always means first-in-the-current-tree.
+function _walkFC(nodes,parts,sch){for(const nd of nodes){if(!nd.placeholder&&!nd.derived&&!nd.header&&nd.code&&!/^(H:|SEC:|SUB:|EMPTY:)/.test(nd.code)){const cap=nd.caption||'';const anc=parts.filter(Boolean);if(!_fullCap.has(nd.code))_fullCap.set(nd.code,anc.length?anc.join(' — ')+' — '+cap:cap);}if(nd.header&&nd.code){const _sn=sch&&SCHED_NAMES[sch]?SCHED_NAMES[sch]:(parts.length?parts[0]:'');const _si=_sn.indexOf(' — ');const _sk=_si>=0?_sn.slice(0,_si):_sn;const _agg=sch?SUB_AGG_DESCS[sch]||'':'';const _cnt=(function c(n){let k=0;for(const x of(n.children||[])){if(x.header)k+=c(x);else if(x.code&&!x.placeholder&&!/^(H:|SEC:|SUB:|EMPTY:)/.test(x.code))k++;}return k;})(nd);if(_cnt>0){const _rl=_agg?_sk+' '+_agg+': '+(nd.caption||''):_sk?_sk+' '+(nd.caption||''):(nd.caption||'');if(!_fullCap.has('SUB:'+nd.code))_fullCap.set('SUB:'+nd.code,_rl);if(!/^(H:|SEC:|EMPTY:)/.test(nd.code)&&!_fullCap.has(nd.code))_fullCap.set(nd.code,_rl);}}if(nd.children&&nd.children.length)_walkFC(nd.children,nd.header?[...parts,nd.caption||'']:parts,sch);}}
 function fullCap(code){return _fullCap.get(code)||'';}
 // ---- "Why this number?" — measure-chip formula disclosure (read-only; derives text from existing DERIV/DYN/USERCALC defs) ----
 // Builds {title, formula, terms:[{code,cap}], note} for any non-plain measure code. Returns null for plain codes
@@ -1085,7 +1092,9 @@ async function init(){try{
  document.addEventListener('click',e=>{const d=document.getElementById('viewsdrop');if(d&&d.style.display!=='none'&&!e.target.closest('#viewsdrop')&&e.target.id!=='viewsbtn')d.style.display='none';});
  document.addEventListener('keydown',e=>{if(e.target.closest('input,textarea,select'))return;if(e.key==='Escape'){const d=document.getElementById('viewsdrop');if(d&&d.style.display!=='none')d.style.display='none';}});
  document.getElementById('lgmeasure').onchange=renderLeague;document.getElementById('lgquarter').onchange=renderLeague;document.getElementById('lgtopn').onchange=renderLeague;document.getElementById('lgbucket').onchange=renderLeague;
- document.getElementById('lgexport').onclick=()=>{if(!window._lg)return;const pm=window._lg.pctileMap||new Map();dl2(['rank','entity_id','bank',window._lg.meas.label,'QoQ','YoY','percentile'],window._lg.rows.map((r,i)=>[i+1,r.eid,r.name,r.v,r.qoq,r.yoy,pm.get(r.eid)??'']),'league');};
+ /* C13-LEAGUE-POLARITY (c13.1): CSV 'percentile' must equal the on-screen Pctile — inverted at
+    write-time for lower-better measures; pctileMap itself stays the raw value-rank map (suite contract). */
+ document.getElementById('lgexport').onclick=()=>{if(!window._lg)return;const pm=window._lg.pctileMap||new Map();const _bw=window._lg.betterWhen;const _inv=p=>(_bw==='lower'&&p!=null)?100-p:p;dl2(['rank','entity_id','bank',window._lg.meas.label,'QoQ','YoY','percentile'],window._lg.rows.map((r,i)=>[i+1,r.eid,r.name,r.v,r.qoq,r.yoy,_inv(pm.get(r.eid))??'']),'league');};
  document.getElementById('reportbtn').onclick=()=>{if(active.length===1&&active[0].id.startsWith('BANK:'))openReport(active[0].id);};
  document.getElementById('rptclose').onclick=()=>{document.getElementById('reportmodal').style.display='none';closeWhyTip();const p=new URLSearchParams(location.hash.slice(1));p.delete('report');history.replaceState(null,'','#'+p.toString());};
  document.getElementById('rpt-print').onclick=rptPrint;
@@ -1383,6 +1392,7 @@ function addSchedule(t,title,nodes){const pfx=secPrefix(nodes);const {sec,rows}=
 function toggleNode(row){if(!row._kids)return;const open=row._kids.style.display!=='none';
  row._kids.style.display=open?'none':'block';const c=row.querySelector('.caret');if(c)c.textContent=open?'▸':'▾';}
 function buildTree(){const t=document.getElementById('tree');t.innerHTML='';
+ _fullCap.clear();   // C13-CAPHOME: first-wins map must restart per rebuild (raw/COMB retoggle)
  const showRaw=document.getElementById('showraw').checked;
  const dnodes=Object.keys(DERIV).filter(k=>DERIV[k].lbl).map(k=>({code:k,caption:DERIV[k].lbl,num:'',depth:1,comb:false,derived:true,pct:isPct(k),children:[]}));
  addSchedule(t,'★ Ratios & Subtotals',dnodes);
@@ -2162,20 +2172,45 @@ function paneDual(dol,pct,win){const _pinned=window._chartW>40&&window._chartH>4
 // now resolved via COMB generation extended to RIAD in build_segments_call.py (2026-06 fix):
 // D_ROA, D_ROE, D_NCO_LOANS, D_PROV_LOANS, S_NCO all work correctly after that fix.
 let LGMEAS=[];
+/* C13-LEAGUE-POLARITY (audit P1-4): explicit key->polarity map for LGMEAS 'better' field, built by
+   enumerating this engine's own DERIV catalog above (DYN entries are always dynamic 'SUB:'-prefixed
+   section subtotals -> always 'neutral', handled inline in buildLGMEAS(), not in this map). Classified
+   by MEANING of the label: efficiency ratio / NPL & noncurrent ratios / NCO & charge-off rates /
+   provision rates / past-due rates -> 'lower' (smaller = better outcome); ROA/ROE/NIM/capital &
+   leverage ratios/reserve-coverage-of-NPLs -> 'higher'; every key omitted here (incl. every type:'sum'
+   $ subtotal, which is a pure size) falls back to 'neutral'. Verified against the entity report's own
+   betterWhen classification (~L2546-2551) for every measure the two surfaces share (COMB2170/2122/2200/
+   3210 sizes, D_ROA, D_ROE, D_NIM, D_EFF, D_NPL, D_NCO_LOANS) — no disagreements found. */
+const LG_POLARITY={
+ D_LIQ_ASSETS:'neutral',D_SEC_ASSETS:'neutral',D_LOANSDEP:'neutral',D_DEPASSETS:'neutral',
+ D_BORROW_ASSETS:'neutral',D_NONDEP:'neutral',D_BROKERED:'neutral',
+ D_NPL:'lower',D_NONCUR_PCT:'lower',
+ D_RESLOANS:'neutral',D_RESNPL:'higher',
+ D_NCO_LOANS:'lower',D_PROV_LOANS:'lower',
+ D_EQASSETS:'higher',D_ROA:'higher',D_ROE:'higher',
+ D_UND_LOANS:'neutral',D_UND_ASSETS:'neutral',D_UTIL:'neutral',
+ D_NPL_CI:'lower',D_NPL_CC:'lower',D_NPL_AUTO:'lower',D_NPL_CONS:'lower',D_NPL_AG:'lower',
+ D_NPL_RES:'lower',D_NPL_CONSTR:'lower',D_NPL_MULTI:'lower',D_NPL_CRE:'lower',
+ D_NIM:'higher',D_EFF:'lower',
+};
 function buildLGMEAS(){
  const seed=[
-  {code:'COMB2170',label:'Total assets',pct:false},
-  {code:'COMB2200',label:'Total deposits',pct:false},
-  {code:'COMB2122',label:'Total loans',pct:false},
-  {code:'COMB3210',label:'Total equity',pct:false},
+  {code:'COMB2170',label:'Total assets',pct:false,better:'neutral'},
+  {code:'COMB2200',label:'Total deposits',pct:false,better:'neutral'},
+  {code:'COMB2122',label:'Total loans',pct:false,better:'neutral'},
+  {code:'COMB3210',label:'Total equity',pct:false,better:'neutral'},
  ];
  const seen=new Set(seed.map(m=>m.code));const out=[...seed];
  for(const[k,d] of Object.entries(DERIV)){if(seen.has(k)||!d.lbl)continue;seen.add(k);
   const lbl=d.lbl||k;const parts=lbl.split(' ▸ ');const shortLbl=parts.length>1?parts.slice(1).join(' ▸ '):lbl;
-  out.push({code:k,label:shortLbl,pct:d.type==='ratio'});}
+  /* C13-LEAGUE-POLARITY: LG_POLARITY is the single source of truth (covers every DERIV key with an
+     explicit 'lower'/'higher'/'neutral', per spec's "explicit key->polarity map" requirement) — every
+     LGMEAS entry must get one of the three enum values, never null, so renderLeague's ===  'neutral'
+     checks correctly suppress value-judgment coloring on ambiguous/pure-size measures. */
+  out.push({code:k,label:shortLbl,pct:d.type==='ratio',better:LG_POLARITY[k]||'neutral'});}
  for(const[k,d] of Object.entries(DYN)){if(seen.has(k))continue;seen.add(k);
   const lbl=d.lbl||k;const parts=lbl.split(' ▸ ');const shortLbl=parts.length>1?parts.slice(1).join(' ▸ '):lbl;
-  out.push({code:k,label:shortLbl,pct:false});}
+  out.push({code:k,label:shortLbl,pct:false,better:'neutral'});}   // C13-LEAGUE-POLARITY: dynamic subtotals are arbitrary tree sums, no inherent direction
  if(HIER){(function walkScheds(){
    for(const sch of Object.keys(HIER)){
      const roots=nest(emitSchedule(sch));
@@ -2185,7 +2220,7 @@ function buildLGMEAS(){
            const codes=descCodes(nd);const key='SUB:'+nd.code;
            if(codes.length&&!seen.has(key)){seen.add(key);
              if(!DYN[key]){DYN[key]={type:'sum',lbl:sch+' ▸ '+(nd.caption||nd.code),plus:codes};}
-             out.push({code:key,label:sch+' ▸ '+(nd.caption||nd.code),pct:false});
+             out.push({code:key,label:sch+' ▸ '+(nd.caption||nd.code),pct:false,better:'neutral'});   // C13-LEAGUE-POLARITY: SUB: header-sum, pure size
            }
          }
          walkH(nd.children||[]);
@@ -2231,6 +2266,10 @@ async function perFilerValues(measCode, quarters){
 let _lgCache=null; // {key,vals,avals} — reused across sort-header clicks when measure/quarter/bucket unchanged
 async function renderLeague(){
  const meas=LGMEAS[+document.getElementById('lgmeasure').value];
+ // C13-LGPOLARITY (AUDIT_DEEP_v101 J-1/J-6): DISPLAYED percentile follows the report-badge convention —
+ // inverted (100−raw) for catalog-tagged lower-is-better measures so green always = good; ordinals via
+ // ordSuffix. The raw value-rank pctileMap is UNCHANGED (window._lg suite contract, verify_cycle71).
+ const bw=meas.better;   // always explicit ('lower'|'higher'|'neutral') from buildLGMEAS/LG_POLARITY
  const q=document.getElementById('lgquarter').value, topn=+document.getElementById('lgtopn').value;
  const prevQ=prevQtr(q), yoyQ=yoyQtr(q);
  const quarters=[q,prevQ,yoyQ].filter(Boolean);
@@ -2257,18 +2296,22 @@ async function renderLeague(){
  const show=topn?rows.slice(0,topn):rows;
  const fmtV=v=>v==null?'—':(meas.pct?(+v).toFixed(2)+'%':fmtUnit(v,false));
  const fmtD=x=>x==null?'—':(meas.pct?((x>=0?'+':'')+x.toFixed(2)+' pp'):((x>=0?'▲ ':'▼ ')+Math.abs(x).toFixed(1)+'%'));
- const cls=x=>x==null?'':(x>=0?'up':'dn');
+ /* C13-LEAGUE-POLARITY (audit P1-4/P2-7): QoQ/YoY chip color is polarity-aware — for bw==='lower'
+    measures a decrease is good(green/'up'), an increase is bad(red/'dn'); neutral measures get no
+    color judgment (pure size ranks). fmtD's arrow/sign still shows raw direction unchanged. */
+ const cls=x=>{if(x==null)return '';if(bw==='neutral')return '';const good=bw==='lower'?x<=0:x>=0;return good?'up':'dn';};
  const arr=f=>lgSortField===f?(lgSortDir<0?' ▼':' ▲'):'';
- const pcClr=pc=>pc>=75?'color:#1b7f3b':pc<25?'color:#c0392b':'';
+ // C13-LEAGUE-POLARITY: no green/red value judgment on 'neutral' (pure-size) measures — mirrors FIX-3.
+ const pcClr=dp=>(bw==='neutral'||dp==null)?'':(dp>=75?'color:#1b7f3b':dp<25?'color:#c0392b':'');   // null-guard: dp==null must not coerce to red via null<25
  let h=`<table><tr><th>#</th><th style="text-align:left">Bank</th>`+
    `<th class="lgs" data-f="v" style="cursor:pointer" title="click to sort">${meas.label}${arr('v')}</th>`+
    `<th class="lgs" data-f="qoq" style="cursor:pointer" title="click to sort">QoQ${arr('qoq')}</th>`+
    `<th class="lgs" data-f="yoy" style="cursor:pointer" title="click to sort">YoY${arr('yoy')}</th>`+
-   `<th title="Percentile rank by value this quarter — 99th = top 1%">Pctile</th>`+
+   `<th title="Percentile this quarter — 99th = best (lower-is-better measures inverted to match the entity report)">Pctile</th>`+
    `<th title="8-quarter trend">Trend</th></tr>`;
- show.forEach((r,i)=>{const pc=pctileMap.get(r.eid);const on=active.some(a=>a.id===r.eid);h+=`<tr${on?' class="lgon-row"':''}><td>${i+1}</td><td class="lglink${on?' lgon':''}" data-id="${r.eid.replace(/"/g,'&quot;')}" data-nm="${r.name.replace(/"/g,'&quot;')}" style="text-align:left;cursor:pointer;text-decoration:underline dotted" title="${on?'In chart':'Click to add to chart'}">${r.name}${on?' <span style="font-size:12px;color:#1b7f3b">✓</span>':''}</td><td>${fmtV(r.v)}</td><td class="${cls(r.qoq)}">${fmtD(r.qoq)}</td><td class="${cls(r.yoy)}">${fmtD(r.yoy)}</td><td style="${pcClr(pc)}">${pc!=null?pc+'th':'—'}</td><td>${spkFn(r.eid)}</td></tr>`;});
+ show.forEach((r,i)=>{const pc=pctileMap.get(r.eid);const dp=pc==null?null:(bw==='lower'?100-pc:pc);const on=active.some(a=>a.id===r.eid);h+=`<tr${on?' class="lgon-row"':''}><td>${i+1}</td><td class="lglink${on?' lgon':''}" data-id="${r.eid.replace(/"/g,'&quot;')}" data-nm="${r.name.replace(/"/g,'&quot;')}" style="text-align:left;cursor:pointer;text-decoration:underline dotted" title="${on?'In chart':'Click to add to chart'}">${r.name}${on?' <span style="font-size:12px;color:#1b7f3b">✓</span>':''}</td><td>${fmtV(r.v)}</td><td class="${cls(r.qoq)}">${fmtD(r.qoq)}</td><td class="${cls(r.yoy)}">${fmtD(r.yoy)}</td><td style="${pcClr(dp)}">${dp!=null?ordSuffix(dp):'—'}</td><td>${spkFn(r.eid)}</td></tr>`;});
  h+=`</table><p class="muted">${show.length} of ${rows.length} banks · ${q}${meas.pct?' · QoQ/YoY in percentage points':''} · individual banks ≥ tool-dataset asset threshold · click a name to add to chart · click a header to sort</p>`;
- const body=document.getElementById('leaguebody'); body.innerHTML=h; window._lg={meas,q,rows:show,pctileMap};
+ const body=document.getElementById('leaguebody'); body.innerHTML=h; window._lg={meas,q,rows:show,pctileMap,betterWhen:bw};
  body.querySelectorAll('.lgs').forEach(th=>th.onclick=()=>{const f=th.dataset.f;if(lgSortField===f)lgSortDir*=-1;else{lgSortField=f;lgSortDir=-1;}renderLeague();});
  body.querySelectorAll('.lglink').forEach(td=>{td.onclick=()=>{const id=td.dataset.id,nm=td.dataset.nm;if(!active.find(a=>a.id===id))active.push({id,label:nm});renderChips();scheduleRecompute();};});}
 async function openLeague(){
@@ -2895,7 +2938,8 @@ async function runExport(preview=false){
  const rows=[];
  if(rawOnly===null||rawOnly.length){
    const sql=`SELECT quarter_end,entity_id,entity_label,mdrm,value FROM t WHERE ${ec} ${df} ${dt} ${mdrmF}ORDER BY mdrm,entity_id,quarter_end${preview?' LIMIT 50':''}`;
-   rows.push(...(await conn.query(sql)).toArray());}
+   /* C13-EXPORT-FIX (audit P1-3): argument-spread over bulk result sets throws RangeError on multi-quarter exports; loop-push is unbounded */
+   {const _r=(await conn.query(sql)).toArray();for(const x of _r)rows.push(x);}}
  if(derivKeys.length){
    const fromQ=_eb.fromQ||null,toQ=_eb.toQ||null;
    for(const ent of _eb.entities){

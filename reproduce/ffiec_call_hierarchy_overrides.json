@@ -3151,6 +3151,11 @@
       "mdrm": "RCFDA590"
     },
     {
+      "_note": "C13-RCM (AUDIT_DEEP_v101 C-1, form p.44 rendered image): B571 carried the stale pre-2010 item '5.b' and sorted BEFORE the 5.b.(1) maturity grid; current form 5.b is a bare header ('Other borrowings:') and B571 is item 5.b.(2), printed after the grid. Re-added via force_rows.",
+      "key": "RCM",
+      "mdrm": "RCFDB571"
+    },
+    {
       "_note": "cycle-11.1: RCR RCFDB704 re-tag to 28 - legacy RC-R item 28 (risk-weighted assets before deductions)",
       "key": "RCR",
       "mdrm": "RCFDB704"
@@ -8635,6 +8640,15 @@
       "caption": "ESTIMATED FAIR VALUE OF MORTGAGE SERVICING ASSETS",
       "item": "2.a.(1)",
       "depth": 3
+    },
+    {
+      "_note": "C13-RCM (AUDIT_DEEP_v101 C-1): RCFDB571 re-added at its current-form item 5.b.(2), form p.44 caption; item_sort_key places it after 5.b.(1)(d) F063 and before 5.c 3190.",
+      "key": "RCM",
+      "mdrm": "RCFDB571",
+      "caption": "Other borrowings with a REMAINING MATURITY of one year or less (included in item 5.b.(1)(a) above)",
+      "item": "5.b.(2)",
+      "depth": 3,
+      "order": 26
     },
     {
       "_note": "cycle-11.1 re-tag: legacy RC-R item 28 (risk-weighted assets before deductions)",

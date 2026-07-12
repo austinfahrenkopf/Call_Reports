@@ -12202,39 +12202,39 @@
 "depth": 3
 },
 {
-"mdrm": "RCFDB571",
-"caption": "OTHER BORROWINGS: WITH A REMAINING MATURITY OF ONE YEAR OR LESS",
-"order": 21,
-"item": "5.b",
-"depth": 2
-},
-{
 "mdrm": "RCFDF060",
 "caption": "OTHER BORROWED MONEY: OTHER BORROWINGS WITH A REMAINING MATURITY OR NEXT REPRICING DATE OF ONE YEAR OR LESS",
-"order": 22,
+"order": 21,
 "item": "5.b.(1)(a)",
 "depth": 4
 },
 {
 "mdrm": "RCFDF061",
 "caption": "OTHER BORROWED MONEY: OTHER BORROWINGS WITH A REMAINING MATURITY OR NEXT REPRICING DATE OF OVER ONE YEAR THROUGH THREE YEARS",
-"order": 23,
+"order": 22,
 "item": "5.b.(1)(b)",
 "depth": 4
 },
 {
 "mdrm": "RCFDF062",
 "caption": "OTHER BORROWED MONEY: OTHER BORROWINGS WITH A REMAINING MATURITY OR NEXT REPRICING DATE OF OVER THREE YEAR THROUGH FIVE YEARS.",
-"order": 24,
+"order": 23,
 "item": "5.b.(1)(c)",
 "depth": 4
 },
 {
 "mdrm": "RCFDF063",
 "caption": "OTHER BORROWED MONEY: OTHER BORROWINGS WITH A REMAINING MATURITY OR NEXT REPRICING DATE OF OVER FIVE YEARS",
-"order": 25,
+"order": 24,
 "item": "5.b.(1)(d)",
 "depth": 4
+},
+{
+"mdrm": "RCFDB571",
+"caption": "Other borrowings with a REMAINING MATURITY of one year or less (included in item 5.b.(1)(a) above)",
+"order": 25,
+"item": "5.b.(2)",
+"depth": 3
 },
 {
 "mdrm": "RCFD3190",
