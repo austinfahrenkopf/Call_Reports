@@ -18,7 +18,7 @@ from datetime import datetime
 import pandas as pd
 BUILD_TS = datetime.now().strftime('%Y-%m-%d %H:%M')
 SRC="ffiec_call_tool.parquet"; SITE="site_call"
-SHARD_BOUNDARY=2018  # must match the build_call_shards.py --boundary actually used (2018: eager 23.4MB per the 25MB rule; the 2001 default gave 53.3MB)
+SHARD_BOUNDARY=2020  # must match the build_call_shards.py --boundary actually used. C14-C zero-preservation grew the eager shard to 29.7MB@2018 (>25MB budget); bumped 2018->2020 (eager 2020-2026 = 22.8MB, under budget). Verify suite shard-name/default-range assertions updated in lockstep.
 # --html-only: regenerate just index.html from the EXISTING site parquet(s) — fast iteration on
 # the dashboard UI without re-reading/re-splitting the ~60M-row tool dataset. Use after editing the template.
 HTML_ONLY="--html-only" in sys.argv
@@ -50,6 +50,7 @@ if HTML_ONLY:
         _dc2=set();[_dc2.add(_it.get("mdrm")) for _its in _hj2.values() for _it in _its];_dc2.discard(None)
         _spq=pd.concat([pd.read_parquet(os.path.join(SITE,p),columns=["mdrm"]) for p in (PARTS+OLD_PARTS)],ignore_index=True)
         NODATA_CODES=sorted(c for c in _dc2 if c and c not in set(_spq["mdrm"].unique()))
+        print(f"NODATA_CODES: {len(NODATA_CODES)} codes in hierarchy but absent from panel (--html-only)")  # C14-E/AQ-C13-12: parity with the full-build print
     else: NODATA_CODES=[]
 else:
     for f in os.listdir(SITE):
@@ -632,12 +633,15 @@ const USERCALC={};  // user-defined custom calculated series (persisted via Save
 const DKIND=m=>(DERIV[m]||DYN[m]||USERCALC[m])?.type||null;
 const isPct=m=>DKIND(m)==='ratio'||(USERCALC[m]?.type==='expr'&&!!USERCALC[m]?.pct);
 // HIGH-2: RC-R capital ratio codes are PERCENTAGES (not $ amounts) — summing across entities is meaningless.
-const PCTC=new Set(['RCFA7204','RCFA7205','RCFA7206','RCFAH036','RCFAP793',
+// C14-A: completed to ALL 21 %-bearing RCRI columns re-derived from the raw 2026Q1 zip at STEP 0
+// (added RCFA/RCOA H311, KX78, KX83 + RCFW/RCOW H312 — the buffer/advanced-approaches ratios revived by
+// the %-parse fix). These render on the % axis; the tree-click + favorites paths OR PCTC.has() below.
+const PCTC=new Set(['RCFA7204','RCFA7205','RCFA7206','RCFAH036','RCFAH311','RCFAKX78','RCFAKX83','RCFAP793',
 'RCFD7204','RCFD7205','RCFD7206','RCFD7273','RCFD7274','RCFD7275',
-'RCFW7205','RCFW7206','RCFWP793',
-'RCOA7204','RCOA7205','RCOA7206','RCOAH036','RCOAP793',
+'RCFW7205','RCFW7206','RCFWH312','RCFWP793',
+'RCOA7204','RCOA7205','RCOA7206','RCOAH036','RCOAH311','RCOAKX78','RCOAKX83','RCOAP793',
 'RCON7204','RCON7205','RCON7206','RCON7273','RCON7274','RCON7275',
-'RCOW7205','RCOW7206','RCOWP793']);
+'RCOW7205','RCOW7206','RCOWH312','RCOWP793']);
 __DECLONE_CORE_SHORT__
 const NORM_DEN_LABELS={'COMB2170':'assets','COMB2122':'loans','COMB2200':'deposits','COMB3210':'equity'};
 function _esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -1270,7 +1274,7 @@ function buildFavShelf(){
   const nodes=[...favs].map(code=>{
     const row=document.querySelector(`#tree .trow[data-code="${CSS.escape(code)}"]`);
     const cap=row?row.querySelector('.cap')?.textContent||code:code;
-    return {code,caption:cap,num:'',depth:1,comb:false,derived:false,pct:false,children:[]};});
+    return {code,caption:cap,num:'',depth:1,comb:false,derived:false,pct:PCTC.has(code),children:[]};});  // C14-A: favorites respect the %-axis (mirror Y-9C buildFavShelf)
   return nodes;}
 function renderFavShelf(){
   const old=document.getElementById('favshelf');if(old)old.remove();
@@ -1316,7 +1320,7 @@ function rowEl(nd,has,dispCap){
  d.innerHTML=nd.derived?`${car}${cap}`:`${car}${(nd.num&&!nd.col)?`<span class=num>${nd.num}</span>`:''}${cap}<span class=code>${nd.code}</span>`;
  const lab=nd.derived?short(nd.caption):((nd.header&&fullCap(nd.code))?fullCap(nd.code):(nd.caption||nd.code));
  d.querySelector('.caret').onclick=ev=>{ev.stopPropagation();if(has)toggleNode(d);};
- d.onclick=()=>toggleMeasure(nd.code,lab,nd.pct);
+ d.onclick=()=>toggleMeasure(nd.code,lab,nd.pct||PCTC.has(nd.code));// C14-A: tree-click charts RC-R I ratios on the %-axis (was nd.pct only → "$0M"; mirror Y-9C onclick)
  if(nd.derived&&DERIV[nd.code]){const dr=DERIV[nd.code];const ab=a=>{if(!a||!a.length)return '?';return a.length<=3?a.join(' + '):a.slice(0,2).join(' + ')+` + …(${a.length})`;};let fml;if(dr.type==='ratio'){const nStr=dr.minus&&dr.minus.length?`(${ab(dr.plus)} − ${ab(dr.minus)})`:ab(dr.plus);fml=`${nStr} ÷ ${ab(dr.den)} × 100${dr.annualize?' × (4/N)':''}`;}else{fml=`${ab(dr.plus)}`;}d.dataset.formula=fml;d.title='Click to chart · hover for formula';}
  if(!nd.derived){const fstar=document.createElement('span');fstar.className='fav'+(loadFavs().has(nd.code)?' on':'');fstar.textContent='★';fstar.title='Add to favorites';
    fstar.onclick=ev=>{ev.stopPropagation();const f=loadFavs();if(f.has(nd.code)){f.delete(nd.code);fstar.classList.remove('on');}else{f.add(nd.code);fstar.classList.add('on');}saveFavs(f);renderFavShelf();};
@@ -1919,7 +1923,11 @@ function draw(){const host=document.getElementById('panes');
  const sameSign=(a,b)=>(a>=0)===(b>=0);
  const pctChg=(a,b)=>(a!=null&&b!=null&&b!==0&&sameSign(a,b))?100*(a/b-1):null;
  const qoq=pctChg(last,prev),yoy=pctChg(last,yr),tot=pctChg(last,f0);
- const cls=x=>x==null?'':(x>=0?'up':'dn'),arr=x=>x==null?'—':((x>=0?'▲ ':'▼ ')+Math.abs(x).toFixed(1)+'%');
+ // C14-KPIPOLARITY (charter §7-item-11 surface fix): main-view KPI cards share the league's LG_POLARITY
+ // map — a 'lower' measure colors a DECREASE green (improvement), 'neutral' $ sums get NO green/red,
+ // 'higher' keeps increase=green. Raw arrows/signs/pp values UNCHANGED.
+ const _pol=c=>LG_POLARITY[c]||'neutral';const _kbw=_pol(prim.code);
+ const cls=(x,bw)=>{if(x==null)return '';const b=bw||_kbw;if(b==='neutral')return '';return((b==='lower')?x<0:x>=0)?'up':'dn';},arr=x=>x==null?'—':((x>=0?'▲ ':'▼ ')+Math.abs(x).toFixed(1)+'%');
  const qoqRaw=last!=null&&prev!=null?last-prev:null,yoyRaw=last!=null&&yr!=null?last-yr:null,totRaw=last!=null&&f0!=null?last-f0:null;
  /* C8-A M0-2: delta formatter now shares fmtUnit/fA's $-scale thresholds (1e9/1e6, $ prefix) instead of
     the old mismatched /1e6-labeled-"B" scale, so a card's delta never disagrees with its own level value. */
@@ -1948,7 +1956,7 @@ function draw(){const host=document.getElementById('panes');
   const fmtDelta=(d,isPct)=>{if(d==null)return '';const sg=d>=0?'+':'−';const a=Math.abs(d);if(isPct)return `${sg}${a.toFixed(2)} pp`;if(a>=1e9)return `${sg}$${(a/1e9).toFixed(1)}T`;if(a>=1e6)return `${sg}$${(a/1e6).toFixed(1)}B`;return `${sg}$${Math.round(a/1e3)}M`;};
   const snapRows=lastSeries.map(s=>{const sR=s.rows.filter(r=>ws.has(r[0]));const sLast=sR.length?sR[sR.length-1][1]:null,sLastQ=sR.length?sR[sR.length-1][0]:null;const sMap=Object.fromEntries(sR.map(r=>[r[0],r[1]]));const sPQ=sLastQ?prevQtr(sLastQ):null,sYQ=sLastQ?yoyQtr(sLastQ):null;const sPrev=(sPQ&&sPQ in sMap)?sMap[sPQ]:null,sYr=(sYQ&&sYQ in sMap)?sMap[sYQ]:null;const sF0=sR.length?sR[0][1]:null;const sQoq=pctChg(sLast,sPrev),sYoy=pctChg(sLast,sYr),sTot=pctChg(sLast,sF0);const sQR=sLast!=null&&sPrev!=null?sLast-sPrev:null,sYR=sLast!=null&&sYr!=null?sLast-sYr:null,sTR=sLast!=null&&sF0!=null?sLast-sF0:null;return {s,sLast,sQoq,sYoy,sTot,sQR,sYR,sTR};});
   let sh=`<table style="width:100%;margin-top:8px;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:3px 6px">Entity</th><th style="padding:3px 6px">Latest</th><th style="padding:3px 6px">QoQ</th><th style="padding:3px 6px">YoY</th><th style="padding:3px 6px">Total Δ</th></tr></thead><tbody>`;
-  for(const {s,sLast,sQoq,sYoy,sTot,sQR,sYR,sTR} of snapRows){const dot=`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${s.color};margin-right:5px"></span>`;sh+=`<tr><td style="text-align:left;padding:3px 6px">${dot}${s.label}</td><td style="padding:3px 6px;text-align:right">${fmtUnit(sLast,s.pct)}</td><td class="${cls(sQoq)}" style="padding:3px 6px;text-align:right">${arr(sQoq)}${sQR!=null?` <span class="muted" style="font-size:12px">${fmtDelta(sQR,s.pct)}</span>`:''}</td><td class="${cls(sYoy)}" style="padding:3px 6px;text-align:right">${arr(sYoy)}${sYR!=null?` <span class="muted" style="font-size:12px">${fmtDelta(sYR,s.pct)}</span>`:''}</td><td class="${cls(sTot)}" style="padding:3px 6px;text-align:right">${arr(sTot)}${sTR!=null?` <span class="muted" style="font-size:12px">${fmtDelta(sTR,s.pct)}</span>`:''}</td></tr>`;}
+  for(const {s,sLast,sQoq,sYoy,sTot,sQR,sYR,sTR} of snapRows){const dot=`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${s.color};margin-right:5px"></span>`;sh+=`<tr><td style="text-align:left;padding:3px 6px">${dot}${s.label}</td><td style="padding:3px 6px;text-align:right">${fmtUnit(sLast,s.pct)}</td><td class="${cls(sQoq,_pol(s.code))}" style="padding:3px 6px;text-align:right">${arr(sQoq)}${sQR!=null?` <span class="muted" style="font-size:12px">${fmtDelta(sQR,s.pct)}</span>`:''}</td><td class="${cls(sYoy,_pol(s.code))}" style="padding:3px 6px;text-align:right">${arr(sYoy)}${sYR!=null?` <span class="muted" style="font-size:12px">${fmtDelta(sYR,s.pct)}</span>`:''}</td><td class="${cls(sTot,_pol(s.code))}" style="padding:3px 6px;text-align:right">${arr(sTot)}${sTR!=null?` <span class="muted" style="font-size:12px">${fmtDelta(sTR,s.pct)}</span>`:''}</td></tr>`;}
   snapEl.innerHTML=sh+'</tbody></table>';
  }else if(snapEl){snapEl.innerHTML='';} const _aBtn=document.getElementById('addchartbtn');if(_aBtn)_aBtn.style.display='';const _lLbl=document.getElementById('linkcharts-lbl');if(_lLbl)_lLbl.style.display='';drawExtraCharts();}
 /* C7-1/C7-2: `staticOpts` (optional 6th arg) renders a SELF-CONTAINED variant for anything that
@@ -3116,5 +3124,5 @@ with open(_tmp,"w",encoding="utf-8") as _f: _f.write(HTML)
 os.replace(_tmp,_out)
 _chk=open(_out,encoding="utf-8").read()
 assert _chk.rstrip().endswith("</html>") and len(_chk)==len(HTML), "index.html write looks truncated — aborting!"
-print(f"wrote {SITE}/index.html ({len(HTML):,} bytes) — {len(PARTS)} eager part(s) + {len(OLD_PARTS)} lazy old-era part(s)")
+print(f"wrote {SITE}/index.html ({len(HTML.encode('utf-8')):,} bytes) — {len(PARTS)} eager part(s) + {len(OLD_PARTS)} lazy old-era part(s)")  # C14-E/AQ-C13-12: report true UTF-8 byte length (was len(HTML)=char count)
 print("Upload site_call/'s index.html + ffiec_call*.parquet + ffiec_call_hierarchy.json")

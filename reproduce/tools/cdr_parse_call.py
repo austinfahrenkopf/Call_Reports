@@ -86,8 +86,13 @@ for z in zips:
         mcols=[c for c in df.columns if MDRM.match(c)]
         if not mcols: continue
         long=df.melt(id_vars=[ic], value_vars=mcols, var_name="mdrm", value_name="value")
-        long["value"]=pd.to_numeric(long["value"], errors="coerce")
-        long=long[(long["value"].notna()) & (long["value"]!=0)]
+        # C14-A: strip a trailing "%" so RC-R I ratio strings (e.g. "16.2529%") survive numeric
+        # coercion as percent-points (NO *100/÷100 — TD raw 18.2813% must equal OPEN-C's 18.2813).
+        # RCRI is the ONLY %-bearing schedule in the zip (STEP-0 verified), so this is loss-free elsewhere.
+        long["value"]=pd.to_numeric(long["value"].astype("string").str.rstrip("%"), errors="coerce")
+        # C14-C: keep filed zeros — a filed 0 is data (removed the `& (long["value"]!=0)` clause;
+        # downstream COMB coalesce + JS ??/!=null are null-safe, so 0 never masquerades as missing).
+        long=long[long["value"].notna()]
         for rid,md,val in zip(long[ic], long["mdrm"], long["value"]):
             k=(rid,md)
             if k in seen: continue

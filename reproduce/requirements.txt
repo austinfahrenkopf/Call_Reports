@@ -1,11 +1,22 @@
 # FFIEC 031/041/051 Call Reports explorer — Python dependencies
 # Install:  pip install -r requirements.txt
+#           playwright install chrome        # one-time, for the downloader
 #
 # pandas/pyarrow : parse FFIEC CDR bulk download files, build/read the parquet panel
+# duckdb         : the BUILD + VALIDATION pipeline queries the panel via Python duckdb
+#                  (build_tool_dataset.py, build_call_shards.py, validators, gates, audit
+#                  scripts). NOT only the in-browser DuckDB-WASM — the old "no Python duckdb
+#                  needed" note was false (audit P1-6 class) and is removed.
 # playwright     : real-Chrome downloader for Akamai-guarded FFIEC CDR endpoints
+# pypdf          : build_hierarchy.py reads the blank Call form PDF for item structure
 # requests       : fallback HTTP for non-guarded endpoints
-# (DuckDB runs client-side as DuckDB-WASM in the browser — no Python duckdb needed here.)
-pandas>=2.0
-pyarrow>=12.0
-playwright>=1.40
-requests>=2.28
+#
+# Versions pinned == to the clean-room freeze (audit101_H_venv_freeze.txt, C14-E / AQ-C13-11 /
+# AQ-C15-1): a floating pandas/pyarrow major could otherwise silently flip the golden gate with
+# zero repo change. Bump deliberately and re-verify the goldens.
+pandas==3.0.3
+pyarrow==25.0.0
+duckdb==1.5.4
+playwright==1.61.0
+pypdf==6.14.2
+requests==2.34.2

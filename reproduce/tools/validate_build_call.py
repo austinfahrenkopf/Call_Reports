@@ -240,6 +240,11 @@ def main():
 
     # 4. GOLDEN cell — JPMorgan Chase Bank, N.A. (RSSD 852218) assets at latest quarter.
     # Individual bank rows in the tool parquet use RCFD/RCON directly (no COMB for individuals).
+    # C14-E (audit P1-7 fix): the golden is now VALUE-EXACT and HARD-FAILS (was a range-only WARN).
+    # The old check let a corrupted golden pass "ALL CHECKS PASSED" — the CI validate.yml exact-value
+    # assert was the only backstop and fired post-push. Range/mismatch/exception all -> fails now
+    # (house precedent, this file's own [MISSING] handling). Update GOLDEN_VALUE deliberately on refresh.
+    GOLDEN_VALUE=4_016_571_000
     try:
         pnl=pd.read_parquet(TOOL,columns=["quarter_end","entity_id","mdrm","value"])
         lq=pnl["quarter_end"].max()
@@ -249,9 +254,9 @@ def main():
         else:
             v=int(gold["value"].max())
             found_code=gold.loc[gold["value"].idxmax(),"mdrm"]
-            if not (500_000_000 <= v <= 10_000_000_000): notes.append(f"[GOLDEN] {found_code}={v:,} at {lq} — outside expected JPM asset range (500B–10T thousands)")
+            if v!=GOLDEN_VALUE: fails.append(f"[GOLDEN] {found_code}={v:,} at {lq}, expected {GOLDEN_VALUE:,} — a real value change (STOP) OR update GOLDEN_VALUE if a new quarter was deliberately added")
             else: notes.append(f"[GOLDEN] {found_code}={v:,} at {lq} [OK]")
-    except Exception as e: notes.append(f"[GOLDEN] check failed ({e})")
+    except Exception as e: fails.append(f"[GOLDEN] check failed ({e})")
 
     # 5. RIAD income COMBs — verify HIGH-1 fix was applied
     if os.path.exists(SEG):

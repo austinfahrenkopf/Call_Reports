@@ -166,7 +166,8 @@ def xpt_to_long(df, quarter_end, cap_lookup):
     melted = mdrm_data.melt(id_vars=[idcol, "_form"], var_name="mdrm", value_name="value")
     # Drop rows with null/zero/nan RSSD
     melted = melted.dropna(subset=["value", idcol])
-    melted = melted[melted["value"] != 0]
+    # C14-C: keep filed zeros — a filed 0 is data (removed `melted = melted[melted["value"] != 0]`;
+    # mirrors the cdr_parse_call.py fix for the pre-2001 Chicago-Fed path).
     melted = melted[melted[idcol] > 0]
 
     # Build output
