@@ -669,14 +669,14 @@ function shareSeries(group,ws){const rows=group.map(s=>Object.fromEntries(s.rows
    the series label change (to 'pp' / "... (pp)"), mirroring the KPI convention instead of forking new
    math. Rendered as its own pane (labeled pp, not %) so it's never confused with a level-of-the-ratio
    pane; if both $ and % measures are selected, BOTH the $ delta pane and the pp delta pane render. */
-function deltaSeriesPP(pctSeries,ws,qtrFn,tag){return deltaSeries(pctSeries,ws,qtrFn).map(s=>({...s,pct:true,label:s.label+' '+tag+' (pp)'}));}
-function roll4qSeriesPP(pctSeries,ws){return roll4qSeries(pctSeries,ws,false).map(s=>({...s,pct:true,label:s.label.replace(/ \(4Q avg\)$/,' (4Q avg, pp)')}));}
+__DECLONE_TR_DELTASERIESPP__
+__DECLONE_TR_ROLL4QSERIESPP__
 // seriesBeginNote: "Series begins YYYY (code introduced)" footnote for any plotted series whose first
 // non-null quarter is materially later (>2 quarters) than the visible window's start — footnote-line
 // convention (not chart clutter) per spec; applies to level panes AND transform panes (QoQ/YoY/4Q avg/
 // idx/share all call this with their OWN win/series so a transform pane's later effective start, e.g.
 // a QoQ pane's first point is one quarter after the level series' first point, is captured honestly).
-function seriesBeginNote(series,win){if(!win||win.length<3)return '';const wIdx=Object.fromEntries(win.map((q,i)=>[q,i]));const lines=[];for(const s of series){let firstQ=null;for(const r of s.rows){if(r[1]!=null){firstQ=r[0];break;}}if(!firstQ)continue;const i=wIdx[firstQ];if(i==null||i<=2)continue;lines.push(`${_esc(short(s.label)||s.label)}: begins ${firstQ.slice(0,4)}`);}if(!lines.length)return '';return `<div style="font-size:11px;color:var(--muted,#9aa3b2);padding:2px 14px 6px;font-style:italic">${lines.join(' · ')}</div>`;}
+__DECLONE_TR_SERIESBEGINNOTE__
 /* C8-A M0-2: fmtUnit now matches fA's canonical $-scale/notation exactly ($X.XT/$X.XB/$XM, 1 decimal,
    $ prefix) so the same underlying value never renders two different scales across KPI cards vs Entity
    Report. Values are stored in $ thousands throughout, hence the 1e9/1e6 thresholds. */
@@ -3117,8 +3117,8 @@ def _declone_load(_fn):
         if _ls[_i].startswith('//@ '): _d[_ls[_i][4:].strip()]=_ls[_i+1]; _i+=2
         else: _i+=1
     return _d
-_FC=_declone_load('formatters_core.js'); _FR=_declone_load('formatters_report.js'); _FN=_declone_load('formatters_narrative.js')
-HTML=HTML.replace("__DECLONE_CORE_SHORT__",_FC['short']).replace("__DECLONE_CORE_FMTUNIT__",_FC['fmtUnit']).replace("__DECLONE_CORE_ORDSUFFIX__",_FC['ordSuffix']).replace("__DECLONE_RPT_PCTD__",_FR['pctD']).replace("__DECLONE_RPT_FA__",_FR['fA']).replace("__DECLONE_RPT_FP__",_FR['fP']).replace("__DECLONE_RPT_RNK__",_FR['rnk']).replace("__DECLONE_RPT_PCTILEBAR__",_FR['pctileBar']).replace("__DECLONE_NAR_FA__",_FN['fA']).replace("__DECLONE_NAR_FP__",_FN['fP'])
+_FC=_declone_load('formatters_core.js'); _FR=_declone_load('formatters_report.js'); _FN=_declone_load('formatters_narrative.js'); _TR=_declone_load('transforms_core.js')
+HTML=HTML.replace("__DECLONE_CORE_SHORT__",_FC['short']).replace("__DECLONE_CORE_FMTUNIT__",_FC['fmtUnit']).replace("__DECLONE_CORE_ORDSUFFIX__",_FC['ordSuffix']).replace("__DECLONE_RPT_PCTD__",_FR['pctD']).replace("__DECLONE_RPT_FA__",_FR['fA']).replace("__DECLONE_RPT_FP__",_FR['fP']).replace("__DECLONE_RPT_RNK__",_FR['rnk']).replace("__DECLONE_RPT_PCTILEBAR__",_FR['pctileBar']).replace("__DECLONE_NAR_FA__",_FN['fA']).replace("__DECLONE_NAR_FP__",_FN['fP']).replace("__DECLONE_TR_DELTASERIESPP__",_TR['deltaSeriesPP']).replace("__DECLONE_TR_ROLL4QSERIESPP__",_TR['roll4qSeriesPP']).replace("__DECLONE_TR_SERIESBEGINNOTE__",_TR['seriesBeginNote'])
 _out=os.path.join(SITE,"index.html"); _tmp=_out+".tmp"
 with open(_tmp,"w",encoding="utf-8") as _f: _f.write(HTML)
 os.replace(_tmp,_out)
