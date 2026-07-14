@@ -116,7 +116,7 @@ HTML = r"""<!doctype html><html lang="en"><head><meta charset="utf-8">
  /* C7-4: explicit light-theme base for select so it never falls back to UA/system white-on-white
     once body.dark overrides kick in below; :root token vars keep this in sync with the rest of the UI. */
  select,input{font-size:15px;padding:7px;border:1px solid #cdd5e0;border-radius:7px;background:#fff;color:#14213d}
- input{min-width:300px}#ent{min-width:380px}#pname{min-width:160px}
+ input:not([type=checkbox]):not([type=radio]){min-width:300px}#ent{min-width:380px}#pname{min-width:160px}
  button{font-size:14px;padding:7px 12px;border:1px solid #1b7f3b;background:#1b7f3b;color:#fff;border-radius:7px;cursor:pointer}
  button.sec{background:#fff;color:#14213d;border-color:#cdd5e0}
  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:10px}
@@ -178,7 +178,7 @@ HTML = r"""<!doctype html><html lang="en"><head><meta charset="utf-8">
     cluster (label+checkbox, select, text input) is pinned flex-start/no-grow so labels stay glued
     to their checkboxes instead of drifting per justify-content on an ancestor. */
  .slider{display:flex;align-items:flex-start;flex-wrap:wrap;gap:6px 14px;margin:6px 0 8px;justify-content:flex-start;max-width:100%;box-sizing:border-box}
- .slider input[type=range]{min-width:80px;flex:0 1 140px;max-width:200px}.slider input[type=text]{flex:none}
+ .slider input[type=range]{min-width:80px;flex:0 1 140px;max-width:200px}.slider input[type=text]{flex:none;min-width:0}
  /* C-FIX-CTLROW: each cluster is capped to the slider row's own width (not just allowed to wrap as
     a whole unit onto a new line) so a single content-heavy cluster (Range: 2 sliders + 2 text inputs
     + 4 buttons) can never itself exceed the chart/table container below it — max-width:100% forces
