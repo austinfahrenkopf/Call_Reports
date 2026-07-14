@@ -844,7 +844,7 @@ function hashToState(){
   try{const p=new URLSearchParams(location.hash.slice(1));
     const eStr=p.get('e');if(eStr){active=eStr.split(',').filter(Boolean).map(id=>({id,label:id2lbl.get(id)||id}));}
     const mStr=p.get('m');if(mStr){measures=[];for(const code of mStr.split(',').filter(Boolean)){
-      const d=DERIV[code];const lbl=d?d.lbl:(fullCap(code)||code);const pct=isPct(code);
+      const d=DERIV[code];const lbl=d?d.lbl:(fullCap(code)||code);const pct=isPct(code)||PCTC.has(code);// C14A-HASHFIX: hash/link-restored raw %-codes (RC-R I ratios) render on the %-axis (was isPct only → "$0M"; mirror tree-click/browse/search)
       if(measures.length<20)measures.push({code,label:lbl,pct:!!pct});}}
     const q0=p.get('q0'),q1=p.get('q1');
     if(q0&&q1&&Qall.length){const a=Qall.indexOf(q0),b=Qall.indexOf(q1);
@@ -1219,7 +1219,7 @@ document.getElementById('reflineset').onclick=()=>{const v=parseFloat(document.g
  if(HIER)buildTree(); else document.getElementById('tree').innerHTML='<p class="muted" style="padding:10px">hierarchy not found</p>';
  const restored=hashToState();
  if(!restored){active=[{id:'ALL',label:'ALL'}];}
- if(!measures.length){try{const s=localStorage.getItem('ffiec_call_measures');if(s){const ms=JSON.parse(s);if(Array.isArray(ms)&&ms.length)measures=ms.slice(0,20);}}catch{}if(!measures.length)measures=[{code:'COMB2170',label:'Total assets',pct:false}];}
+ if(!measures.length){try{const s=localStorage.getItem('ffiec_call_measures');if(s){const ms=JSON.parse(s);if(Array.isArray(ms)&&ms.length)measures=ms.slice(0,20).map(m=>({code:m.code,label:m.label,pct:!!(m.pct||isPct(m.code)||PCTC.has(m.code))}));/* C14A-HASHFIX: re-derive the %-axis flag on saved-measure restore (pre-fix saves carry pct:false on raw %-codes) */}}catch{}if(!measures.length)measures=[{code:'COMB2170',label:'Total assets',pct:false}];}
  // FIX-RPT-5: ÷/normden used to silently re-apply from localStorage on a PLAIN load (no t=/nd= in
  // hash) with zero visible cue — this was the root cause of a false owner report that "all charts
  // show %". The hash (t=/nd=) is now the ONLY canonical carrier of this transform; a fresh load
