@@ -37,6 +37,8 @@
  svg{background:#fff;border:1px solid #e3e8ef;border-radius:8px;display:block;overflow:visible}
  svg circle.pt{cursor:pointer;r:1.5px;fill-opacity:0;stroke-opacity:0;pointer-events:none;transition:r .1s,fill-opacity .1s,stroke-opacity .1s}
  svg .qband .reveal{opacity:0;transition:opacity .05s;pointer-events:none}svg .qband:hover .reveal{opacity:1}svg .qband-pinned .reveal{opacity:1!important;pointer-events:none}svg .qband .hit{fill:#000;fill-opacity:0;pointer-events:all;cursor:crosshair}
+/* C18 seam honesty: quarters where a filed-first hybrid used derived component fill */
+svg .qband.qfill .hit{fill:#c47f00;fill-opacity:.08}
  details{margin-top:14px;background:#fff;border:1px solid #e3e8ef;border-radius:8px;padding:12px}
  textarea{width:100%;height:70px;font-family:Consolas,monospace;font-size:14px}
  .box{background:#fff;border:1px solid #e3e8ef;border-radius:8px;padding:12px;margin-bottom:12px}
@@ -47,6 +49,17 @@
  .trow:hover{background:#eef3f8}.trow .code{color:#9aa3b2;font-size:12px;flex:none}
  .trow.comb{color:#1b7f3b}.trow .num{color:#5a6478;flex:none}.trow.on{background:#dcefe2}.trow.nodata{opacity:0.38;pointer-events:none;cursor:default}.trow.hdr{font-weight:600;border-left:2px solid var(--accent,#1b7f3b);margin-top:2px}.trow.hdr .cap{color:#14213d}body.dark .trow.hdr .cap{color:#e6e9ef}
  .trow .cap{overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+/* C18 tree grammar: section banners, Σ subtotal glyph, non-additive headers, filing-metadata rows */
+.trow.sec{font-weight:700;letter-spacing:.4px;text-transform:uppercase;font-size:12px;color:#14213d;background:#eef1f6;border-left:3px solid #14213d;margin-top:6px;cursor:pointer}
+body.dark .trow.sec{color:#e6e9ef;background:#232a36;border-left-color:#9aa3b2}
+.trow .sig{margin-left:auto;flex:none;color:#1b7f3b;font-weight:700;font-size:12px;padding:0 4px;opacity:.85}
+.trow.hdr.nsum{border-left-style:dotted}
+.trow.meta .cap{color:#7a6ea0;font-style:italic}
+#treelegend .legendbody{padding:4px 6px;border:1px solid #d6dbe4;border-radius:6px;margin-top:3px;display:flex;flex-direction:column;gap:3px;color:#5a6478;font-size:12px}
+#treelegend .lg-sec{font-weight:700;letter-spacing:.4px;font-size:10px;background:#eef1f6;border-left:3px solid #14213d;padding:0 4px}
+#treelegend .lg-meta{color:#7a6ea0;font-style:italic}
+body.dark #treelegend .legendbody{border-color:#3a4250;color:#9aa3b2}
+body.dark #treelegend .lg-sec{background:#232a36;border-left-color:#9aa3b2}
  .caret{cursor:pointer;color:#5a6478;display:inline-block;width:13px;text-align:center;font-size:12px}
  .railctl{margin-top:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:13px}
  .railctl button{padding:3px 8px}
@@ -257,7 +270,16 @@ body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td
      <button id="expall" class="sec">⊕ all</button><button id="colall" class="sec">⊖ all</button>
      <button id="jumpto" class="sec" title="scroll to active measure in tree">⊙ active</button>
     </div>
-    <div class="muted" style="font-size:12px;margin-top:3px"><b style="color:#1b7f3b">Bold code</b> = combined (all filing variants); light code = one variant only</div>
+    <details id="treelegend"><summary class="muted" style="cursor:pointer;font-size:12px;margin-top:3px">Tree legend ⓘ</summary>
+     <div class="legendbody">
+      <div><span class="lg-sec">ASSETS</span> form section banner — click charts the FILED section total</div>
+      <div><b>Header</b> <span style="color:#1b7f3b;font-weight:700">Σ</span> = chartable subtotal: the filed total line where the form has one, derived Σ of components where it doesn't (reconstructed quarters are marked on the chart)</div>
+      <div><b>Header</b> without Σ = grouping only — items beneath are not additive (hover explains why)</div>
+      <div><b style="color:#1b7f3b">Bold code</b> = combined (all filing variants); light code = one variant only</div>
+      <div>★ Ratios &amp; Subtotals = curated derived measures — hover a row for its formula</div>
+      <div><span style="opacity:.45">Greyed row</span> = no public data for this item</div>
+      <div><span class="lg-meta">Italic violet</span> = filing-metadata code (administrative, not a financial position — hover explains)</div>
+     </div></details>
     <div class="railctl">
      <label title="Shows the individual filing-variant codes (RCFD domestic-consolidated / RCON domestic-only / RCFN foreign-office) nested under each combined row"><input type="checkbox" id="showraw"> Show raw filing codes</label>
     </div></div>
@@ -379,7 +401,7 @@ body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td
 SELECT quarter_end, value FROM t WHERE entity_id='ALL' AND mdrm='COMB2170' ORDER BY quarter_end;</textarea>
    <div style="margin-top:8px"><button id="runsql" class="sec">Run</button> <button id="sqlcsv" class="sec">Export result</button></div>
    <div id="sqlout"></div></details>
-  <div class="credit">Built by Austin Fahrenkopf &middot; data: public FFIEC filings &middot; Built 2026-07-14 11:36</div>
+  <div class="credit">Built by Austin Fahrenkopf &middot; data: public FFIEC filings &middot; Built 2026-07-15 00:03</div>
  </div>
 </div>
 <div id="formmodal" class="modal" style="display:none"><div class="modalbox">
@@ -441,7 +463,7 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.0
 const PARTS=['ffiec_call_recent_2020_2026.parquet'], OLD_PARTS=['ffiec_call_old_1976_2019.parquet'];
 const SHARD_BOUNDARY_JS=2020; // C7-6: JS-side mirror of the Python SHARD_BOUNDARY constant (year), for q0-vs-shard comparisons
 const EMPTY_CODES=new Set(["RCFD4088", "RCFDA345", "RCFDA346", "RCFDB569", "RCFDB867", "RCFDJ449", "RCFDK656", "RCFDK659", "RCFDK663", "RCFDK664", "RCFDK665", "RCFDK666", "RCFDK667", "RCFDK668", "RCFDK673", "RCFDK674", "RCFDK675", "RCFDM964", "RCFDM965", "RCFDM966", "RCFDM967", "RCFDM968", "RCFDM969", "RCFDM970", "RCFDM971", "RCFDM972", "RCFDM973", "RCFDM974", "RCFDM975", "RCFDM976", "RCFDM977", "RCFDM978", "RCFDM979", "RCFDM980", "RCFDM981", "RCFDM982", "RCFDM983", "RCFDM984", "RCFDM985", "RCFDM986", "RCFDM987", "RCFDM988", "RCFDM989", "RCFDM990", "RCFDM991", "RCFDM992", "RCFDM993", "RCFDM994", "RCFDM995", "RCFDM996", "RCFDM997", "RCFDM998", "RCFDM999", "RCFDN001", "RCFDN002", "RCFDN003", "RCFDN004", "RCFDN005", "RCFDN006", "RCFDN007", "RCFDN008", "RCFDN009", "RCFDN010", "RCFDN011", "RCFDN012", "RCFDN013", "RCFDN014", "RCFDN015", "RCFDN016", "RCFDN017", "RCFDN018", "RCFDN019", "RCFDN020", "RCFDN021", "RCFDN022", "RCFDN023", "RCFDN024", "RCFDN025", "RCFDN026", "RCFDN027", "RCFDN028", "RCFDN029", "RCFDN030", "RCFDN040", "RCFDN041", "RCFDN042", "RCFDN043", "RCFDN044", "RCFDN045", "RCFDN046", "RCFDN047", "RCFDN048", "RCFDN049", "RCFDN050", "RCFDN051", "RCFDN052", "RCFDN053", "RCFDN054", "RCFDN055", "RCFDN056", "RCFDN057", "RCFDN058", "RCFDN059", "RCFDN060", "RCFDN061", "RCFDN062", "RCFDN063", "RCFDN064", "RCFDN065", "RCFDN066", "RCFDN067", "RCFDN068", "RCFDN069", "RCFDN070", "RCFDN071", "RCFDN072", "RCFDN073", "RCFDN074", "RCFDN075", "RCFDN076", "RCFDN077", "RCFDN078", "RCFDN079", "RCFDN080", "RCFDN081", "RCFDN082", "RCFDN083", "RCFDN084", "RCFDN085", "RCFDN086", "RCFDN087", "RCFDN088", "RCFDN089", "RCFDN090", "RCFDN091", "RCFDN092", "RCFDN093", "RCFDN094", "RCFDN095", "RCFDN096", "RCFDN097", "RCFDN098", "RCFDN099", "RCFDN100", "RCFDN101", "RCFDN102", "RCFDN103", "RCFDN104", "RCFDN105", "RCFDN106", "RCFDN107", "RCFDN108", "RCFDN109", "RCFDN110", "RCFDN111", "RCFDN112", "RCFDN113", "RCFDN114", "RCFDN115", "RCFDN116", "RCFDN117", "RCFDN118", "RCFDN119", "RCFDN120", "RCFDN121", "RCFDN122", "RCFDN123", "RCFDN124", "RCFDN125", "RCFDN126", "RCFDN127", "RCFDN128", "RCON4088", "RCON9224", "RCONA345", "RCONA346", "RCONB569", "RCONB867", "RCONFT00", "RCONFT03", "RCONFT06", "RCONFT07", "RCONFT09", "RCONFT11", "RCONFT13", "RCONFT16", "RCONFT17", "RCONG463", "RCONG464", "RCONJ449", "RCONK656", "RCONK659", "RCONK663", "RCONK664", "RCONK665", "RCONK666", "RCONK667", "RCONK668", "RCONK673", "RCONK674", "RCONK675", "RCONL135", "RCONL191", "RCONL192", "RCONLG24", "RCONLG25", "RCONM964", "RCONM965", "RCONM966", "RCONM967", "RCONM968", "RCONM969", "RCONM970", "RCONM971", "RCONM972", "RCONM973", "RCONM974", "RCONM975", "RCONM976", "RCONM977", "RCONM978", "RCONM979", "RCONM980", "RCONM981", "RCONM982", "RCONM983", "RCONM984", "RCONM985", "RCONM986", "RCONM987", "RCONM988", "RCONM989", "RCONM990", "RCONM991", "RCONM992", "RCONM993", "RCONM994", "RCONM995", "RCONM996", "RCONM997", "RCONM998", "RCONM999", "RCONN001", "RCONN002", "RCONN003", "RCONN004", "RCONN005", "RCONN006", "RCONN007", "RCONN008", "RCONN009", "RCONN010", "RCONN011", "RCONN012", "RCONN013", "RCONN014", "RCONN015", "RCONN016", "RCONN017", "RCONN018", "RCONN019", "RCONN020", "RCONN021", "RCONN022", "RCONN023", "RCONN024", "RCONN025", "RCONN026", "RCONN027", "RCONN028", "RCONN029", "RCONN030", "RCONN040", "RCONN041", "RCONN042", "RCONN043", "RCONN044", "RCONN045", "RCONN046", "RCONN047", "RCONN048", "RCONN049", "RCONN050", "RCONN051", "RCONN052", "RCONN053", "RCONN054", "RCONN055", "RCONN056", "RCONN057", "RCONN058", "RCONN059", "RCONN060", "RCONN061", "RCONN062", "RCONN063", "RCONN064", "RCONN065", "RCONN066", "RCONN067", "RCONN068", "RCONN069", "RCONN070", "RCONN071", "RCONN072", "RCONN073", "RCONN074", "RCONN075", "RCONN076", "RCONN077", "RCONN078", "RCONN079", "RCONN080", "RCONN081", "RCONN082", "RCONN083", "RCONN084", "RCONN085", "RCONN086", "RCONN087", "RCONN088", "RCONN089", "RCONN090", "RCONN091", "RCONN092", "RCONN093", "RCONN094", "RCONN095", "RCONN096", "RCONN097", "RCONN098", "RCONN099", "RCONN100", "RCONN101", "RCONN102", "RCONN103", "RCONN104", "RCONN105", "RCONN106", "RCONN107", "RCONN108", "RCONN109", "RCONN110", "RCONN111", "RCONN112", "RCONN113", "RCONN114", "RCONN115", "RCONN116", "RCONN117", "RCONN118", "RCONN119", "RCONN120", "RCONN121", "RCONN122", "RCONN123", "RCONN124", "RCONN125", "RCONN126", "RCONN127", "RCONN128", "RCONN512", "RCONN514", "RCONN515", "RCONN516", "RCONN517", "RCONN518", "RCONN519", "RCONN520", "RCONN521", "RCONP752", "TEXT4086", "TEXT6373", "TEXT8901", "TEXT8902", "TEXT9116", "TEXTB926", "TEXTB962", "TEXTB963", "TEXTB964", "TEXTC366", "TEXTC367", "TEXTC368", "TEXTC369", "TEXTC370", "TEXTC371", "TEXTC372", "TEXTC373", "TEXTC374", "TEXTC375", "TEXTC437", "TEXTC438", "TEXTC439", "TEXTC440", "TEXTC441", "TEXTC442", "TEXTC443", "TEXTC444", "TEXTC445", "TEXTC446", "TEXTC490", "TEXTC491", "TEXTC492", "TEXTC493", "TEXTC494", "TEXTC495", "TEXTC496", "TEXTC870", "TEXTC871", "TEXTC872", "TEXTC873", "TEXTC874", "TEXTC875", "TEXTC876", "TEXTC877", "TEXTC878", "TEXTC879", "TEXTFT42", "TEXTFT43", "TEXTFT44", "TEXTFT45"]);
-const BUILD_TS='2026-07-14 11:36';
+const BUILD_TS='2026-07-15 00:03';
 const st=m=>document.getElementById('status').textContent=m;
 const _pb=document.getElementById('pbar');const pbar=pct=>{if(!_pb)return;_pb.style.width=pct+'%';if(pct>=100){setTimeout(()=>{_pb.style.opacity='0';setTimeout(()=>{_pb.style.display='none';},400);},300);}};
 let _reflineVal=null,_reflineLbl='';
@@ -507,9 +529,9 @@ const DERIV={
  // RC-N item 9 totals — gap 2001-Q1→2016-Q4 filled by summing RC-N items 1-8 leaf codes (per column).
  // Validation: 0.25%/0.15%/0.80% mean error vs reported in post-gap overlap 2017-Q1→2026-Q1.
  // Caveat: COMBK213-K218 (consumer auto/other) absent pre-2011-Q1 → ~4% understatement 2001-2010.
- 'COMB1406':{type:'hybrid_sum',parts:[{reported:'COMB1406',components:['COMBF172','COMBF173','COMB3493','COMB5398','COMBC236','COMBC238','COMB3499','COMBF178','COMBF179','RCFNB572','COMB5377','COMB5380','COMB1594','COMB1251','COMB1254','COMB1606','COMBB575','COMBK213','COMBK216','COMB5389','COMB5459','COMBF166','COMBF169']}]},
- 'COMB1407':{type:'hybrid_sum',parts:[{reported:'COMB1407',components:['COMBF174','COMBF175','COMB3494','COMB5399','COMBC237','COMBC239','COMB3500','COMBF180','COMBF181','RCFNB573','COMB5378','COMB5381','COMB1597','COMB1252','COMB1255','COMB1607','COMBB576','COMBK214','COMBK217','COMB5390','COMB5460','COMBF167','COMBF170']}]},
- 'COMB1403':{type:'hybrid_sum',parts:[{reported:'COMB1403',components:['COMBF176','COMBF177','COMB3495','COMB5400','COMBC229','COMBC230','COMB3501','COMBF182','COMBF183','RCFNB574','COMB5379','COMB5382','COMB1583','COMB1253','COMB1256','COMB1608','COMBB577','COMBK215','COMBK218','COMB5391','COMB5461','COMBF168','COMBF171']}]},
+ 'COMB1406':{type:'hybrid_sum',note:'RC-N item 9 reconstruction (gap 2001-Q1–2016-Q4): validated vs reported in the post-gap overlap at ~0.25% mean error; consumer auto/other components (COMBK213/K216) absent pre-2011-Q1 cause a further ~4% understatement 2001–2010.',parts:[{reported:'COMB1406',components:['COMBF172','COMBF173','COMB3493','COMB5398','COMBC236','COMBC238','COMB3499','COMBF178','COMBF179','RCFNB572','COMB5377','COMB5380','COMB1594','COMB1251','COMB1254','COMB1606','COMBB575','COMBK213','COMBK216','COMB5389','COMB5459','COMBF166','COMBF169']}]},
+ 'COMB1407':{type:'hybrid_sum',note:'RC-N item 9 reconstruction (gap 2001-Q1–2016-Q4): validated vs reported in the post-gap overlap at ~0.15% mean error; consumer auto/other components (COMBK214/K217) absent pre-2011-Q1 cause a further ~4% understatement 2001–2010.',parts:[{reported:'COMB1407',components:['COMBF174','COMBF175','COMB3494','COMB5399','COMBC237','COMBC239','COMB3500','COMBF180','COMBF181','RCFNB573','COMB5378','COMB5381','COMB1597','COMB1252','COMB1255','COMB1607','COMBB576','COMBK214','COMBK217','COMB5390','COMB5460','COMBF167','COMBF170']}]},
+ 'COMB1403':{type:'hybrid_sum',note:'RC-N item 9 reconstruction (gap 2001-Q1–2016-Q4): validated vs reported in the post-gap overlap at ~0.80% mean error; consumer auto/other components (COMBK215/K218) absent pre-2011-Q1 cause a further ~4% understatement 2001–2010.',parts:[{reported:'COMB1403',components:['COMBF176','COMBF177','COMB3495','COMB5400','COMBC229','COMBC230','COMB3501','COMBF182','COMBF183','RCFNB574','COMB5379','COMB5382','COMB1583','COMB1253','COMB1256','COMB1608','COMBB577','COMBK215','COMBK218','COMB5391','COMB5461','COMBF168','COMBF171']}]},
 };
 // VIEWS — one-click premade measure selections (owner's top UI ask). Every code below was verified
 // present in this engine's own DERIV catalog above (or, for raw COMB<base> codes, resolves via the
@@ -598,7 +620,7 @@ const _fullCap=new Map();
 // (e.g. COMB2170 in RC item 12 AND RC-R II item 11) labels KPI/table/export headers from its FIRST
 // FORM_ORDER occurrence (primary home), not whichever schedule was walked last. buildTree() clears
 // the map per rebuild so "first" always means first-in-the-current-tree.
-function _walkFC(nodes,parts,sch){for(const nd of nodes){if(!nd.placeholder&&!nd.derived&&!nd.header&&nd.code&&!/^(H:|SEC:|SUB:|EMPTY:)/.test(nd.code)){const cap=nd.caption||'';const anc=parts.filter(Boolean);if(!_fullCap.has(nd.code))_fullCap.set(nd.code,anc.length?anc.join(' — ')+' — '+cap:cap);}if(nd.header&&nd.code){const _sn=sch&&SCHED_NAMES[sch]?SCHED_NAMES[sch]:(parts.length?parts[0]:'');const _si=_sn.indexOf(' — ');const _sk=_si>=0?_sn.slice(0,_si):_sn;const _agg=sch?SUB_AGG_DESCS[sch]||'':'';const _cnt=(function c(n){let k=0;for(const x of(n.children||[])){if(x.header)k+=c(x);else if(x.code&&!x.placeholder&&!/^(H:|SEC:|SUB:|EMPTY:)/.test(x.code))k++;}return k;})(nd);if(_cnt>0){const _rl=_agg?_sk+' '+_agg+': '+(nd.caption||''):_sk?_sk+' '+(nd.caption||''):(nd.caption||'');if(!_fullCap.has('SUB:'+nd.code))_fullCap.set('SUB:'+nd.code,_rl);if(!/^(H:|SEC:|EMPTY:)/.test(nd.code)&&!_fullCap.has(nd.code))_fullCap.set(nd.code,_rl);}}if(nd.children&&nd.children.length)_walkFC(nd.children,nd.header?[...parts,nd.caption||'']:parts,sch);}}
+function _walkFC(nodes,parts,sch){for(const nd of nodes){if(!nd.placeholder&&!nd.derived&&!nd.header&&nd.code&&!/^(H:|SEC:|SECBAR:|SUB:|EMPTY:)/.test(nd.code)){const cap=nd.caption||'';const anc=parts.filter(Boolean);if(!_fullCap.has(nd.code))_fullCap.set(nd.code,anc.length?anc.join(' — ')+' — '+cap:cap);}if(nd.header&&nd.code){const _sn=sch&&SCHED_NAMES[sch]?SCHED_NAMES[sch]:(parts.length?parts[0]:'');const _si=_sn.indexOf(' — ');const _sk=_si>=0?_sn.slice(0,_si):_sn;const _agg=sch?SUB_AGG_DESCS[sch]||'':'';const _cnt=(function c(n){let k=0;for(const x of(n.children||[])){if(x.header)k+=c(x);else if(x.code&&!x.placeholder&&!/^(H:|SEC:|SECBAR:|SUB:|EMPTY:)/.test(x.code))k++;}return k;})(nd);if(_cnt>0){const _rl=_agg?_sk+' '+_agg+': '+(nd.caption||''):_sk?_sk+' '+(nd.caption||''):(nd.caption||'');if(!_fullCap.has('SUB:'+nd.code))_fullCap.set('SUB:'+nd.code,_rl);if(!/^(H:|SEC:|EMPTY:)/.test(nd.code)&&!_fullCap.has(nd.code))_fullCap.set(nd.code,_rl);}}if(nd.children&&nd.children.length)_walkFC(nd.children,nd.header?[...parts,nd.caption||'']:parts,sch);}}
 function fullCap(code){return _fullCap.get(code)||'';}
 // ---- "Why this number?" — measure-chip formula disclosure (read-only; derives text from existing DERIV/DYN/USERCALC defs) ----
 // Builds {title, formula, terms:[{code,cap}], note} for any non-plain measure code. Returns null for plain codes
@@ -621,9 +643,11 @@ function whyDescribe(code,label){
  if(d.type==='hybrid_ratio'||d.type==='hybrid_sum'){
   const reportedCodes=d.parts.map(p=>p.reported);
   const formula=d.type==='hybrid_ratio'?`Σ(${reportedCodes.join('+')}) ÷ Σ(${(d.den||[]).join('+')}) × 100`:`Σ(${reportedCodes.join(' + ')})`;
-  const terms=d.parts.map(p=>({code:p.reported,cap:cap(p.reported),role:'reported total (era-dependent)'}));
+  const terms=d.parts.map(p=>({code:p.reported,cap:cap(p.reported),role:'filed total line (primary)'}));
   if(d.den)for(const c of d.den)terms.push({code:c,cap:cap(c),role:'denominator'});
-  const note='Reconstruction note: for quarters where the reported total (e.g. '+reportedCodes.join('/')+') was not collected (roughly 2001-Q1–2016-Q4 for RC-N item 9), the value is instead SUMMED from that row\'s per-loan-book leaf codes ('+d.parts.map(p=>p.components.length+' codes for '+p.reported).join('; ')+'). Validated against the post-gap overlap (2017-Q1 onward) at ~0.25/0.15/0.80% mean error for the three item-9 rows; known caveat: consumer auto/other leaf codes (COMBK213-K218) were not collected before 2011-Q1, causing a further ~4% understatement for 2001–2010 in the affected rows.';
+  // C18: generic filed-first/derived-fill provenance — per-entry caveats ride d.note, never hardcoded prose
+  let note='Filed-first, derived-fill: for each filer and quarter the FILED total line ('+reportedCodes.join('/')+') is charted where it exists; only where that line is absent is the value summed from the component items ('+d.parts.map(p=>(p.components||[]).length+' component code(s) for '+p.reported).join('; ')+'). Quarters that used component fill are marked as reconstructed on the chart.';
+  if(d.note)note+=' '+d.note;
   return {title:label||d.lbl||code,formula,terms,note};
  }
  if(d.type==='expr'){
@@ -779,6 +803,20 @@ function resolveEnt(){const v=document.getElementById('ent').value.trim();
  const m=v.match(/(\d{3,})/);if(m){const id='BANK:'+m[1];if(id2lbl.has(id))return {id,label:id2lbl.get(id)};}return null;}
 function expand(id){if(id&&id.startsWith('PEER:')){const n=id.slice(5);return peers[n]||[];}return [id];}
 function coalesce(map,base){return map['COMB'+base]??map['RCFD'+base]??map['RCON'+base]??map['RIAD'+base]??map['RCFA'+base]??map['RCFW'+base]??map['RCOA'+base]??map['RCOW'+base]??map['RCFN'+base];}
+// C18 token resolution for sum/hybrid definitions (see ROLLUP_RULES comment): COMB<base> → the
+// materialized COMB row, else coalesce(RCFD,RCON) · full 8-char prefixed code → exactly that code ·
+// bare 4-char base (curated DERIV entries keep the pre-C18 convention) → the legacy 9-prefix coalesce.
+const _TOKPREF=/^(RCFD|RCON|RCFN|RCFA|RCFW|RCOA|RCOW|RIAD)/;
+function tokCodes(t){if(t.startsWith('COMB'))return['COMB'+t.slice(4),'RCFD'+t.slice(4),'RCON'+t.slice(4)];
+ if(_TOKPREF.test(t)&&t.length===8)return[t];
+ return ['COMB','RCFD','RCON','RIAD','RCFA','RCFW','RCOA','RCOW','RCFN'].map(p=>p+t);}
+function tokVal(mp,t){if(t.startsWith('COMB')){const b=t.slice(4);const a=mp['COMB'+b];if(a!=null)return a;const c=mp['RCFD'+b];if(c!=null)return c;const e=mp['RCON'+b];return e??null;}
+ if(_TOKPREF.test(t)&&t.length===8)return mp[t]??null;
+ return coalesce(mp,t);}
+// C18 seam honesty: per hybrid measure, the quarters whose charted value used derived component
+// fill (the filed line was absent for at least one in-scope filer) — computed, never hardcoded.
+window._fillQ={};
+const _fillQCache=new Map(); // C18 review fix: restore scope-dependent fill quarters on cache hits (stale-seam guard)
 // FIX-2: ordSuffix — correct English ordinal suffix (1st/2nd/3rd/4th…, with 11th/12th/13th special-
 // cased so it doesn't say "11st"). Module-scope (not buildReport()-local) so buildNarrative() — a
 // separate top-level function called from buildReport() but without closure access to its locals —
@@ -877,7 +915,7 @@ const isRawPct=m=>PCTC.has(m)&&!DERIV[m];
 async function seriesFor(id,m){const ids=expand(id);if(!ids.length)return [];
  // HIGH-2: raw capital-ratio codes must not be summed across a multi-entity aggregate.
  if(isRawPct(m)&&isAggScope(id))return [];
- const _sk=`${id}::${m}`;if(_seriesCache.has(_sk))return _seriesCache.get(_sk);
+ const _sk=`${id}::${m}`;if(_seriesCache.has(_sk)){if(_fillQCache.has(_sk))window._fillQ[m]=_fillQCache.get(_sk);return _seriesCache.get(_sk);}
  if(_inflight.has(_sk))return _inflight.get(_sk);
  const _p=(async()=>{
  let d=DERIV[m]||DYN[m]||USERCALC[m];
@@ -892,23 +930,27 @@ async function seriesFor(id,m){const ids=expand(id);if(!ids.length)return [];
      try{let v=evalCalcAST(d.ast,env);if(v!=null){if(d.pct)v=v*100;out.push([q,v]);}}catch(e){}}
    _seriesCache.set(_sk,out);return out;}
  if(d&&d.type==='hybrid_sum'){
-   const allCodes=[...new Set(d.parts.flatMap(p=>[p.reported,...p.components]))];
-   const r=(await conn.query(`SELECT entity_id,quarter_end,mdrm,value FROM t WHERE entity_id IN (${sqlList(ids)}) AND mdrm IN (${sqlList(allCodes)})`)).toArray();
-   const byqe={};for(const x of r){((byqe[x.quarter_end]=byqe[x.quarter_end]||{})[x.entity_id]=byqe[x.quarter_end][x.entity_id]||{})[x.mdrm]=Number(x.value);}
-   const acc=(mp,arr)=>{let s=0,seen=false;for(const c of arr){const v=mp[c]??null;if(v!=null){s+=v;seen=true;}}return[s,seen];};
-   const out=[];for(const q of Object.keys(byqe).sort()){let num=0,anyN=false;
-     for(const eid of Object.keys(byqe[q])){const mp=byqe[q][eid];
-       let pnum=0,pany=false;
-       for(const part of d.parts){const rv=mp[part.reported]??null;
-         if(rv!=null){pnum+=rv;pany=true;}else{const[cs,csSeen]=acc(mp,part.components);if(csSeen){pnum+=cs;pany=true;}}}
-       if(pany){num+=pnum;anyN=true;}}
-     if(anyN)out.push([q,num]);}
-   _seriesCache.set(_sk,out);return out;}
- if(d){const bases=[...d.plus,...(d.minus||[]),...(d.den||[])];
-   const codes=[];for(const b of bases)for(const p of['COMB','RCFD','RCON','RIAD','RCFA','RCFW','RCOA','RCOW','RCFN'])codes.push(`${p}${b}`);
+   // C18 filed-first, derived-fill with token semantics + computed fill-quarter seams
+   const allToks=[...new Set(d.parts.flatMap(p=>[p.reported,...p.components]))];
+   const codes=[...new Set(allToks.flatMap(tokCodes))];
    const r=(await conn.query(`SELECT entity_id,quarter_end,mdrm,value FROM t WHERE entity_id IN (${sqlList(ids)}) AND mdrm IN (${sqlList(codes)})`)).toArray();
    const byqe={};for(const x of r){((byqe[x.quarter_end]=byqe[x.quarter_end]||{})[x.entity_id]=byqe[x.quarter_end][x.entity_id]||{})[x.mdrm]=Number(x.value);}
-   const acc=(mp,arr)=>{let s=0,seen=false;for(const b of arr){const v=coalesce(mp,b);if(v!=null){s+=v;seen=true;}}return [s,seen];};
+   const acc=(mp,arr)=>{let s=0,seen=false;for(const t of arr){const v=tokVal(mp,t);if(v!=null){s+=v;seen=true;}}return[s,seen];};
+   const out=[],fq=new Set();
+   for(const q of Object.keys(byqe).sort()){let num=0,anyN=false,fill=false;
+     for(const eid of Object.keys(byqe[q])){const mp=byqe[q][eid];
+       let pnum=0,pany=false;
+       for(const part of d.parts){const rv=tokVal(mp,part.reported);
+         if(rv!=null){pnum+=rv;pany=true;}else{const[cs,csSeen]=acc(mp,part.components);if(csSeen){pnum+=cs;pany=true;fill=true;}}}
+       if(pany){num+=pnum;anyN=true;}}
+     if(anyN){out.push([q,num]);if(fill)fq.add(q);}}
+   window._fillQ[m]=fq;_fillQCache.set(_sk,fq);
+   _seriesCache.set(_sk,out);return out;}
+ if(d){const toks=[...d.plus,...(d.minus||[]),...(d.den||[])];
+   const codes=[...new Set(toks.flatMap(tokCodes))];
+   const r=(await conn.query(`SELECT entity_id,quarter_end,mdrm,value FROM t WHERE entity_id IN (${sqlList(ids)}) AND mdrm IN (${sqlList(codes)})`)).toArray();
+   const byqe={};for(const x of r){((byqe[x.quarter_end]=byqe[x.quarter_end]||{})[x.entity_id]=byqe[x.quarter_end][x.entity_id]||{})[x.mdrm]=Number(x.value);}
+   const acc=(mp,arr)=>{let s=0,seen=false;for(const t of arr){const v=tokVal(mp,t);if(v!=null){s+=v;seen=true;}}return [s,seen];};
    const out=[];for(const q of Object.keys(byqe).sort()){let num=0,den=0,anyN=false,anyD=false;
      for(const eid of Object.keys(byqe[q])){const mp=byqe[q][eid];
        const [np,ns]=acc(mp,d.plus);const [nm,ms]=acc(mp,d.minus||[]);num+=np-nm;if(ns||ms)anyN=true;
@@ -1117,7 +1159,9 @@ document.getElementById('reflineset').onclick=()=>{const v=parseFloat(document.g
   window.addEventListener('mousemove',e=>{if(!drag)return;const w=Math.min(820,Math.max(300,e.clientX));document.documentElement.style.setProperty('--railw',w+'px');});
   window.addEventListener('mouseup',()=>{drag=false;document.body.style.userSelect='';});})();
  document.getElementById('downloads').innerHTML='&#11015; Data: '+[...PARTS,...OLD_PARTS].map(p=>`<a href="${p}" download>${p}</a>`).join(' &middot; ')+' (Python / Power BI / DuckDB)';
- if(HIER)buildTree(); else document.getElementById('tree').innerHTML='<p class="muted" style="padding:10px">hierarchy not found</p>';
+ if(HIER){buildTree();LGMEAS=buildLGMEAS();} else document.getElementById('tree').innerHTML='<p class="muted" style="padding:10px">hierarchy not found</p>';
+ // C18 review fix: buildLGMEAS at boot pre-registers SUB:/section DYN defs before hash restore
+ // (restored subtotal links used to render empty until a tree click / league open).
  const restored=hashToState();
  if(!restored){active=[{id:'ALL',label:'ALL'}];}
  if(!measures.length){try{const s=localStorage.getItem('ffiec_call_measures');if(s){const ms=JSON.parse(s);if(Array.isArray(ms)&&ms.length)measures=ms.slice(0,20).map(m=>({code:m.code,label:m.label,pct:!!(m.pct||isPct(m.code)||PCTC.has(m.code))}));/* C14A-HASHFIX: re-derive the %-axis flag on saved-measure restore (pre-fix saves carry pct:false on raw %-codes) */}}catch{}if(!measures.length)measures=[{code:'COMB2170',label:'Total assets',pct:false}];}
@@ -1193,12 +1237,33 @@ function mkSec(title,cnt){const sec=document.createElement('div');sec.className=
  h.onclick=()=>{const open=rows.style.display!=='none';rows.style.display=open?'none':'block';h.innerHTML=h.innerHTML.replace(open?'▾':'▸',open?'▸':'▾');};
  sec.appendChild(h);sec.appendChild(rows);return {sec,rows};}
 function rowEl(nd,has,dispCap){
+ if(nd.sec){ // C18: form section banner (Assets / Liabilities / Equity capital) — a label, never a Σ-parent
+   const d=document.createElement('div');d.className='trow sec';
+   // dataset.code = the banner's OWN synthetic code — NEVER the filed total's code (a duplicate
+   // data-code hijacks data-code lookups away from the real item row; markTree's 'SUB:'+code
+   // pattern covers banner highlighting for section hybrids).
+   d.dataset.code=nd.code;d.dataset.depth=nd.depth;d.dataset.txt=(nd.caption||'').toLowerCase();
+   d.style.paddingLeft=(6+(nd.depth-1)*14)+'px';
+   const cap=`<span class="cap">${nd.caption||''}</span>`;
+   d.innerHTML=`<span class="caret" style="visibility:hidden">▸</span>${cap}`;
+   if(nd.secTotal){
+     d.title=(nd.secNote?nd.secNote+' — ':'')+'Click to chart the filed section total ('+nd.secTotal+')';
+     d.onclick=()=>{
+       if(nd.secFill){const code='SUB:'+nd.code;const rl=fullCap(nd.secTotal)||nd.caption;
+         DYN[code]={type:'hybrid_sum',lbl:rl,parts:[{reported:nd.secTotal,components:nd.secFill}]};
+         toggleMeasure(code,rl,false);}
+       else toggleMeasure(nd.secTotal,fullCap(nd.secTotal)||nd.caption,false);};}
+   else{d.title=nd.secNote||'';d.style.cursor='default';}
+   return d;}
  if(nd.placeholder){
    const p=document.createElement('div');p.className='trow placeholder';
    p.style.cssText=`padding-left:${6+(nd.depth-1)*14}px`;
+   // C18: numbering-completeness placeholders carry their form-ink caption ("Not applicable") and
+   // an explanatory hover; legacy reserved rows keep the "(empty)" rendering.
+   const _ptxt=nd.caption&&nd.caption!=='(empty)'?nd.caption:'(empty)';
    p.innerHTML=`<span class="caret" style="visibility:hidden">▸</span>`+
      (nd.num?`<span class="num">${nd.num}</span>`:'') +
-     `<span class="cap" style="color:#9aa3b2;font-style:italic">(empty)</span>`;
+     `<span class="cap" style="color:#9aa3b2;font-style:italic"${nd.naNote?` title="${String(nd.naNote).replace(/"/g,'&quot;')}"`:''}>${_ptxt}</span>`;
    return p;}
  if(nd.header){
    const d=document.createElement('div');d.className='trow hdr';
@@ -1207,17 +1272,27 @@ function rowEl(nd,has,dispCap){
    const cap=`<span class="cap" title="${String(nd.caption||'').replace(/"/g,'&quot;')}">${dispCap||nd.caption||''}</span>`;
    d.innerHTML=`${car}${nd.num?`<span class=num>${nd.num}</span>`:''}${cap}`;
    d.querySelector('.caret').onclick=ev=>{ev.stopPropagation();if(has)toggleNode(d);};
-   const codes=descCodes(nd);const pctSkip=hasPctDesc(nd);
-   if(codes.length){d.title='Click to chart sum of '+codes.length+' leaf $ code(s)'+(pctSkip?' · non-additive % cells excluded':'');
-     d.onclick=()=>{const code='SUB:'+nd.code;const rl=fullCap(code)||nd.caption;DYN[code]={type:'sum',lbl:rl,plus:codes};toggleMeasure(code,rl,false);};}
+   const sd=subDefFor(nd);const pctSkip=hasPctDesc(nd);
+   if(sd&&sd.def){
+     const nComp=(sd.def.type==='hybrid_sum')?sd.def.parts[0].components.length:sd.def.plus.length;
+     d.title=sd.filed
+       ?'Click to chart — charts the FILED total line ('+sd.filed+'); quarters where the filed line is absent are summed from '+nComp+' component code(s) and marked as reconstructed'
+       :'Click to chart Σ of '+nComp+' leaf $ code(s)'+(pctSkip?' · non-additive % cells excluded':'');
+     const sig=document.createElement('span');sig.className='sig';sig.textContent='Σ';
+     sig.title=sd.filed?'Subtotal: filed total line first; derived Σ fill where unfiled':'Derived subtotal (Σ of component items)';
+     d.appendChild(sig);
+     d.onclick=()=>{const code='SUB:'+nd.code;DYN[code]=sd.def;toggleMeasure(code,sd.label,false);};}
+   else if(sd&&sd.nosum){d.classList.add('nsum');d.title=sd.nosum;d.onclick=()=>{if(has)toggleNode(d);};}
    else if(pctSkip){d.title='Contains only non-additive % cells — cannot sum';d.onclick=()=>{if(has)toggleNode(d);};}
    else d.onclick=()=>{if(has)toggleNode(d);};
    return d;}
- const d=document.createElement('div');d.className='trow'+(nd.comb?' comb':'')+(nd.header?' hdr':'');
+ const d=document.createElement('div');d.className='trow'+(nd.comb?' comb':'')+(nd.header?' hdr':'')+(nd.meta||META_HOVER[nd.code]?' meta':'');
  d.dataset.code=nd.code;d.dataset.txt=(nd.code+' '+nd.caption).toLowerCase();d.dataset.depth=nd.depth;
  d.style.paddingLeft=(6+(nd.depth-1)*14)+'px';
  const car=`<span class="caret"${has?'':' style="visibility:hidden"'}>▸</span>`;
- const cap=`<span class="cap" title="${String(nd.caption||'').replace(/"/g,'&quot;')}">${dispCap||nd.caption||''}</span>`;
+ // C18: filing-metadata / admin codes carry their instruction-sourced explanation on hover
+ const _hovTxt=META_CODES[nd.code]||META_HOVER[nd.code]||nd.caption||'';
+ const cap=`<span class="cap" title="${String(_hovTxt).replace(/"/g,'&quot;')}">${dispCap||nd.caption||''}</span>`;
  d.innerHTML=nd.derived?`${car}${cap}`:`${car}${(nd.num&&!nd.col)?`<span class=num>${nd.num}</span>`:''}${cap}<span class=code>${nd.code}</span>`;
  const lab=nd.derived?short(nd.caption):((nd.header&&fullCap(nd.code))?fullCap(nd.code):(nd.caption||nd.code));
  d.querySelector('.caret').onclick=ev=>{ev.stopPropagation();if(has)toggleNode(d);};
@@ -1237,6 +1312,46 @@ function nest(flat){const ns=flat.map(it=>({...it,children:[]}));
  const roots=[];
  for(const n of ns){if(!n.num){roots.push(n);continue;}const a=ancestor(n.num);const par=a&&first(a);(par?par.children:roots).push(n);}
  return roots;}
+// C18 SECTIONS — the form's printed section banners (form ink: FFIEC031_202606_f.pdf p16-17 — RC
+// mirrors Y-9C HC: Assets 1-12, Liabilities 13-21, Equity Capital 23-29). Rendered as banner rows,
+// NOT parents: the filed section-total LINES already exist as items (12/21/28) — a banner that Σ'd
+// descendants would double-count them (the P0 class). Clicking a banner charts the FILED total.
+const SECTIONS={
+ 'RC':[{label:'Assets',before:'1',total:'COMB2170',note:'Items 1–12 — item 12 IS the filed section total (sum of items 1 through 11)'},
+       {label:'Liabilities',before:'13',total:'COMB2948',note:'Items 13–21 — item 21 IS the filed section total (sum of items 13 through 20)'},
+       {label:'Equity capital',before:'23',total:'COMBG105',note:'Items 23–28 — item 28 IS the filed section total (sum of items 27.a and 27.b)'}],
+};
+// C18 FILING METADATA — administrative codes explained on hover from form ink (f031 p18, p83).
+// All five are NUMBERED form items, so they KEEP their form position (numbering completeness is an
+// owner scan cue) and only gain the instruction hover; no rows move. META_CODES (unnumbered admin
+// codes moved under a "Filing metadata" banner, like 002 RAL 9395) has no members on this form.
+const META_CODES={};
+// C18 numbering-completeness sweep (owner checkpoint amendment, ported ×3): item numbers the
+// current form marks "Not applicable" appear as grey unchartable placeholders — every entry
+// adjudicated on RENDERED FORM INK (page cited per note; FFIEC031_202606_f.pdf).
+const NA_ROWS={
+ 'RC':[{before:'19',num:'17–18',cap:'Not applicable',note:'Form ink p17: "17. and 18. Not applicable" printed between items 16 and 19.'},
+       {before:'23',num:'22',cap:'Not applicable',note:'Form ink p17: "22. Not applicable" printed between item 21 and the Equity Capital section (pre-2009 this number carried the liabilities-side minority-interest line, RCFD3000 — now item 27.b).'}],
+ 'RCCI':[{before:'6',num:'5',cap:'Not applicable',note:'Form ink p25: "5. Not applicable" printed between items 4.b and 6.'}],
+ 'RCCII':[{before:'3',num:'1–2',cap:'Not applicable',note:'Form ink p30: "1. and 2. Not applicable" printed under the Loans to Small Businesses heading.'},
+          {before:'7',num:'5–6',cap:'Not applicable',note:'Form ink p30: "5. and 6. Not applicable" printed under the Agricultural Loans to Small Farms heading.'}],
+ 'RCD':[{before:'9',num:'7–8',cap:'Not applicable',note:'Form ink p31: "7. and 8. Not applicable" printed between items 6.d and 9.'},
+        {before:'11',num:'10',cap:'Not applicable',note:'Form ink p31: "10. Not applicable" printed between items 9 and 11.'}],
+ 'RCH':[{before:'3',num:'1–2',cap:'Not applicable',note:'Form ink p37: "1. and 2. Not applicable" printed before item 3.'},
+        {before:'17',num:'16',cap:'Not applicable',note:'Form ink p37: "16. Not applicable" printed between items 15 and 17.'}],
+ 'RCL':[{before:'6',num:'5',cap:'Not applicable',note:'Form ink p40: "5. Not applicable" printed between items 4 and 6.'}],
+ 'RCRI':[{before:'44',num:'43',cap:'Not applicable',note:'Form ink p64: "43. Not applicable" printed between items 42.b and 44.'}],
+ 'RCS':[{before:'9',num:'7–8',cap:'Not applicable',note:'Form ink p81: "7. and 8. Not applicable" printed under item 6.'}],
+ 'RIBI':[{before:'3',num:'2',cap:'Not applicable',note:'Form ink p10: "2. Not applicable" printed before item 3.'}],
+ 'RID':[{before:'12',num:'11',cap:'Not applicable',note:'Form ink p13: "11. Not applicable" printed between items 10 and 12.'}],
+};
+const META_HOVER={
+ 'COMBA345':'Yes/No flag (1=yes): does the institution have fiduciary powers? Administrative gate for Schedule RC-T — not a dollar amount. (Form ink, RC-T item 1.)',
+ 'COMBA346':'Yes/No flag (1=yes): does the institution exercise the fiduciary powers it has been granted? Administrative gate for Schedule RC-T — not a dollar amount. (Form ink, RC-T item 2.)',
+ 'COMBB867':'Yes/No flag (1=yes): does the institution have any fiduciary or related activity to report? If no, the rest of Schedule RC-T is not completed. Not a dollar amount. (Form ink, RC-T item 3.)',
+ 'COMB6724':'Audit level indicator (March report only) — a CATEGORICAL code (1a/1b/2a/2b/3–9) describing the most comprehensive level of external auditing work performed for the bank, from integrated AICPA/PCAOB audit (1a) down to no external audit work (9). Not a dollar amount. (Form ink, Schedule RC Memoranda item 1.)',
+ 'COMB8678':'Bank\'s fiscal year-end date, reported in MMDD format (March report only) — a DATE field, not a dollar amount. (Form ink, Schedule RC Memoranda item 2.)',
+};
 function emitSchedule(sch,showRaw){const allRows=HIER[sch];
  // Emit rows in ORIGINAL hierarchy order, interleaving placeholder/header rows and code rows, so
  // code-bearing top-level items don't sort above header-only items (the RAL hoisting class). nest()
@@ -1244,8 +1359,17 @@ function emitSchedule(sch,showRaw){const allRows=HIER[sch];
  const raw=allRows.filter(r=>REPORT.test(r.mdrm));
  const capByBase={};for(const r of raw){const b=r.mdrm.slice(4);if(r.caption&&!capByBase[b])capByBase[b]=r.caption;}
  const combBases=new Set();for(const r of raw){const p=r.mdrm.slice(0,4);if(p==='RCFD'||p==='RCON')combBases.add(r.mdrm.slice(4));}
- const out=[],done=new Set();
+ const secs=SECTIONS[sch]||[];const secDone=new Set();
+ const nas=NA_ROWS[sch]||[];const naDone=new Set();
+ const out=[],done=new Set(),metaRows=[];
+ // banner fires at the first row of its item range — exact item OR a sub-item of it (some forms
+ // carry no bare top-level row, e.g. RC starts at 1.a)
+ const pushSec=it=>{for(const s of secs){if((s.before===it||it.startsWith(s.before+'.'))&&!secDone.has(s.label)){secDone.add(s.label);
+   out.push({code:'SECBAR:'+sch+':'+s.label,caption:s.label,num:'',depth:1,comb:false,derived:false,pct:false,sec:true,secTotal:s.total,secFill:s.fill||null,secNote:s.note||'',sch:sch});}}};
+ const pushNA=it=>{for(const a of nas){if((a.before===it||it.startsWith(a.before+'.'))&&!naDone.has(a.num)){naDone.add(a.num);
+   out.push({code:'EMPTY:'+sch+':'+a.num,caption:a.cap,num:a.num,depth:1,comb:false,derived:false,pct:false,placeholder:true,naNote:a.note||'',sch:sch});}}};
  for(const r of allRows){
+   if(r.item){pushNA(r.item);pushSec(r.item);}
    if(!REPORT.test(r.mdrm)){
      if(!r.item)continue;
      if(r.caption)out.push({code:'HDR:'+sch+':'+r.item,caption:r.caption,num:r.item||'',depth:r.depth||1,comb:false,derived:false,pct:false,header:true,sch:sch});
@@ -1255,11 +1379,19 @@ function emitSchedule(sch,showRaw){const allRows=HIER[sch];
    if(r.item==null)continue;
    const depth=r.depth||1;
    if(p==='RCFD'||p==='RCON'){
-     if(!done.has('C'+base)){done.add('C'+base);out.push({code:'COMB'+base,caption:cap,num:r.item||'',depth,comb:true,derived:false,pct:false,col:!!r.col,sch:sch});}
+     if(!done.has('C'+base)){done.add('C'+base);
+       const node={code:'COMB'+base,caption:cap,num:r.item||'',depth,comb:true,derived:false,pct:false,col:!!r.col,sch:sch};
+       if(META_CODES['COMB'+base]){node.meta=true;node.depth=2;metaRows.push(node);}else out.push(node);}
      if(showRaw&&!done.has(r.mdrm)){done.add(r.mdrm);out.push({code:r.mdrm,caption:cap+' ['+p.slice(2)+']',num:'',depth:depth+1,comb:false,derived:false,pct:false,sch:sch});}
    } else if(p==='RCFN'){ if(combBases.has(base))continue;
      if(!done.has(r.mdrm)){done.add(r.mdrm);out.push({code:r.mdrm,caption:cap,num:r.item||'',depth,comb:false,derived:false,pct:false,col:!!r.col,sch:sch});}
-   } else { if(!done.has(r.mdrm)){done.add(r.mdrm);out.push({code:r.mdrm,caption:cap,num:r.item||'',depth,comb:false,derived:false,pct:false,col:!!r.col,sch:sch});} }}
+   } else { if(!done.has(r.mdrm)){done.add(r.mdrm);
+       const node={code:r.mdrm,caption:cap,num:r.item||'',depth,comb:false,derived:false,pct:false,col:!!r.col,sch:sch};
+       if(META_CODES[r.mdrm]){node.meta=true;node.depth=2;metaRows.push(node);}else out.push(node);} }}
+ if(metaRows.length){
+   out.push({code:'SECBAR:'+sch+':__meta',caption:'Filing metadata',num:'',depth:1,comb:false,derived:false,pct:false,sec:true,secTotal:null,secFill:null,
+     secNote:'Administrative filing codes — grouped here because they are not financial positions and carry no form item number.',sch:sch});
+   for(const m of metaRows)out.push(m);}
  return out;}
 function secPrefix(nodes){
  const caps=[];function walk(ns){for(const n of ns){if(!n.header&&!n.derived&&!n.placeholder){if(!n.children.length)caps.push(n.caption||'');else walk(n.children);}}}
@@ -1348,13 +1480,47 @@ function filterTree(q){q=q.trim().toLowerCase();
    sec.querySelectorAll('.trow').forEach(r=>{const m=(r.dataset.txt||'').includes(q);r.style.display=m?'':'none';if(m)any=true;});
    rows.style.display=any?'block':'none';sec.style.display=any?'':'none';});}
 const _pctB=new Set([...PCTC].map(c=>c.slice(4)));
-// Roll-up de-dup rules: clicking a header with an explicit rule uses the pre-aggregated total
-// code instead of summing children (prevents double-counting gross+net+HFS or parts+total).
+// C18 SUBTOTAL ARCHITECTURE — owner-ratified "filed-first, derived-fill" policy (cycle-18; ported
+// token-level from the 002 reference implementation, per-form facts proven from THIS form's ink).
+// A header click charts SUB:<code>, whose definition comes from subDefFor(nd). Rule actions,
+// keyed (schedule → item), form-ink verified in _verify\evidence\c18_subtotal_enumeration.md:
+//   {total:'<tok>'}  filed-first hybrid: parent charts the FILED total line; quarters where it is
+//                    absent are Σ'd from the remaining components, marked reconstructed on-chart.
+//                    Inside an ANCESTOR's Σ the subtree contributes the total token only.
+//   {codes:[...]}    plain Σ of exactly those tokens (substituted / column-corrected rollup).
+//   {use:'<item>'}   delegate to another item's subtree.
+//   {drop:[...]}     exclude tokens from every Σ at-or-below this item (subset/memo rows).
+//   {suppress:1}     subtree contributes nothing to ancestor Σ.
+//   {nosum:'why'}    grouping only: no subtotal offered, excluded from ancestor Σ (hover says why).
+// TOKENS are tree codes (COMB<base> → coalesce COMB/RCFD/RCON; full 8-char code → that exact code;
+// bare 4-char base is reserved for curated DERIV entries → the legacy 9-prefix coalesce) — never
+// naked bases from the tree walk: a naked base from an RCFN-only leaf would coalesce to another
+// schedule's COMB/RCFD row (the 002 E7 ≈2× class, fixed structurally cycle-18).
+// RC-R II fix (owner P0 class, live here pre-C18): headers 2/3/4 summed Column-A totals + Column-B
+// adjustments + every risk-weight allocation column (23/8/39 addends, ≈2×+). Column A ("Totals From
+// Schedule RC") is the balance-sheet tie — Σ uses ONLY the Col-A codes, listed explicitly because
+// this form's hierarchy carries no col flags (AQ-C16-9). Form ink: FFIEC031_202606_f.pdf p66-67.
+// NOTE the RI entries are DORMANT on this form today (RI carries no header rows with items 1/2/5/7)
+// — kept because they are correct if RI headers ever appear; do not mistake them for live coverage.
 const FV_SCHED=new Set(['RCQ']);
 const ROLLUP_RULES={
- 'RC':{'4':{codes:['RCFD5369','RCFDB529']}},
- 'RI':{'1':{codes:['RIAD4107']},'2':{codes:['RIAD4073']},'5':{codes:['RIAD4079']},'7':{codes:['RIAD4093']}}
+ 'RC':{'4':{codes:['COMB5369','COMBB529']}},
+ 'RI':{'1':{codes:['RIAD4107']},'2':{codes:['RIAD4073']},'5':{codes:['RIAD4079']},'7':{codes:['RIAD4093']}},
+ 'RCRII':{'2':{codes:['COMBD961','COMBJA21']},           // Col A: 2.a HTM total, 2.b AFS total
+          '3':{codes:['COMBD971','COMBH171']},           // Col A: 3.a fed funds sold, 3.b resale
+          '4':{codes:['COMBS413','COMBS419','COMBS423','COMBS431']}}, // Col A of 4.a–4.d
+ // C18 review fix (salvaged adversarial review): RC-R I 48 summed standardized+advanced RWA (~2×) —
+ // the BHCA/BHCW-class disease in RCFA/RCFW clothing; pin the standardized line.
+ 'RCRI':{'48':{codes:['RCFAA223']}},
 };
+// C18 unit guard (PCTC-analog for counts): cells denominated in NUMBERS (of accounts/funds/issues),
+// not $ thousands, never join a $ Σ. RC-T cols C/D are "Number of ..." per form ink (f031 p83).
+// COMBB897 (col D of the total row) lacks the "Number of" phrasing in its MDRM caption — ink governs.
+// RCFNB902/RCFNB903 are the foreign-office count twins (RCFN is not COMB-folded).
+const NONDOLLAR=new Set(['COMBB870','COMBB871','COMBB874','COMBB875','COMBB878','COMBB879','COMBB882',
+ 'COMBB883','COMBC001','COMBC002','COMBB888','COMBJ254','COMBJ257','COMBJ258','COMBB892','COMBB893',
+ 'COMBB896','COMBB897','COMBB899','COMBJ261','COMBJ262','RCFNB902','RCFNB903','COMBB927','COMBJ313',
+ 'COMBB929','COMBB931','COMBB933','COMBB935','COMBB937','COMBB939','COMBB941','COMBB943','COMBB945']);
 function descCodes(nd){
  const sch=nd.sch||'';
  const rules=ROLLUP_RULES[sch]||{};
@@ -1364,30 +1530,55 @@ function descCodes(nd){
  const ok=c=>c&&!c.placeholder&&!c.derived&&!_pctB.has(c.code.slice(4));
  const pickCols=cl=>{
    const cs=cl.filter(ok);if(!cs.length)return [];
-   if(colStrat==='A')return [cs[0].code.slice(4)];
-   if(colStrat==='AD'){const codes=cs.map(c=>c.code);return codes.length>=4?[codes[0].slice(4),codes[codes.length-1].slice(4)]:[codes[0].slice(4)];}
+   if(colStrat==='A')return [cs[0].code];
+   if(colStrat==='AD'){const codes=cs.map(c=>c.code);return codes.length>=4?[codes[0],codes[codes.length-1]]:[codes[0]];}
    const consol=new Set(cs.filter(c=>c.code.startsWith('RCFD')||c.code.startsWith('COMB')).map(c=>c.code.slice(4)));
-   return cs.filter(c=>!(c.code.startsWith('RCON')&&consol.has(c.code.slice(4)))).map(c=>c.code.slice(4));};
+   return cs.filter(c=>!(c.code.startsWith('RCON')&&consol.has(c.code.slice(4)))).map(c=>c.code);};
  const out=[];
+ const push=t=>{if(!NONDOLLAR.has(t))out.push(t);};
  const findItem=(n,it)=>{if(n.num===it)return n;for(const c of(n.children||[])){const r=findItem(c,it);if(r)return r;}return null;};
- (function rec(n){
-   const r=rules[n.num];
-   if(r){
-     if(r.suppress)return;
-     if(r.codes){for(const c of r.codes)out.push(c.slice(4));return;}
-     if(r.use){const t=findItem(nd,r.use);if(t&&t!==n)rec(t);return;}
+ (function rec(n,drops){
+   const r=(n.num&&rules[n.num])||null;
+   if(r&&r.drop)drops=drops?new Set([...drops,...r.drop]):new Set(r.drop);
+   const dropped=t=>drops&&drops.has(t);
+   if(r&&n!==nd){                       // a DESCENDANT's rule decides its whole subtree's contribution
+     if(r.suppress||r.nosum)return;     // nosum groups are non-additive: excluded from ancestor Σ too
+     if(r.total){if(!dropped(r.total))push(r.total);return;}
+     if(r.codes){for(const t of r.codes)if(!dropped(t))push(t);return;}
+     if(r.use){const u=findItem(nd,r.use);if(u&&u!==n)rec(u,drops);return;}
+   }
+   if(r&&n===nd){                       // the clicked node's own {codes}/{use} replace the walk
+     if(r.codes){for(const t of r.codes)if(!dropped(t))push(t);return;}
+     if(r.use){const u=findItem(nd,r.use);if(u&&u!==n)rec(u,drops);return;}
    }
    if(fv){
      const cols=(n.children||[]).filter(c=>c.col&&!c.header&&c.code&&!c.placeholder&&!c.derived);
-     if(cols.length){out.push(cols[0].code.slice(4));}
-     for(const c of(n.children||[])){if(c.header)rec(c);else if(!c.col&&c.code&&!c.placeholder&&!c.derived&&!_pctB.has(c.code.slice(4)))out.push(c.code.slice(4));}
+     if(cols.length&&!dropped(cols[0].code)&&!_pctB.has(cols[0].code.slice(4)))push(cols[0].code);
+     for(const c of(n.children||[])){if(c.header)rec(c,drops);else if(!c.col&&c.code&&!c.placeholder&&!c.derived&&!_pctB.has(c.code.slice(4))&&!dropped(c.code))push(c.code);}
      return;}
    const kids=n.children||[];
    const colLeaves=kids.filter(c=>!c.header&&c.col&&c.code&&!c.placeholder&&!c.derived&&!_pctB.has(c.code.slice(4)));
-   if(colLeaves.length){for(const b of pickCols(colLeaves))out.push(b);return;}
-   for(const c of kids){if(c.header)rec(c);else if(c.code&&!c.placeholder&&!c.derived&&!_pctB.has(c.code.slice(4)))out.push(c.code.slice(4));}
- })(nd);
+   if(colLeaves.length){for(const t of pickCols(colLeaves))if(!dropped(t))push(t);return;}
+   for(const c of kids){if(c.header)rec(c,drops);else if(c.code&&!c.placeholder&&!c.derived&&!_pctB.has(c.code.slice(4))&&!dropped(c.code))push(c.code);}
+ })(nd,null);
  return [...new Set(out)];}
+// subDefFor(nd) — the ONE builder for a header's chartable subtotal (tree click AND league catalog
+// route through it, so the two can never diverge). Returns:
+//   {def,label}        chartable: def is a DYN-shape {type:'sum'|'hybrid_sum',...}
+//   {nosum:'why'}      grouping only — do not offer a subtotal; show why on hover
+//   null               nothing summable beneath
+function subDefFor(nd){
+ const sch=nd.sch||'';const r=(ROLLUP_RULES[sch]||{})[nd.num]||null;
+ if(r&&r.nosum)return {nosum:r.nosum};
+ const codes=descCodes(nd);
+ if(!codes.length)return null;
+ const rl=fullCap('SUB:'+nd.code)||nd.caption||nd.code;
+ if(r&&r.total){
+   const comps=codes.filter(t=>t!==r.total);
+   return {def:{type:'hybrid_sum',lbl:rl,parts:[{reported:r.total,components:comps}]},label:rl,filed:r.total};
+ }
+ return {def:{type:'sum',lbl:rl,plus:codes},label:rl};
+}
 function hasPctDesc(nd){return(function chk(n){for(const c of n.children||[]){if(c.header){if(chk(c))return true;}else if(c.code&&_pctB.has(c.code.slice(4)))return true;}return false;})(nd);}
 function markTree(){const on=new Set(measures.map(m=>m.code));
  document.querySelectorAll('#tree .trow').forEach(r=>r.classList.toggle('on',on.has(r.dataset.code)||on.has('SUB:'+r.dataset.code)));}
@@ -1803,7 +1994,14 @@ function draw(){const host=document.getElementById('panes');
    if(pctm.length){const w=roll4qSeriesPP(pctm,ws);html+=pane(w,true,'pp',win)+seriesBeginNote(w,win);}}
  if(document.getElementById('sharemode')&&document.getElementById('sharemode').checked&&!document.getElementById('sharemode').disabled){const dol=lastSeries.filter(s=>!s.pct);
    if(dol.length>=2){const perM=Math.max(1,active.length);const chunks=[];for(let i=0;i<dol.length;i+=perM)chunks.push(dol.slice(i,i+perM));const w=chunks.flatMap(g=>g.length>=2?shareSeries(g,ws):[]);if(w.length)html+=`<div class="idx-pane"><div style="font-size:12px;color:var(--muted,#9aa3b2);padding:2px 14px">Share % — composition across selected entities</div>${pane(w,true,'percent',win,stackedOn)}${seriesBeginNote(w,win)}<div style="font-size:11px;color:var(--muted,#9aa3b2);padding:0 14px 6px">Share of reporting entities that quarter (non-reporters excluded)</div></div>`;}}
+ // C18 seam honesty: quarters whose hybrid (filed-first) measures used derived component fill are
+ // hatched on the chart + noted below it. Fill quarters are COMPUTED per measure by seriesFor —
+ // never a hardcoded window.
+ const _fillOnChart=new Set();
+ for(const s of lastSeries){const fq=window._fillQ&&window._fillQ[s.code];if(fq)for(const q of fq)if(ws.has(q))_fillOnChart.add(q);}
+ if(_fillOnChart.size)html+=`<div class="muted" style="font-size:11px;padding:2px 14px 6px">Σ reconstructed: in ${_fillOnChart.size} hatched quarter(s) the filed total line was absent for at least one in-scope filer and the value is summed from component items — see the measure's ⓘ for composition.</div>`;
  host.innerHTML=html;
+ if(_fillOnChart.size){document.querySelectorAll('#panes .qband').forEach(g=>{if(_fillOnChart.has(g.dataset.q))g.classList.add('qfill');});}
  applyChartSize();
  renderLblOverlay(lastSeries,window._inlineLbls!==false);
  if(window._pinnedQ){document.querySelectorAll(`#panes .qband[data-q="${window._pinnedQ}"]`).forEach(g=>g.classList.add('qband-pinned'));}
@@ -2126,10 +2324,19 @@ function buildLGMEAS(){
      (function walkH(nodes){
        for(const nd of nodes){
          if(nd.header){
-           const codes=descCodes(nd);const key='SUB:'+nd.code;
-           if(codes.length&&!seen.has(key)){seen.add(key);
-             if(!DYN[key]){DYN[key]={type:'sum',lbl:sch+' ▸ '+(nd.caption||nd.code),plus:codes};}
+           // C18: routes through subDefFor — the SAME builder as the tree click handler, so tree,
+           // league, and hash/localStorage restore can never disagree. nosum groups are skipped.
+           const sd=subDefFor(nd);const key='SUB:'+nd.code;
+           if(sd&&sd.def&&!seen.has(key)){seen.add(key);
+             if(!DYN[key]){DYN[key]=sd.def;}
              out.push({code:key,label:sch+' ▸ '+(nd.caption||nd.code),pct:false,better:'neutral'});   // C13-LEAGUE-POLARITY: SUB: header-sum, pure size
+           }
+         }
+         if(nd.sec&&nd.secTotal&&nd.secFill){ // C18 section banner with filed total + component fill
+           const key='SUB:'+nd.code;
+           if(!seen.has(key)){seen.add(key);
+             if(!DYN[key])DYN[key]={type:'hybrid_sum',lbl:fullCap(nd.secTotal)||nd.caption,parts:[{reported:nd.secTotal,components:nd.secFill}]};
+             out.push({code:key,label:sch+' ▸ '+(nd.caption||'')+' (section total)',pct:false,better:'neutral'});
            }
          }
          walkH(nd.children||[]);
@@ -2142,26 +2349,27 @@ async function perFilerValues(measCode, quarters){
  const out={}; for(const q of quarters) out[q]=new Map();
  let d=DERIV[measCode]||DYN[measCode]; if(!d&&measCode.startsWith('COMB'))d={type:'sum',plus:[measCode.slice(4)],minus:[],den:[]};
  if(d&&(d.type==='hybrid_sum'||d.type==='hybrid_ratio')){
-   const acc=(mp,arr)=>{let s=0,seen=false;for(const c of arr){const v=mp[c]??null;if(v!=null){s+=v;seen=true;}}return[s,seen];};
-   const allCodes=[];
-   for(const part of(d.parts||[])){if(part.reported)allCodes.push(part.reported);for(const c of(part.components||[]))allCodes.push(c);}
-   if(d.den)for(const c of d.den)allCodes.push(c);
-   const codes=[...new Set(allCodes)];if(!codes.length)return out;
+   // C18: token semantics (COMB→materialized row/coalesce · 8-char literal · 4-char base legacy)
+   const acc=(mp,arr)=>{let s=0,seen=false;for(const t of arr){const v=tokVal(mp,t);if(v!=null){s+=v;seen=true;}}return[s,seen];};
+   const allToks=[];
+   for(const part of(d.parts||[])){if(part.reported!=null)allToks.push(part.reported);for(const c of(part.components||[]))allToks.push(c);}
+   if(d.den)for(const c of d.den)allToks.push(c);
+   const codes=[...new Set(allToks.flatMap(tokCodes))];if(!codes.length)return out;
    const r=(await conn.query(`SELECT entity_id,quarter_end,mdrm,value FROM t WHERE kind='bank' AND mdrm IN (${sqlList(codes)}) AND quarter_end IN (${sqlList(quarters)})`)).toArray();
    const byqf={}; for(const x of r){const q=String(x.quarter_end);(byqf[q]=byqf[q]||{});(byqf[q][x.entity_id]=byqf[q][x.entity_id]||{})[x.mdrm]=Number(x.value);}
    for(const q of quarters){const per=byqf[q]||{};
      for(const id in per){const mp=per[id];
        let total=0,anyN=false;
-       for(const part of(d.parts||[])){const rv=(part.reported&&mp[part.reported]!=null)?mp[part.reported]:null;
+       for(const part of(d.parts||[])){const rv=part.reported!=null?tokVal(mp,part.reported):null;
          if(rv!=null){total+=rv;anyN=true;}
          else{const[cs,csSeen]=acc(mp,part.components||[]);if(csSeen){total+=cs;anyN=true;}}}
        if(anyN){if(d.type==='hybrid_sum'){out[q].set(id,total);}
          else{const[dp,ds]=acc(mp,d.den||[]);if(ds&&dp>0)out[q].set(id,100*total/dp);}}}}
- } else if(d){const bases=[...d.plus,...(d.minus||[]),...(d.den||[])];
-   const codes=[];for(const b of bases)for(const p of['COMB','RCFD','RCON','RIAD'])codes.push(p+b);
+ } else if(d){const toks=[...d.plus,...(d.minus||[]),...(d.den||[])];
+   const codes=[...new Set(toks.flatMap(tokCodes))];
    const r=(await conn.query(`SELECT entity_id,quarter_end,mdrm,value FROM t WHERE kind='bank' AND mdrm IN (${sqlList(codes)}) AND quarter_end IN (${sqlList(quarters)})`)).toArray();
    const byqf={}; for(const x of r){const q=String(x.quarter_end);(byqf[q]=byqf[q]||{});(byqf[q][x.entity_id]=byqf[q][x.entity_id]||{})[x.mdrm]=Number(x.value);}
-   const acc=(mp,arr)=>{let s=0,seen=false;for(const b of arr){const v=coalesce(mp,b);if(v!=null){s+=v;seen=true;}}return [s,seen];};
+   const acc=(mp,arr)=>{let s=0,seen=false;for(const t of arr){const v=tokVal(mp,t);if(v!=null){s+=v;seen=true;}}return [s,seen];};
    for(const q of quarters){const per=byqf[q]||{};
      for(const id in per){const mp=per[id];const [np,ns]=acc(mp,d.plus);const [nm,ms]=acc(mp,d.minus||[]);const num=np-nm;const [dp,ds]=acc(mp,d.den||[]);
        if(d.type==='sum'){if(ns||ms)out[q].set(id,num);}else{if((ns||ms)&&ds&&dp>0){let val=100*num/dp;
