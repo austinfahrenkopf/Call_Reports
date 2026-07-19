@@ -401,7 +401,7 @@ body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td
 SELECT quarter_end, value FROM t WHERE entity_id='ALL' AND mdrm='COMB2170' ORDER BY quarter_end;</textarea>
    <div style="margin-top:8px"><button id="runsql" class="sec">Run</button> <button id="sqlcsv" class="sec">Export result</button></div>
    <div id="sqlout"></div></details>
-  <div class="credit">Built by Austin Fahrenkopf &middot; data: public FFIEC filings &middot; Built 2026-07-15 00:03</div>
+  <div class="credit">Built by Austin Fahrenkopf &middot; data: public FFIEC filings &middot; Built 2026-07-17 01:14</div>
  </div>
 </div>
 <div id="formmodal" class="modal" style="display:none"><div class="modalbox">
@@ -463,7 +463,7 @@ import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.29.0
 const PARTS=['ffiec_call_recent_2020_2026.parquet'], OLD_PARTS=['ffiec_call_old_1976_2019.parquet'];
 const SHARD_BOUNDARY_JS=2020; // C7-6: JS-side mirror of the Python SHARD_BOUNDARY constant (year), for q0-vs-shard comparisons
 const EMPTY_CODES=new Set(["RCFD4088", "RCFDA345", "RCFDA346", "RCFDB569", "RCFDB867", "RCFDJ449", "RCFDK656", "RCFDK659", "RCFDK663", "RCFDK664", "RCFDK665", "RCFDK666", "RCFDK667", "RCFDK668", "RCFDK673", "RCFDK674", "RCFDK675", "RCFDM964", "RCFDM965", "RCFDM966", "RCFDM967", "RCFDM968", "RCFDM969", "RCFDM970", "RCFDM971", "RCFDM972", "RCFDM973", "RCFDM974", "RCFDM975", "RCFDM976", "RCFDM977", "RCFDM978", "RCFDM979", "RCFDM980", "RCFDM981", "RCFDM982", "RCFDM983", "RCFDM984", "RCFDM985", "RCFDM986", "RCFDM987", "RCFDM988", "RCFDM989", "RCFDM990", "RCFDM991", "RCFDM992", "RCFDM993", "RCFDM994", "RCFDM995", "RCFDM996", "RCFDM997", "RCFDM998", "RCFDM999", "RCFDN001", "RCFDN002", "RCFDN003", "RCFDN004", "RCFDN005", "RCFDN006", "RCFDN007", "RCFDN008", "RCFDN009", "RCFDN010", "RCFDN011", "RCFDN012", "RCFDN013", "RCFDN014", "RCFDN015", "RCFDN016", "RCFDN017", "RCFDN018", "RCFDN019", "RCFDN020", "RCFDN021", "RCFDN022", "RCFDN023", "RCFDN024", "RCFDN025", "RCFDN026", "RCFDN027", "RCFDN028", "RCFDN029", "RCFDN030", "RCFDN040", "RCFDN041", "RCFDN042", "RCFDN043", "RCFDN044", "RCFDN045", "RCFDN046", "RCFDN047", "RCFDN048", "RCFDN049", "RCFDN050", "RCFDN051", "RCFDN052", "RCFDN053", "RCFDN054", "RCFDN055", "RCFDN056", "RCFDN057", "RCFDN058", "RCFDN059", "RCFDN060", "RCFDN061", "RCFDN062", "RCFDN063", "RCFDN064", "RCFDN065", "RCFDN066", "RCFDN067", "RCFDN068", "RCFDN069", "RCFDN070", "RCFDN071", "RCFDN072", "RCFDN073", "RCFDN074", "RCFDN075", "RCFDN076", "RCFDN077", "RCFDN078", "RCFDN079", "RCFDN080", "RCFDN081", "RCFDN082", "RCFDN083", "RCFDN084", "RCFDN085", "RCFDN086", "RCFDN087", "RCFDN088", "RCFDN089", "RCFDN090", "RCFDN091", "RCFDN092", "RCFDN093", "RCFDN094", "RCFDN095", "RCFDN096", "RCFDN097", "RCFDN098", "RCFDN099", "RCFDN100", "RCFDN101", "RCFDN102", "RCFDN103", "RCFDN104", "RCFDN105", "RCFDN106", "RCFDN107", "RCFDN108", "RCFDN109", "RCFDN110", "RCFDN111", "RCFDN112", "RCFDN113", "RCFDN114", "RCFDN115", "RCFDN116", "RCFDN117", "RCFDN118", "RCFDN119", "RCFDN120", "RCFDN121", "RCFDN122", "RCFDN123", "RCFDN124", "RCFDN125", "RCFDN126", "RCFDN127", "RCFDN128", "RCON4088", "RCON9224", "RCONA345", "RCONA346", "RCONB569", "RCONB867", "RCONFT00", "RCONFT03", "RCONFT06", "RCONFT07", "RCONFT09", "RCONFT11", "RCONFT13", "RCONFT16", "RCONFT17", "RCONG463", "RCONG464", "RCONJ449", "RCONK656", "RCONK659", "RCONK663", "RCONK664", "RCONK665", "RCONK666", "RCONK667", "RCONK668", "RCONK673", "RCONK674", "RCONK675", "RCONL135", "RCONL191", "RCONL192", "RCONLG24", "RCONLG25", "RCONM964", "RCONM965", "RCONM966", "RCONM967", "RCONM968", "RCONM969", "RCONM970", "RCONM971", "RCONM972", "RCONM973", "RCONM974", "RCONM975", "RCONM976", "RCONM977", "RCONM978", "RCONM979", "RCONM980", "RCONM981", "RCONM982", "RCONM983", "RCONM984", "RCONM985", "RCONM986", "RCONM987", "RCONM988", "RCONM989", "RCONM990", "RCONM991", "RCONM992", "RCONM993", "RCONM994", "RCONM995", "RCONM996", "RCONM997", "RCONM998", "RCONM999", "RCONN001", "RCONN002", "RCONN003", "RCONN004", "RCONN005", "RCONN006", "RCONN007", "RCONN008", "RCONN009", "RCONN010", "RCONN011", "RCONN012", "RCONN013", "RCONN014", "RCONN015", "RCONN016", "RCONN017", "RCONN018", "RCONN019", "RCONN020", "RCONN021", "RCONN022", "RCONN023", "RCONN024", "RCONN025", "RCONN026", "RCONN027", "RCONN028", "RCONN029", "RCONN030", "RCONN040", "RCONN041", "RCONN042", "RCONN043", "RCONN044", "RCONN045", "RCONN046", "RCONN047", "RCONN048", "RCONN049", "RCONN050", "RCONN051", "RCONN052", "RCONN053", "RCONN054", "RCONN055", "RCONN056", "RCONN057", "RCONN058", "RCONN059", "RCONN060", "RCONN061", "RCONN062", "RCONN063", "RCONN064", "RCONN065", "RCONN066", "RCONN067", "RCONN068", "RCONN069", "RCONN070", "RCONN071", "RCONN072", "RCONN073", "RCONN074", "RCONN075", "RCONN076", "RCONN077", "RCONN078", "RCONN079", "RCONN080", "RCONN081", "RCONN082", "RCONN083", "RCONN084", "RCONN085", "RCONN086", "RCONN087", "RCONN088", "RCONN089", "RCONN090", "RCONN091", "RCONN092", "RCONN093", "RCONN094", "RCONN095", "RCONN096", "RCONN097", "RCONN098", "RCONN099", "RCONN100", "RCONN101", "RCONN102", "RCONN103", "RCONN104", "RCONN105", "RCONN106", "RCONN107", "RCONN108", "RCONN109", "RCONN110", "RCONN111", "RCONN112", "RCONN113", "RCONN114", "RCONN115", "RCONN116", "RCONN117", "RCONN118", "RCONN119", "RCONN120", "RCONN121", "RCONN122", "RCONN123", "RCONN124", "RCONN125", "RCONN126", "RCONN127", "RCONN128", "RCONN512", "RCONN514", "RCONN515", "RCONN516", "RCONN517", "RCONN518", "RCONN519", "RCONN520", "RCONN521", "RCONP752", "TEXT4086", "TEXT6373", "TEXT8901", "TEXT8902", "TEXT9116", "TEXTB926", "TEXTB962", "TEXTB963", "TEXTB964", "TEXTC366", "TEXTC367", "TEXTC368", "TEXTC369", "TEXTC370", "TEXTC371", "TEXTC372", "TEXTC373", "TEXTC374", "TEXTC375", "TEXTC437", "TEXTC438", "TEXTC439", "TEXTC440", "TEXTC441", "TEXTC442", "TEXTC443", "TEXTC444", "TEXTC445", "TEXTC446", "TEXTC490", "TEXTC491", "TEXTC492", "TEXTC493", "TEXTC494", "TEXTC495", "TEXTC496", "TEXTC870", "TEXTC871", "TEXTC872", "TEXTC873", "TEXTC874", "TEXTC875", "TEXTC876", "TEXTC877", "TEXTC878", "TEXTC879", "TEXTFT42", "TEXTFT43", "TEXTFT44", "TEXTFT45"]);
-const BUILD_TS='2026-07-15 00:03';
+const BUILD_TS='2026-07-17 01:14';
 const st=m=>document.getElementById('status').textContent=m;
 const _pb=document.getElementById('pbar');const pbar=pct=>{if(!_pb)return;_pb.style.width=pct+'%';if(pct>=100){setTimeout(()=>{_pb.style.opacity='0';setTimeout(()=>{_pb.style.display='none';},400);},300);}};
 let _reflineVal=null,_reflineLbl='';
@@ -494,7 +494,7 @@ const DERIV={
  'D_BORROW_ASSETS':{type:'ratio',lbl:'Funding ▸ Borrowings / Assets (%)',plus:['B993','B995','3190'],den:['2170']},
  'D_NONDEP':{type:'ratio',lbl:'Funding ▸ Non-deposit liabilities / Assets (%)',plus:['2948'],minus:['2200'],den:['2170']},
  'D_BROKERED':{type:'ratio',lbl:'Funding ▸ Brokered deposits / Deposits (%)',plus:['2365'],den:['2200']},
- 'D_NPL':{type:'ratio',lbl:'Credit ▸ NPL % (Past Due + Non Accrual / loans)',plus:['1406','1407','1403'],den:['2122']},
+ 'D_NPL':{type:'ratio',lbl:'Credit ▸ NPL % (90+ PD + nonaccrual / loans)',plus:['1407','1403'],den:['2122']},
  'D_NONCUR_PCT':{type:'ratio',lbl:'Credit ▸ Noncurrent loan ratio % (90++nonaccrual / loans)',plus:['1407','1403'],den:['2122']},
  'D_RESLOANS':{type:'ratio',lbl:'Credit ▸ Reserves / Loans (%)',plus:['3123'],den:['2122']},
  'D_RESNPL':{type:'ratio',lbl:'Credit ▸ Reserve coverage % (reserves / noncurrent)',plus:['3123'],den:['1407','1403']},
@@ -508,15 +508,15 @@ const DERIV={
  'D_UTIL':{type:'ratio',lbl:'Undrawn ▸ Loan utilization % (loans/(loans+unused))',plus:['2122'],den:['2122',...UNUSED]},
  'S_NONCUR':{type:'sum',lbl:'Subtotal ▸ Noncurrent loans $ (90++nonaccrual)',plus:['1407','1403']},
  'S_PASTDUE':{type:'sum',lbl:'Subtotal ▸ Past due + nonaccrual $ (RC-N item 9)',plus:['1406','1407','1403']},
- 'D_NPL_CI':{type:'ratio',lbl:'Loan quality ▸ C&I NPL % (Past Due + Non Accrual / C&I loans)',plus:['1250','1252','1253','1254','1255','1256'],den:['1763','1764']},
- 'D_NPL_CC':{type:'ratio',lbl:'Loan quality ▸ Credit card NPL % (Past Due + Non Accrual / CC loans)',plus:['B575','B576','B577'],den:['B538']},
- 'D_NPL_AUTO':{type:'ratio',lbl:'Loan quality ▸ Auto NPL % (Past Due + Non Accrual / auto loans)',plus:['K213','K214','K215'],den:['K137']},
- 'D_NPL_CONS':{type:'ratio',lbl:'Loan quality ▸ Other consumer NPL % (Past Due + Non Accrual / other consumer)',plus:['B578','B579','B580'],den:['K207']},
- 'D_NPL_AG':{type:'ratio',lbl:'Loan quality ▸ Agricultural NPL % (Past Due + Non Accrual / ag loans)',plus:['1594','1597','1583'],den:['1590']},
- 'D_NPL_RES':{type:'ratio',lbl:'Loan quality ▸ 1-4 family RE NPL % (Past Due + Non Accrual / residential loans)',plus:['5398','5399','5400','C236','C237','C229','C238','C239','C230'],den:['1797','5367','5368']},
- 'D_NPL_CONSTR':{type:'ratio',lbl:'Loan quality ▸ Construction & land NPL % (Past Due + Non Accrual / construction loans)',plus:['F172','F173','F174','F176','F175','F177'],den:['F158','F159']},
- 'D_NPL_MULTI':{type:'ratio',lbl:'Loan quality ▸ Multifamily RE NPL % (Past Due + Non Accrual / multifamily loans)',plus:['3499','3500','3501'],den:['1460']},
- 'D_NPL_CRE':{type:'ratio',lbl:'Loan quality ▸ CRE nonfarm nonres NPL % (Past Due + Non Accrual / CRE loans)',plus:['F178','F179','F180','F182','F181','F183'],den:['F160','F161']},
+ 'D_NPL_CI':{type:'ratio',lbl:'Loan quality ▸ C&I delinquency % (30+ PD + nonaccrual / C&I loans)',plus:['1250','1252','1253','1254','1255','1256'],den:['1763','1764']},
+ 'D_NPL_CC':{type:'ratio',lbl:'Loan quality ▸ Credit card delinquency % (30+ PD + nonaccrual / CC loans)',plus:['B575','B576','B577'],den:['B538']},
+ 'D_NPL_AUTO':{type:'ratio',lbl:'Loan quality ▸ Auto delinquency % (30+ PD + nonaccrual / auto loans)',plus:['K213','K214','K215'],den:['K137']},
+ 'D_NPL_CONS':{type:'ratio',lbl:'Loan quality ▸ Other consumer delinquency % (30+ PD + nonaccrual / other consumer)',plus:['B578','B579','B580'],den:['K207']},
+ 'D_NPL_AG':{type:'ratio',lbl:'Loan quality ▸ Agricultural delinquency % (30+ PD + nonaccrual / ag loans)',plus:['1594','1597','1583'],den:['1590']},
+ 'D_NPL_RES':{type:'ratio',lbl:'Loan quality ▸ 1-4 family RE delinquency % (30+ PD + nonaccrual / residential loans)',plus:['5398','5399','5400','C236','C237','C229','C238','C239','C230'],den:['1797','5367','5368']},
+ 'D_NPL_CONSTR':{type:'ratio',lbl:'Loan quality ▸ Construction & land delinquency % (30+ PD + nonaccrual / construction loans)',plus:['F172','F173','F174','F176','F175','F177'],den:['F158','F159']},
+ 'D_NPL_MULTI':{type:'ratio',lbl:'Loan quality ▸ Multifamily RE delinquency % (30+ PD + nonaccrual / multifamily loans)',plus:['3499','3500','3501'],den:['1460']},
+ 'D_NPL_CRE':{type:'ratio',lbl:'Loan quality ▸ CRE nonfarm nonres delinquency % (30+ PD + nonaccrual / CRE loans)',plus:['F178','F179','F180','F182','F181','F183'],den:['F160','F161']},
  'S_NCO':{type:'sum',lbl:'Subtotal ▸ Net charge-offs $ YTD (charge-offs-recoveries)',plus:['4635'],minus:['4605']},
  'S_UNUSED':{type:'sum',lbl:'Subtotal ▸ Total unused commitments $ (RC-L item 1)',plus:UNUSED},
  'S_EXPOSURE':{type:'sum',lbl:'Subtotal ▸ Total loan exposure $ (loans+unused)',plus:['2122',...UNUSED]},
@@ -541,10 +541,10 @@ const DERIV={
 // xform keys map 1:1 to the Transform cluster checkbox ids; range is '1Y'|'5Y'|'10Y'|'All'.
 const VIEWS=[
  {id:'liquidity',name:'Liquidity snapshot',icon:'💧',desc:'Liquid assets, securities, loans/deposits, deposits/assets — a funding-run screen.',measures:['D_LIQ_ASSETS','D_SEC_ASSETS','D_LOANSDEP','D_DEPASSETS'],xform:{},range:'5Y'},
- {id:'credit',name:'Credit quality',icon:'⚠️',desc:'NPL %, noncurrent ratio, reserve coverage, net charge-off rate.',measures:['D_NPL','D_NONCUR_PCT','D_RESNPL','D_NCO_LOANS'],xform:{},range:'5Y'},
+ {id:'credit',name:'Credit quality',icon:'⚠️',desc:'NPL % (90+ PD + nonaccrual), reserve coverage, net charge-off rate.',measures:['D_NPL','D_RESNPL','D_NCO_LOANS'],xform:{},range:'5Y'},
  {id:'capital',name:'Capital & earnings',icon:'🏦',desc:'Equity/assets, ROA, ROE, NIM, efficiency ratio.',measures:['D_EQASSETS','D_ROA','D_ROE','D_NIM','D_EFF'],xform:{},range:'5Y'},
  {id:'funding',name:'Funding mix',icon:'💰',desc:'Brokered deposits, borrowings, non-deposit liabilities, deposits/assets.',measures:['D_BROKERED','D_BORROW_ASSETS','D_NONDEP','D_DEPASSETS'],xform:{},range:'5Y'},
- {id:'loanbook',name:'Loan quality by book',icon:'📊',desc:'NPL % broken out by loan book: C&I, credit card, auto, consumer, residential, CRE.',measures:['D_NPL_CI','D_NPL_CC','D_NPL_AUTO','D_NPL_CONS','D_NPL_RES','D_NPL_CRE'],xform:{},range:'5Y'},
+ {id:'loanbook',name:'Loan quality by book',icon:'📊',desc:'Delinquency % (30+ days past due + nonaccrual) by loan book: C&I, credit card, auto, consumer, residential, CRE.',measures:['D_NPL_CI','D_NPL_CC','D_NPL_AUTO','D_NPL_CONS','D_NPL_RES','D_NPL_CRE'],xform:{},range:'5Y'},
  {id:'balsheet',name:'Balance sheet levels (peer-scale)',icon:'📈',desc:'Liquid assets, cash, borrowings, noncurrent loans — sized by ÷ assets for cross-bank comparison.',measures:['S_LIQ','S_CASH','S_BORROW','S_NONCUR'],xform:{normbyassets:true,normden:'COMB2170'},range:'5Y'},
  {id:'growth',name:'Growth / trend',icon:'📉',desc:'Assets, loans, deposits, equity indexed to 100 — long-run growth trend.',measures:['COMB2170','COMB2122','COMB2200','COMB3210'],xform:{idx:true},range:'10Y'},
  {id:'reserve',name:'Reserve build',icon:'🛡️',desc:'Reserves/loans, reserve coverage, provisions/loans, net charge-offs.',measures:['D_RESLOANS','D_RESNPL','D_PROV_LOANS','D_NCO_LOANS'],xform:{},range:'10Y'},
@@ -620,8 +620,10 @@ const _fullCap=new Map();
 // (e.g. COMB2170 in RC item 12 AND RC-R II item 11) labels KPI/table/export headers from its FIRST
 // FORM_ORDER occurrence (primary home), not whichever schedule was walked last. buildTree() clears
 // the map per rebuild so "first" always means first-in-the-current-tree.
-function _walkFC(nodes,parts,sch){for(const nd of nodes){if(!nd.placeholder&&!nd.derived&&!nd.header&&nd.code&&!/^(H:|SEC:|SECBAR:|SUB:|EMPTY:)/.test(nd.code)){const cap=nd.caption||'';const anc=parts.filter(Boolean);if(!_fullCap.has(nd.code))_fullCap.set(nd.code,anc.length?anc.join(' — ')+' — '+cap:cap);}if(nd.header&&nd.code){const _sn=sch&&SCHED_NAMES[sch]?SCHED_NAMES[sch]:(parts.length?parts[0]:'');const _si=_sn.indexOf(' — ');const _sk=_si>=0?_sn.slice(0,_si):_sn;const _agg=sch?SUB_AGG_DESCS[sch]||'':'';const _cnt=(function c(n){let k=0;for(const x of(n.children||[])){if(x.header)k+=c(x);else if(x.code&&!x.placeholder&&!/^(H:|SEC:|SECBAR:|SUB:|EMPTY:)/.test(x.code))k++;}return k;})(nd);if(_cnt>0){const _rl=_agg?_sk+' '+_agg+': '+(nd.caption||''):_sk?_sk+' '+(nd.caption||''):(nd.caption||'');if(!_fullCap.has('SUB:'+nd.code))_fullCap.set('SUB:'+nd.code,_rl);if(!/^(H:|SEC:|EMPTY:)/.test(nd.code)&&!_fullCap.has(nd.code))_fullCap.set(nd.code,_rl);}}if(nd.children&&nd.children.length)_walkFC(nd.children,nd.header?[...parts,nd.caption||'']:parts,sch);}}
+function _walkFC(nodes,parts,sch){for(const nd of nodes){if(!nd.placeholder&&!nd.derived&&!nd.header&&nd.code&&!/^(H:|SEC:|SECBAR:|SUB:|EMPTY:)/.test(nd.code)){const cap=nd.caption||'';const anc=parts.filter(Boolean);if(!_fullCap.has(nd.code))_fullCap.set(nd.code,anc.length?anc.join(' — ')+' — '+cap:cap);const dcap=dispCapFor(nd,null)||cap;if(!_dispCapM.has(nd.code))_dispCapM.set(nd.code,anc.length?anc.join(' — ')+' — '+dcap:dcap);}if(nd.header&&nd.code){const _sn=sch&&SCHED_NAMES[sch]?SCHED_NAMES[sch]:(parts.length?parts[0]:'');const _si=_sn.indexOf(' — ');const _sk=_si>=0?_sn.slice(0,_si):_sn;const _agg=sch?SUB_AGG_DESCS[sch]||'':'';const _cnt=(function c(n){let k=0;for(const x of(n.children||[])){if(x.header)k+=c(x);else if(x.code&&!x.placeholder&&!/^(H:|SEC:|SECBAR:|SUB:|EMPTY:)/.test(x.code))k++;}return k;})(nd);if(_cnt>0){const _rl=_agg?_sk+' '+_agg+': '+(nd.caption||''):_sk?_sk+' '+(nd.caption||''):(nd.caption||'');if(!_fullCap.has('SUB:'+nd.code))_fullCap.set('SUB:'+nd.code,_rl);if(!/^(H:|SEC:|EMPTY:)/.test(nd.code)&&!_fullCap.has(nd.code))_fullCap.set(nd.code,_rl);}}if(nd.children&&nd.children.length)_walkFC(nd.children,nd.header?[...parts,nd.caption||'']:parts,sch);}}
 function fullCap(code){return _fullCap.get(code)||'';}
+const _dispCapM=new Map();   // C19-D2: display-caption full-path map (parallel to _fullCap official)
+function dispFullCap(code){return _dispCapM.get(code)||_fullCap.get(code)||'';}
 // ---- "Why this number?" — measure-chip formula disclosure (read-only; derives text from existing DERIV/DYN/USERCALC defs) ----
 // Builds {title, formula, terms:[{code,cap}], note} for any non-plain measure code. Returns null for plain codes
 // (caller should skip the info icon in that case). Never re-derives math — only describes what seriesFor()/perFilerValues() already compute.
@@ -976,7 +978,27 @@ async function init(){try{
    await db.registerFileBuffer(p,new Uint8Array(await r.arrayBuffer()));_doneP++;pbar(20+60*_doneP/Math.max(1,PARTS.length));}
  await _rebuildView();
  ALLQ=(await conn.query('SELECT DISTINCT quarter_end FROM t ORDER BY quarter_end')).toArray().map(r=>String(r.quarter_end));
- {const maxQ=ALLQ[ALLQ.length-1];if(maxQ){const dc=document.getElementById('datacur');if(dc)dc.textContent=` · data through ${maxQ} · built ${BUILD_TS}`;}}
+ {const maxQ=ALLQ[ALLQ.length-1];if(maxQ){const dc=document.getElementById('datacur');if(dc)dc.textContent=` · data through ${maxQ} · built ${BUILD_TS}`;
+  // §P0g data-status chip + "About this data" popover (2026-07-16): static quarterly snapshots —
+  // there is no refresh button by design, and until now the UI never said so (owner UX finding).
+  if(dc&&!document.getElementById('datachip')){
+   const yy=maxQ.slice(0,4),qn=({'03':1,'06':2,'09':3,'12':4})[maxQ.slice(5,7)]||4;
+   const nq=qn===4?`Q1 ${+yy+1}`:`Q${qn+1} ${yy}`;
+   const chip=document.createElement('span');chip.id='datachip';chip.title='About this data';
+   chip.style.cssText='cursor:pointer;margin-left:8px;font-size:11px;font-weight:600;padding:2px 8px;border:1px solid var(--border,#ccc);border-radius:10px;background:var(--head,#f7f8fc);color:var(--fg,#111);white-space:nowrap;vertical-align:middle';
+   chip.innerHTML=`Data: ${yy} Q${qn} <span style="opacity:.7">ⓘ</span>`;
+   const about=`<div>Quarterly Call Report filings (FFIEC 031/041/051) for every U.S. commercial bank, from the FFIEC CDR public bulk data.</div>`;
+   chip.onclick=e=>{e.stopPropagation();let p=document.getElementById('datapop');if(p){p.remove();return;}
+    p=document.createElement('div');p.id='datapop';
+    p.style.cssText='position:fixed;z-index:9999;max-width:420px;padding:12px 16px;border:1px solid var(--border,#ccc);border-radius:8px;background:var(--head,#f7f8fc);color:var(--fg,#111);box-shadow:0 4px 18px rgba(0,0,0,.3);font-size:12.5px;line-height:1.55';
+    const r=chip.getBoundingClientRect();p.style.top=(r.bottom+6)+'px';p.style.left=Math.max(8,Math.min(r.left,innerWidth-436))+'px';
+    p.innerHTML=`<div style="font-weight:700;margin-bottom:6px">About this data</div>`+about
+     +`<div style="margin-top:6px"><b>This is a static, verified snapshot — there is nothing to refresh.</b> Banks file ~30–40 days after each quarter-end; the site is rebuilt and re-verified when the agencies publish, so the next update lands with the ${nq} filings.</div>`
+     +`<div style="margin-top:6px">Every build passes a verification battery before release: golden filed values must match to the dollar, and headline ratios are cross-anchored to the FFIEC's own UBPR.</div>`
+     +`<div style="font-size:11px;opacity:.75;margin-top:8px">Latest quarter: ${maxQ} · built ${BUILD_TS}</div>`;
+    document.body.appendChild(p);
+    setTimeout(()=>document.addEventListener('click',function h(ev){if(!p.contains(ev.target)){p.remove();document.removeEventListener('click',h);}}),0);};
+   dc.insertAdjacentElement('afterend',chip);}}}
  {const lb=document.getElementById('loadold');if(lb){if(OLD_PARTS.length)lb.style.display='';lb.onclick=async()=>{lb.disabled=true;lb.textContent='Loading…';await ensureOldCall();};}}
  {const sh=document.getElementById('sql-oldhint');if(sh&&OLD_PARTS.length)sh.style.display='';}
  pbar(85);st('Indexing entities…');
@@ -1236,6 +1258,65 @@ function mkSec(title,cnt){const sec=document.createElement('div');sec.className=
  const rows=document.createElement('div');rows.className='schrows';rows.style.display='none';
  h.onclick=()=>{const open=rows.style.display!=='none';rows.style.display=open?'none':'block';h.innerHTML=h.innerHTML.replace(open?'▾':'▸',open?'▸':'▾');};
  sec.appendChild(h);sec.appendChild(rows);return {sec,rows};}
+// CYCLE-19 directive 2 (P0d/P0b): Call caption-curation layer, ported token-level from the Y-9C
+// reference (cycle-18). Tree/chip/chart display = curated DISP_CAP → generic prefix-strip (dc) →
+// sentenceCase(ALL-CAPS) → official; hover ALWAYS keeps the FULL official caption (+ INSTR_NOTE).
+// CSV export keeps the OFFICIAL caption (it reads window._fr.caption / fullCap, untouched). Pure
+// display normalization — no data/count surface changes (goldens/EMPTY unaffected).
+// sentenceCase(): the generic fallback that turns an ALL-CAPS dictionary caption into sentence case;
+// token-map (_SC_MAP) + keep-upper acronyms (_SC_UP) run BEFORE the sentence-initial capital so a
+// leading acronym maps correctly (no "U.s."/"Aoci"-class manglings). Set extended for Call's capital
+// schedules (AOCI/DTLs/DTAs/MSAs/GSEs/CMOs/REMICs/OTTI/...) beyond the Y-9C base.
+const _SC_MAP={'ibfs':'IBFs','ibf':'IBF','u.s.':'U.S.','us':'U.S.','usa':'USA','edge':'Edge','cds':'CDs',"cd's":'CDs','cd':'CD'};
+const _SC_UP=new Set(['fdic','oreo','htm','afs','mmda','mmdas',"mmda's",'ira','iras','ffiec','now','ats','reit','reits','fhlb','asc','fasb','gaap','otc','abs','mbs','cmo','cmos','remic','remics','sba','usda','fnma','fhlmc','gnma','vie','vies','esop','asu','aicpa','pcaob','abcp','hsa','hsas','atm','atms','sbic','sbics',
+ 'aoci','cva','dva','dtl','dtls','dta','dtas','msa','msas','gse','gses','otti','hecm','hola','irs','ssfa','fas','fsp','sbos','mba','ach','cusip','llc','sec','heloc','helocs','tdr','tdrs','hfs','qtl','aacl','cet1','slr','cblr']);
+function sentenceCase(cap){
+ if(!cap||cap!==cap.toUpperCase()||!/[A-Z]{3}/.test(cap))return null;   // only ALL-CAPS captions
+ let s=cap.toLowerCase().replace(/;\s*/g,', ');                          // MDRM ';' = ',' convention
+ s=s.replace(/[a-z][a-z.']*/g,w=>{const k=w.toLowerCase();
+   if(_SC_MAP[k]!==undefined)return _SC_MAP[k];
+   if(_SC_UP.has(k))return k.toUpperCase();
+   return w;});
+ s=s.charAt(0).toUpperCase()+s.slice(1);
+ s=s.replace(/^less:/i,'LESS:').replace(/\bless:/gi,'LESS:');
+ return s;}
+// DISP_CAP / INSTR_NOTE: hand-curated (schedule → item) — committee schedules populated below;
+// generic sentenceCase handles the rest. Empty entries fall through to the generic path.
+const DISP_CAP={
+ 'RI':{'1.a.(1)(a)(1)':'Loans secured by 1–4 family residential properties','1.a.(1)(a)(2)':'All other loans secured by real estate','1.a.(1)(b)':'Loans to finance agricultural production and other loans to farmers','1.a.(1)(c)':'Commercial and industrial loans','1.a.(1)(d)(1)':'Credit cards','1.a.(1)(d)(2)':'Other','1.a.(1)(e)':'Loans to foreign governments and official institutions','1.a.(1)(f)':'All other loans in domestic offices','1.a.(2)':'In foreign offices, Edge and Agreement subsidiaries, and IBFs','1.a.(3)':'Total interest and fee income on loans','1.b':'Income from lease financing receivables','1.c':'Interest income on balances due from depository institutions','1.d.(1)':'U.S. Treasury securities and U.S. Government agency obligations (excluding MBS)','1.d.(2)':'Mortgage-backed securities','1.d.(3)':'All other securities','1.e':'Interest income from trading assets','1.f':'Interest income on federal funds sold and securities purchased under agreements to resell','1.g':'Other interest income','1.h':'Total interest income','2.a.(1)(a)':'Transaction accounts','2.a.(1)(b)(1)':'Savings deposits (includes MMDAs)','2.a.(1)(b)(2)':'Time deposits of $250,000 or less','2.a.(1)(b)(3)':'Time deposits of more than $250,000','2.a.(2)':'In foreign offices, Edge and Agreement subsidiaries, and IBFs','2.b':'Expense of federal funds purchased and securities sold under agreements to repurchase','2.c':'Interest on trading liabilities and other borrowed money','2.d':'Interest on subordinated notes and debentures','2.e':'Total interest expense','3':'Net interest income','4':'Provisions for credit losses','5.a':'Income from fiduciary activities','5.b':'Service charges on deposit accounts','5.c':'Trading revenue','5.d.(1)':'Fees and commissions from securities brokerage','5.d.(2)':'Investment banking, advisory, and underwriting fees and commissions','5.d.(3)':'Fees and commissions from annuity sales','5.d.(4)':'Underwriting income from insurance and reinsurance activities','5.d.(5)':'Income from other insurance activities','5.e':'Venture capital revenue','5.f':'Net servicing fees','5.g':'Net securitization income','5.i':'Net gains (losses) on sales of loans and leases','5.j':'Net gains (losses) on sales of other real estate owned','5.k':'Net gains (losses) on sales of other assets','5.l':'Other noninterest income','5.m':'Total noninterest income','6.a':'Realized gains (losses) on held-to-maturity securities','6.b':'Realized gains (losses) on available-for-sale debt securities','7.a':'Salaries and employee benefits','7.b':'Expenses of premises and fixed assets','7.c.(1)':'Goodwill impairment losses','7.c.(2)':'Amortization expense and impairment losses for other intangible assets','7.d':'Other noninterest expense','7.e':'Total noninterest expense','8.b':'Change in net unrealized holding gains (losses) on equity securities not held for trading','8.c':'Income (loss) before applicable income taxes and discontinued operations','9':'Applicable income taxes','10':'Income (loss) before discontinued operations','11':'Discontinued operations, net of applicable income taxes','12':'Net income (loss) attributable to bank and noncontrolling (minority) interests','13':'Less: Net income (loss) attributable to noncontrolling (minority) interests','14':'Net income (loss) attributable to bank','M.2':'Income from the sale and servicing of mutual funds and annuities','M.3':'Income on tax-exempt loans and leases to states and political subdivisions in the U.S.','M.4':'Income on tax-exempt securities issued by states and political subdivisions in the U.S.','M.5':'Number of full-time equivalent employees at end of current period','M.8.a':'Interest rate exposures','M.8.b':'Foreign exchange exposures','M.8.c':'Equity security and index exposures','M.8.d':'Commodity and other exposures','M.8.e':'Credit exposures','M.8.f.(1)':'Gross credit valuation adjustment (CVA)','M.8.f.(2)':'CVA hedge','M.8.g.(1)':'Gross debit valuation adjustment (DVA)','M.8.g.(2)':'DVA hedge','M.8.h':'Gross trading revenue, before including positive or negative net CVA and net DVA','M.9.a':'Net gains (losses) on credit derivatives held for trading','M.9.b':'Net gains (losses) on credit derivatives held for purposes other than trading','M.10':'Credit losses on derivatives','M.13.a':'Net gains (losses) on assets','M.13.a.(1)':'Estimated net gains (losses) on loans attributable to changes in instrument-specific credit risk','M.13.b':'Net gains (losses) on liabilities','M.13.b.(1)':'Estimated net gains (losses) on liabilities attributable to changes in instrument-specific credit risk','M.15.a':'Consumer overdraft-related service charges','M.15.b':'Consumer account periodic maintenance charges','M.15.c':'Consumer customer ATM fees','M.15.d':'All other service charges on deposit accounts'},
+ 'RCB':{'1':'U.S. Treasury securities','2':'U.S. Government agency and sponsored agency obligations (exclude MBS)','3':'Securities issued by states and political subdivisions in the U.S.','4.a.(1)':'Guaranteed by GNMA','4.a.(2)':'Issued by FNMA and FHLMC','4.a.(3)':'Other pass-through securities','4.b.(1)':'Issued or guaranteed by U.S. Government agencies or sponsored agencies','4.b.(2)':'Collateralized by MBS issued or guaranteed by U.S. Government agencies or sponsored agencies','4.b.(3)':'All other residential MBS','4.c.(1)(a)':'Issued or guaranteed by FNMA, FHLMC, or GNMA','4.c.(1)(b)':'Other pass-through securities','4.c.(2)(a)':'Issued or guaranteed by U.S. Government agencies or sponsored agencies','4.c.(2)(b)':'All other commercial MBS','5.a':'Asset-backed securities (ABS)','5.b':'Structured financial products','6.a':'Other domestic debt securities','6.b':'Other foreign debt securities','7':'Unallocated portfolio layer fair value hedge basis adjustments','8':'Total','M.1':'Pledged securities','M.2.a.(1)':'Three months or less','M.2.a.(2)':'Over three months through 12 months','M.2.a.(3)':'Over one year through three years','M.2.a.(4)':'Over three years through five years','M.2.a.(5)':'Over five years through 15 years','M.2.a.(6)':'Over 15 years','M.2.b.(1)':'Three months or less','M.2.b.(2)':'Over three months through 12 months','M.2.b.(3)':'Over one year through three years','M.2.b.(4)':'Over three years through five years','M.2.b.(5)':'Over five years through 15 years','M.2.b.(6)':'Over 15 years','M.2.c.(1)':'Three years or less','M.2.c.(2)':'Over three years','M.2.d':'Debt securities with a remaining maturity of one year or less','M.3':'Amortized cost of HTM securities sold or transferred to AFS or trading during the year-to-date','M.4.a':'Amortized cost','M.4.b':'Fair value','M.5.a':'Credit card receivables','M.5.b':'Home equity lines','M.5.c':'Automobile loans','M.5.d':'Other consumer loans','M.5.e':'Commercial and industrial loans','M.5.f':'Other','M.6.a':'Trust preferred securities issued by financial institutions','M.6.b':'Trust preferred securities issued by real estate investment trusts','M.6.c':'Corporate and similar loans','M.6.d':'1–4 family residential MBS issued or guaranteed by U.S. Government-sponsored enterprises (GSEs)','M.6.e':'1–4 family residential MBS not issued or guaranteed by GSEs','M.6.f':'Diversified (mixed) pools of structured financial products','M.6.g':'Other collateral or reference assets'},
+ 'RCCI':{'1':'Loans secured by real estate','1.a.(1)':'1–4 family residential construction loans','1.a.(2)':'Other construction loans and all land development and other land loans','1.b':'Secured by farmland (including farm residential and other improvements)','1.c':'Revolving, open-end loans extended under lines of credit (1–4 family)','1.c.(2)(a)':'Closed-end loans secured by first liens','1.c.(2)(b)':'Closed-end loans secured by junior liens','1.d':'Secured by multifamily (5 or more) residential properties','1.e.(1)':'Loans secured by owner-occupied nonfarm nonresidential properties','1.e.(2)':'Loans secured by other nonfarm nonresidential properties','2.a':'To commercial banks in the U.S.','2.a.(1)':'To U.S. branches and agencies of foreign banks','2.a.(2)':'To other commercial banks in the U.S.','2.b':'To other depository institutions in the U.S.','2.c':'To banks in foreign countries','2.c.(1)':'To foreign branches of other U.S. banks','2.c.(2)':'To other banks in foreign countries','3':'Loans to finance agricultural production and other loans to farmers','4.a':'To U.S. addressees (domicile)','4.b':'To non-U.S. addressees (domicile)','6.a':'Credit cards','6.b':'Other revolving credit plans','6.c':'Automobile loans','6.d':'Other consumer loans','7':'Loans to foreign governments and official institutions','8':'Obligations (other than securities and leases) of states and political subdivisions in the U.S.','9.a':'Loans to nondepository financial institutions','9.b.(1)':'Loans for purchasing or carrying securities, including margin loans','9.b.(2)':'All other loans (exclude consumer loans)','10':'Lease financing receivables (net of unearned income)','10.a':'Leases to individuals for household, family, and other personal expenditures','10.b':'All other leases','11':'Less: Any unearned income on loans','12':'Total loans and leases held for investment and held for sale','M.1.a.(1)':'1–4 family residential construction loans','M.1.a.(2)':'Other construction loans and all land development and other land loans','M.1.b':'Loans secured by 1–4 family residential properties in domestic offices','M.1.c':'Secured by multifamily (5 or more) residential properties in domestic offices','M.1.d.(1)':'Loans secured by owner-occupied nonfarm nonresidential properties','M.1.d.(2)':'Loans secured by other nonfarm nonresidential properties','M.1.e.(1)':'To U.S. addressees (domicile)','M.1.e.(2)':'To non-U.S. addressees (domicile)','M.1.f':'All other loans','M.1.f.(1)':'Loans secured by farmland in domestic offices','M.1.f.(3)':'Loans to finance agricultural production and other loans to farmers','M.1.f.(4)(a)':'Credit card','M.1.f.(4)(b)':'Automobile loans','M.1.f.(4)(c)':'Other','M.1.g':'Total loan modifications in compliance with modified terms','M.2.a.(1)':'Three months or less','M.2.a.(2)':'Over three months through 12 months','M.2.a.(3)':'Over one year through three years','M.2.a.(4)':'Over three years through five years','M.2.a.(5)':'Over five years through 15 years','M.2.a.(6)':'Over 15 years','M.2.b.(1)':'Three months or less','M.2.b.(2)':'Over three months through 12 months','M.2.b.(3)':'Over one year through three years','M.2.b.(4)':'Over three years through five years','M.2.b.(5)':'Over five years through 15 years','M.2.b.(6)':'Over 15 years','M.2.c':'Loans and leases with a remaining maturity of one year or less','M.3':'Loans to finance commercial real estate, construction, and land development activities (not secured by real estate)','M.4':'Adjustable-rate closed-end loans secured by first liens on 1–4 family residential properties','M.5':'Loans secured by real estate to non-U.S. addressees (domicile)','M.6':'Outstanding credit card fees and finance charges','M.8.a':'Total amount of closed-end loans with negative amortization features (1–4 family)','M.8.b':'Total maximum remaining amount of negative amortization contractually permitted','M.8.c':'Total amount of negative amortization included in the amount reported in M.8.a','M.9':'Loans secured by 1–4 family residential properties in process of foreclosure','M.10.a':'Loans to mortgage credit intermediaries','M.10.b':'Loans to business credit intermediaries','M.10.c':'Loans to private equity funds','M.10.d':'Loans to consumer credit intermediaries','M.10.e':'Other loans to nondepository financial institutions','M.12.a':'Loans secured by real estate','M.12.b':'Commercial and industrial loans','M.12.c':'Loans to individuals for household, family, and other personal expenditures','M.12.d':'All other loans and all leases','M.13.a':'Amount of loans that provide for the use of interest reserves','M.13.b':'Amount of interest capitalized from interest reserves','M.14':'Pledged loans and leases','M.15.a':'Reverse mortgages outstanding that are held for investment','M.15.b':'Estimated number of reverse mortgage loan referrals to other lenders','M.15.c':'Principal amount of reverse mortgage originations sold during the year','M.16':'Revolving, open-end 1–4 family lines of credit converted to non-revolving closed-end status','M.17.a':'Number of Section 4013 loans outstanding','M.17.b':'Outstanding balance of Section 4013 loans'},
+ 'RCN':{'1.a.(1)':'1–4 family residential construction loans','1.a.(2)':'Other construction loans and all land development and other land loans','1.b':'Secured by farmland in domestic offices','1.c':'Revolving, open-end loans extended under lines of credit (1–4 family)','1.c.(2)(a)':'Closed-end loans secured by first liens','1.c.(2)(b)':'Closed-end loans secured by junior liens','1.d':'Secured by multifamily (5 or more) residential properties in domestic offices','1.e.(1)':'Loans secured by owner-occupied nonfarm nonresidential properties','1.e.(2)':'Loans secured by other nonfarm nonresidential properties','1.f':'In foreign offices','2.a':'To U.S. banks and other U.S. depository institutions','2.b':'To foreign banks','3':'Loans to finance agricultural production and other loans to farmers','4.a':'To U.S. addressees (domicile)','4.b':'To non-U.S. addressees (domicile)','5.a':'Credit cards','5.b':'Automobile loans','5.c':'Other','6':'Loans to foreign governments and official institutions','7':'All other loans','8.a':'Leases to individuals for household, family, and other personal expenditures','8.b':'All other leases','9':'Total loans and leases','10':'Debt securities and other assets','11':'Loans and leases wholly or partially guaranteed by the U.S. Government (excl. FDIC loss-sharing)','11.a':'Guaranteed portion of loans and leases (excluding rebooked "GNMA loans")','11.b':'Rebooked "GNMA loans" repurchased or eligible for repurchase','12':'Portion of covered loans and leases protected by FDIC loss-sharing agreements','M.1.a.(1)':'1–4 family residential construction loans','M.1.a.(2)':'Other construction loans and all land development and other land loans','M.1.b':'Loans secured by 1–4 family residential properties in domestic offices','M.1.c':'Secured by multifamily (5 or more) residential properties in domestic offices','M.1.d.(1)':'Loans secured by owner-occupied nonfarm nonresidential properties','M.1.d.(2)':'Loans secured by other nonfarm nonresidential properties','M.1.e.(1)':'To U.S. addressees (domicile)','M.1.e.(2)':'To non-U.S. addressees (domicile)','M.1.f':'All other loans','M.1.f.(1)':'Loans secured by farmland in domestic offices','M.1.f.(3)':'Loans to finance agricultural production and other loans to farmers','M.1.f.(4)(a)':'Credit cards','M.1.f.(4)(b)':'Automobile loans','M.1.f.(4)(c)':'Other','M.1.g':'Total loan modifications to borrowers experiencing financial difficulty','M.2':'Loans to finance commercial real estate, construction, and land development activities (not secured by real estate)','M.3':'Loans secured by real estate to non-U.S. addressees (domicile)','M.5':'Loans and leases held for sale','M.6':'Derivative contracts: fair value of amounts carried as assets','M.7':'Additions to nonaccrual assets during the previous six months','M.8':'Nonaccrual assets sold during the previous six months','M.9':'Loans to nondepository financial institutions (included in item 7)'},
+ 'RCRI':{'1':'Common stock plus related surplus, net of treasury stock and ESOP shares','2':'Retained earnings','3':'Accumulated other comprehensive income (AOCI)','4':'CET1 minority interest includable in CET1 capital','5':'CET1 capital before adjustments and deductions','6':'Less: Goodwill net of associated deferred tax liabilities (DTLs)','7':'Less: Intangible assets (other than goodwill and MSAs), net of associated DTLs','8':'Less: DTAs from net operating loss and tax credit carryforwards, net of DTLs','9.a':'Less: Net unrealized gains (losses) on available-for-sale debt securities','9.c':'Less: Accumulated net gains (losses) on cash flow hedges','9.d':'Less: Amounts in AOCI attributed to defined benefit postretirement plans','9.e':'Less: Net unrealized gains (losses) on held-to-maturity securities included in AOCI','9.f':'Less: Accumulated net gain (loss) on cash flow hedges not recognized at fair value','10.a':'Less: Unrealized net gain (loss) from changes in fair value of liabilities due to own credit risk','10.b':'Less: All other deductions from (additions to) CET1 capital before threshold-based deductions','11':'Less: Non-significant investments in unconsolidated financial institutions exceeding 10% threshold','12':'Subtotal','13':'Less: Investments in unconsolidated financial institutions exceeding 25% of item 12','13.b':'Less: Significant investments (common stock) exceeding the 10% CET1 deduction threshold','14':'Less: MSAs, net of associated DTLs, that exceed 25% of item 12','14.b':'Less: MSAs, net of associated DTLs, exceeding the 10% CET1 deduction threshold','15':'Less: DTAs from temporary differences exceeding 25% of item 12','15.b':'Less: DTAs from temporary differences exceeding the 10% CET1 deduction threshold','16':'Less: Significant investments, MSAs, and DTAs exceeding the 15% CET1 deduction threshold','17':'Less: Deductions applied to CET1 due to insufficient additional tier 1 and tier 2 capital','18':'Total adjustments and deductions for CET1 capital','19':'CET1 capital','20':'Additional tier 1 capital instruments plus related surplus','21':'Non-qualifying capital instruments subject to phase-out from additional tier 1 capital','22':'Tier 1 minority interest not included in CET1 capital','23':'Additional tier 1 capital before deductions','24':'Less: Additional tier 1 capital deductions','25':'Additional tier 1 capital','26':'Tier 1 capital','27':'Average total consolidated assets','28':'Less: Deductions from CET1 capital and additional tier 1 capital','29':'Less: Other deductions from (additions to) assets for leverage ratio purposes','30':'Total assets for the leverage ratio','31.11':'Leverage ratio','32':'Total assets','33':'Trading assets and trading liabilities','34.a':'Unused portion of conditionally cancellable commitments','34.b':'Securities lent and borrowed','34.c':'Other off-balance sheet exposures','34.d':'Total off-balance sheet exposures','35':'Unconditionally cancellable commitments','36':'Investments in the tier 2 capital of unconsolidated financial institutions','37':'Allocated transfer risk reserve','38.a':'Loans and leases held for investment','38.b':'Held-to-maturity debt securities','38.c':'Other financial assets measured at amortized cost','39':'Tier 2 capital instruments plus related surplus','40':'Non-qualifying capital instruments subject to phase-out from tier 2 capital','41':'Total capital minority interest that is not included in tier 1 capital','44':'Tier 2 capital before deductions','45':'Less: Tier 2 capital deductions','46':'Tier 2 (supplementary) capital','47':'Total capital','48':'Total risk-weighted assets','49':'CET1 capital ratio','50':'Tier 1 capital ratio','51':'Total capital ratio','52':'Capital conservation buffer','52.b':'Total applicable capital buffer','53':'Eligible retained income','54':'Distributions and discretionary bonus payments during the quarter','55.a':'Total leverage exposure','55.b':'Supplementary leverage ratio'},
+ 'RCCII':{'3.a':'With original amounts of $100,000 or less','3.b':'With original amounts of more than $100,000 through $250,000','3.c':'With original amounts of more than $250,000 through $1,000,000','4.a':'With original amounts of $100,000 or less','4.b':'With original amounts of more than $100,000 through $250,000','4.c':'With original amounts of more than $250,000 through $1,000,000','7.a':'With original amounts of $100,000 or less','7.b':'With original amounts of more than $100,000 through $250,000','7.c':'With original amounts of more than $250,000 through $500,000','8.a':'With original amounts of $100,000 or less','8.b':'With original amounts of more than $100,000 through $250,000','8.c':'With original amounts of more than $250,000 through $500,000'},
+ 'RCRII':{'2':'Securities','2.a':'Held-to-maturity securities','2.b':'Available-for-sale debt and equity securities not held for trading','3':'Federal funds sold and securities purchased under agreements to resell','3.a':'Federal funds sold in domestic offices','3.b':'Securities purchased under agreements to resell','4':'Loans and leases held for sale','4.a':'Residential mortgage exposures','4.b':'High volatility commercial real estate exposures','4.c':'Exposures past due 90 days or more or on nonaccrual','4.d':'All other exposures','5.a':'Residential mortgage exposures','5.b':'High volatility commercial real estate exposures','5.c':'Exposures past due 90 days or more or on nonaccrual','5.d':'All other exposures','1':'Cash and balances due from depository institutions','6':'Less: Allowance for credit losses on loans and leases','7':'Trading assets','8':'All other assets','8.a':'Separate account bank-owned life insurance','8.b':'Default fund contributions to central counterparties','9.a':'Held-to-maturity securities','9.b':'Available-for-sale securities','9.c':'Trading assets','9.d':'All other on-balance sheet securitization exposures','10':'Off-balance sheet securitization exposures','11':'Total balance sheet assets','12':'Financial standby letters of credit','13':'Performance standby letters of credit and transaction-related contingent items','14':'Commercial and similar letters of credit with an original maturity of one year or less','15':'Retained recourse on small business obligations sold with recourse','16':'Repo-style transactions','17':'All other off-balance sheet liabilities','18.a':'Original maturity of one year or less','18.b':'Original maturity exceeding one year','19':'Unconditionally cancelable commitments','20':'Over-the-counter derivatives','21':'Centrally cleared derivatives','22':'Unsettled transactions (failed trades)','23':'Total assets, derivatives, off-balance sheet, and other items subject to risk weighting','24':'Risk-weight factor','25':'Risk-weighted assets by risk-weight category','26':'Risk-weighted assets base for the AACL 1.25 percent threshold','27':'Standardized market-risk weighted assets','28':'Risk-weighted assets before deductions for excess AACL and allocated transfer risk reserve','29':'Less: Excess AACL','30':'Less: Allocated transfer risk reserve','31':'Total risk-weighted assets','M.1':'Current credit exposure across all derivative contracts covered by the regulatory capital rules','M.2.a':'Interest rate','M.2.b':'Foreign exchange rate and gold','M.2.c':'Credit (investment grade reference asset)','M.2.d':'Credit (non-investment grade reference asset)','M.2.e':'Equity','M.2.f':'Precious metals (except gold)','M.2.g':'Other','M.3.a':'Interest rate','M.3.b':'Foreign exchange rate and gold','M.3.c':'Credit (investment grade reference asset)','M.3.d':'Credit (non-investment grade reference asset)','M.3.e':'Equity','M.3.f':'Precious metals (except gold)','M.3.g':'Other','M.4.a':'Loans and leases held for investment','M.4.b':'Held-to-maturity debt securities','M.4.c':'Other financial assets measured at amortized cost'}
+};
+const INSTR_NOTE={
+ 'RI':{'1.c':'Includes interest income on time certificates of deposit not held for trading.','5.k':'Excludes net gains (losses) on sales of trading assets and held-to-maturity and available-for-sale debt securities.','7.b':'Net of rental income; excludes salaries and employee benefits and mortgage interest.'},
+ 'RCB':{'M.1':'Includes HTM securities at amortized cost, AFS debt securities at fair value, and equity securities with readily determinable fair values not held for trading, at fair value.'}
+};
+// dispCapFor(nd, dc): the one display-label resolver — curated DISP_CAP wins, then the generic
+// prefix-strip transform (dc), then the ALL-CAPS sentence-caser, else the official caption.
+function dispCapFor(nd,dc){
+ const cur=(DISP_CAP[nd.sch||'']||{})[nd.num];
+ // A "… "-prefixed dc is a MATRIX/COLUMN-variant strip (siblings share the item#; the tail is the
+ // column: HTM/AFS, risk-weight, past-due bucket, maturity). Do NOT collapse those to one curated
+ // label — combine "[curated item] · [column]" so each variant stays distinct. A dc WITHOUT the
+ // "… " marker is a schedule-level prefix strip → the curated label alone is right when present.
+ const isCol=dc&&/^…\s*/.test(dc);
+ if(isCol){const body=dc.replace(/^…\s*/,'');const sc=sentenceCase(body)||body;return cur?cur+' · '+sc:'… '+sc;}
+ // C19-AQ-C19-2 column-aware: apply the curated item label ONLY to a SINGLE-row item. A column-variant
+ // row (several rows share the item number — HTM/AFS, risk-weight, past-due bucket — with NO common-
+ // prefix matrix strip) is marked _colVariant by renderNodes; using the item label on all of them would
+ // collapse them to identical text, so those fall through to their own sentence-cased caption (distinct).
+ if(cur&&!nd._colVariant)return cur;
+ if(dc){const sc=sentenceCase(dc);return sc||dc;}   // schedule-prefix strip → sentence-case its tail
+ return sentenceCase(nd.caption)||null;}
+// hoverFor(nd): FULL official caption (admin hover if any) + the form instruction note if bound.
+function hoverFor(nd){
+ const base=META_CODES[nd.code]||META_HOVER[nd.code]||nd.caption||'';
+ const note=(INSTR_NOTE[nd.sch||'']||{})[nd.num];
+ return note?base+' — '+note:base;}
 function rowEl(nd,has,dispCap){
  if(nd.sec){ // C18: form section banner (Assets / Liabilities / Equity capital) — a label, never a Σ-parent
    const d=document.createElement('div');d.className='trow sec';
@@ -1269,7 +1350,7 @@ function rowEl(nd,has,dispCap){
    const d=document.createElement('div');d.className='trow hdr';
    d.dataset.code=nd.code;d.dataset.depth=nd.depth;d.dataset.txt=(nd.code+' '+(nd.caption||'')).toLowerCase();d.style.paddingLeft=(6+(nd.depth-1)*14)+'px';
    const car=`<span class="caret"${has?'':' style="visibility:hidden"'}>▸</span>`;
-   const cap=`<span class="cap" title="${String(nd.caption||'').replace(/"/g,'&quot;')}">${dispCap||nd.caption||''}</span>`;
+   const _dc=dispCapFor(nd,dispCap);const cap=`<span class="cap" title="${String(hoverFor(nd)).replace(/"/g,'&quot;')}">${_dc||nd.caption||''}</span>`;
    d.innerHTML=`${car}${nd.num?`<span class=num>${nd.num}</span>`:''}${cap}`;
    d.querySelector('.caret').onclick=ev=>{ev.stopPropagation();if(has)toggleNode(d);};
    const sd=subDefFor(nd);const pctSkip=hasPctDesc(nd);
@@ -1290,13 +1371,24 @@ function rowEl(nd,has,dispCap){
  d.dataset.code=nd.code;d.dataset.txt=(nd.code+' '+nd.caption).toLowerCase();d.dataset.depth=nd.depth;
  d.style.paddingLeft=(6+(nd.depth-1)*14)+'px';
  const car=`<span class="caret"${has?'':' style="visibility:hidden"'}>▸</span>`;
- // C18: filing-metadata / admin codes carry their instruction-sourced explanation on hover
- const _hovTxt=META_CODES[nd.code]||META_HOVER[nd.code]||nd.caption||'';
- const cap=`<span class="cap" title="${String(_hovTxt).replace(/"/g,'&quot;')}">${dispCap||nd.caption||''}</span>`;
+ // C18/C19-D2: filing-metadata / admin hover + form instruction note; display = curated/normalized label
+ const _hovTxt=hoverFor(nd);
+ const _dc=dispCapFor(nd,dispCap);
+ const cap=`<span class="cap" title="${String(_hovTxt).replace(/"/g,'&quot;')}">${_dc||nd.caption||''}</span>`;
  d.innerHTML=nd.derived?`${car}${cap}`:`${car}${(nd.num&&!nd.col)?`<span class=num>${nd.num}</span>`:''}${cap}<span class=code>${nd.code}</span>`;
  const lab=nd.derived?short(nd.caption):((nd.header&&fullCap(nd.code))?fullCap(nd.code):(nd.caption||nd.code));
  d.querySelector('.caret').onclick=ev=>{ev.stopPropagation();if(has)toggleNode(d);};
- d.onclick=()=>toggleMeasure(nd.code,lab,nd.pct||PCTC.has(nd.code));// C14-A: tree-click charts RC-R I ratios on the %-axis (was nd.pct only → "$0M"; mirror Y-9C onclick)
+ // C19-D3 nested filed total: clicking the total row charts the filed-first/derived-fill subtotal
+ // (SUB:code hybrid) from the explicit panel-verified components; a Σ sig marks it. The row keeps its
+ // own code (dataset.code) so favorites / hash-restore / coverage are unchanged; its components render
+ // nested beneath it (reparented by applyRollupNest). Non-nested rows chart their raw code as before.
+ const _nsd=nd._nestTotal?subDefFor(nd):null;
+ if(_nsd&&_nsd.def){
+   d.onclick=()=>{const code='SUB:'+nd.code;DYN[code]=_nsd.def;toggleMeasure(code,_nsd.label,false);};
+   const sig=document.createElement('span');sig.className='sig';sig.textContent='Σ';
+   sig.title='Filed total ('+_nsd.filed+'); quarters where the filed line is absent are reconstructed from '+_nsd.def.parts[0].components.length+' component code(s)';
+   d.appendChild(sig);
+ } else d.onclick=()=>toggleMeasure(nd.code,dispFullCap(nd.code)||lab,nd.pct||PCTC.has(nd.code));// C14-A: %-axis; C19-D2: chip label = normalized display caption (mirror Y-9C onclick)
  if(nd.derived&&DERIV[nd.code]){const dr=DERIV[nd.code];const ab=a=>{if(!a||!a.length)return '?';return a.length<=3?a.join(' + '):a.slice(0,2).join(' + ')+` + …(${a.length})`;};let fml;if(dr.type==='ratio'){const nStr=dr.minus&&dr.minus.length?`(${ab(dr.plus)} − ${ab(dr.minus)})`:ab(dr.plus);fml=`${nStr} ÷ ${ab(dr.den)} × 100${dr.annualize?' × (4/N)':''}`;}else{fml=`${ab(dr.plus)}`;}d.dataset.formula=fml;d.title='Click to chart · hover for formula';}
  if(!nd.derived){const fstar=document.createElement('span');fstar.className='fav'+(loadFavs().has(nd.code)?' on':'');fstar.textContent='★';fstar.title='Add to favorites';
    fstar.onclick=ev=>{ev.stopPropagation();const f=loadFavs();if(f.has(nd.code)){f.delete(nd.code);fstar.classList.remove('on');}else{f.add(nd.code);fstar.classList.add('on');}saveFavs(f);renderFavShelf();};
@@ -1316,10 +1408,55 @@ function nest(flat){const ns=flat.map(it=>({...it,children:[]}));
 // mirrors Y-9C HC: Assets 1-12, Liabilities 13-21, Equity Capital 23-29). Rendered as banner rows,
 // NOT parents: the filed section-total LINES already exist as items (12/21/28) — a banner that Σ'd
 // descendants would double-count them (the P0 class). Clicking a banner charts the FILED total.
+// CYCLE-19 section-header sweep (P0c): form-ink section bands across Call schedules, cycle-18
+// mechanism. Every band adjudicated on RENDERED FORM INK (FFIEC031_202606_f.pdf, printed page cited
+// per note). Bands added this pass are PURE LABELS (total:null) — grouping only, they chart nothing
+// and are excluded from every Σ / has_data / EMPTY count (the SECBAR: guard), so they move NO banked
+// count. A filed-total banner (total:'COMB####') is used ONLY where the ink states one item IS the
+// sum of the section (RC Assets/Liab/Equity below) — a wrong total code causes the ~2× class, so the
+// default is null. Deferred to a later careful pass (NA/SEC render-order or anchor ambiguity): RC-C II
+// small-business/farm bands (share the NA_ROWS anchor — pushNA fires before pushSec), RC-R I leverage
+// 31.a / SLR 55.a (CBLR-only anchors), RC-L single mid-schedule band.
 const SECTIONS={
  'RC':[{label:'Assets',before:'1',total:'COMB2170',note:'Items 1–12 — item 12 IS the filed section total (sum of items 1 through 11)'},
        {label:'Liabilities',before:'13',total:'COMB2948',note:'Items 13–21 — item 21 IS the filed section total (sum of items 13 through 20)'},
-       {label:'Equity capital',before:'23',total:'COMBG105',note:'Items 23–28 — item 28 IS the filed section total (sum of items 27.a and 27.b)'}],
+       {label:'Equity capital',before:'23',total:'COMBG105',note:'Items 23–28 — item 28 IS the filed section total (sum of items 27.a and 27.b)'},
+       {label:'Memoranda',before:'M.1',total:null,note:'Form ink p18: bold "Memoranda" heading — RC Memorandum items 1–2 (audit indicator, fiscal year-end).'}],
+ // RI Income Statement — bold "Memoranda" heading printed before the Memorandum items (form ink p7).
+ 'RI':[{label:'Memoranda',before:'M.1',total:null,note:'Form ink p7: bold "Memoranda" heading before Schedule RI Memorandum items.'}],
+ 'RIBI':[{label:'Memoranda',before:'M.1',total:null,note:'Form ink p10: bold "Memoranda" heading before Schedule RI-B Part I Memorandum items.'}],
+ 'RIBII':[{label:'Memoranda',before:'M.1',total:null,note:'Form ink p11: bold "Memoranda" heading before Schedule RI-B Part II Memorandum items.'}],
+ 'RCB':[{label:'Memoranda',before:'M.1',total:null,note:'Form ink p22: bold "Memoranda" heading before Schedule RC-B Memorandum items.'}],
+ 'RCCI':[{label:'Memoranda',before:'M.1.a.(1)',total:null,note:'Form ink p26: bold "Memoranda" heading before Schedule RC-C Part I Memorandum items.'}],
+ 'RCD':[{label:'Memoranda',before:'M.1.a.(1)',total:null,note:'Form ink p32: bold "Memoranda" heading before Schedule RC-D Memorandum items.'}],
+ 'RCEI':[{label:'Memoranda',before:'M.1.a',total:null,note:'Form ink p33: bold "Memoranda" heading before Schedule RC-E Part I Memorandum items.'}],
+ 'RCEII':[{label:'Memoranda',before:'M.1',total:null,note:'Form ink p35: bold "Memoranda" heading before Schedule RC-E Part II Memorandum items.'}],
+ // RC-K Quarterly Averages — bold "Assets" / "Liabilities" super-headers (form ink p39).
+ 'RCK':[{label:'Assets',before:'1',total:null,note:'Form ink p39: bold "Assets" heading over items 1–9 (item 9 is average total assets, not a sum → label only).'},
+        {label:'Liabilities',before:'10',total:null,note:'Form ink p39: bold "Liabilities" heading over items 10–14.'}],
+ 'RCN':[{label:'Memoranda',before:'M.1.a.(1)',total:null,note:'Form ink p49: bold "Memoranda" heading before Schedule RC-N Memorandum items.'}],
+ 'RCO':[{label:'Memoranda',before:'M.1.a.(1)',total:null,note:'Form ink p52: bold "Memoranda" heading before Schedule RC-O Memorandum items.'}],
+ 'RCQ':[{label:'Memoranda',before:'M.1.a',total:null,note:'Form ink p59: bold "Memoranda" heading before Schedule RC-Q Memorandum items.'}],
+ // RC-R Part I Regulatory Capital — bold left-margin capital-section headers (form ink p61,63,65).
+ // All label-only: the filed subtotals (item 5 "sum of items 1–4", item 47, etc.) already render as
+ // their own rows, so a total code here would double-count.
+ 'RCRI':[{label:'Common equity tier 1 capital',before:'1',total:null,note:'Form ink p61: bold "Common Equity Tier 1 Capital" header.'},
+         {label:'CET1 capital: adjustments and deductions',before:'6',total:null,note:'Form ink p61: bold "Common Equity Tier 1 Capital: Adjustments and Deductions" header.'},
+         {label:'Additional tier 1 capital',before:'20',total:null,note:'Form ink p63: bold "Additional Tier 1 Capital" header.'},
+         {label:'Tier 1 capital',before:'26',total:null,note:'Form ink p63: bold "Tier 1 Capital" header.'},
+         {label:'Total assets for the leverage ratio',before:'27',total:null,note:'Form ink p63: bold "Total Assets for the Leverage Ratio" header.'},
+         {label:'Total capital',before:'47',total:null,note:'Form ink p65: bold "Total Capital" header.'},
+         {label:'Total risk-weighted assets',before:'48',total:null,note:'Form ink p65: bold "Total Risk-Weighted Assets" header.'},
+         {label:'Risk-based capital ratios',before:'49',total:null,note:'Form ink p65: bold "Risk-Based Capital Ratios" header.'},
+         {label:'Capital buffer',before:'52',total:null,note:'Form ink p65: bold "Capital Buffer" header (item 52 = institution-specific capital buffer).'}],
+ // RC-R Part II Risk-Weighted Assets — three bold left-margin section headers (form ink p66,72,74).
+ // Part II totals are cross-column risk-weight matrix sums (never a single filed code) → label only.
+ 'RCRII':[{label:'Balance sheet asset categories',before:'1',total:null,note:'Form ink p66: bold "Balance Sheet Asset Categories" header.'},
+          {label:'Securitization exposures: on- and off-balance sheet',before:'9.a',total:null,note:'Form ink p72: bold "Securitization Exposures: On- and Off-Balance Sheet" header.'},
+          {label:'Derivatives, off-balance sheet, and other items subject to risk weighting',before:'12',total:null,note:'Form ink p74: bold "Derivatives, Off-Balance Sheet Items, and Other Items Subject to Risk Weighting" header.'},
+          {label:'Memoranda',before:'M.1',total:null,note:'Form ink p79: bold "Memoranda" heading before Schedule RC-R Part II Memorandum items.'}],
+ 'RCS':[{label:'Memoranda',before:'M.2.a',total:null,note:'Form ink p82: bold "Memoranda" heading before Schedule RC-S Memorandum items.'}],
+ 'RCT':[{label:'Memoranda',before:'M.1.a',total:null,note:'Form ink p84: bold "Memoranda" heading before Schedule RC-T Memorandum items.'}],
 };
 // C18 FILING METADATA — administrative codes explained on hover from form ink (f031 p18, p83).
 // All five are NUMBERED form items, so they KEEP their form position (numbering completeness is an
@@ -1412,6 +1549,9 @@ function renderNodes(container,nodes,pfx,pfx2){if(!pfx)pfx='';if(!pfx2)pfx2='';
  // Matrix rows: items sharing item# with long common prefix get "… stripped" display
  const disp=new Map(),grp={};
  for(const n of nodes) if(!n.header&&n.num){(grp[n.num]=grp[n.num]||[]).push(n);}
+ // C19-AQ-C19-2: mark column-variant rows (several non-header rows share one item number) so
+ // dispCapFor won't collapse them under a single curated DISP_CAP label.
+ for(const n of nodes) if(!n.header&&n.num&&grp[n.num]&&grp[n.num].length>1)n._colVariant=true;
  for(const num in grp){const g=grp[num];if(g.length<2)continue;
    let pre=g[0].caption||'';
    for(const n of g){const c=n.caption||'';while(pre&&!c.startsWith(pre))pre=pre.slice(0,-1);}
@@ -1429,12 +1569,12 @@ function addSchedule(t,title,nodes){const pfx=secPrefix(nodes);const {sec,rows}=
 function toggleNode(row){if(!row._kids)return;const open=row._kids.style.display!=='none';
  row._kids.style.display=open?'none':'block';const c=row.querySelector('.caret');if(c)c.textContent=open?'▸':'▾';}
 function buildTree(){const t=document.getElementById('tree');t.innerHTML='';
- _fullCap.clear();   // C13-CAPHOME: first-wins map must restart per rebuild (raw/COMB retoggle)
+ _fullCap.clear();_dispCapM.clear();   // C13-CAPHOME/C19-D2: first-wins maps must restart per rebuild (raw/COMB retoggle)
  const showRaw=document.getElementById('showraw').checked;
  const dnodes=Object.keys(DERIV).filter(k=>DERIV[k].lbl).map(k=>({code:k,caption:DERIV[k].lbl,num:'',depth:1,comb:false,derived:true,pct:isPct(k),children:[]}));
  addSchedule(t,'★ Ratios & Subtotals',dnodes);
  const keys=[...FORM_ORDER.filter(k=>HIER[k]),...Object.keys(HIER).filter(k=>SCHED_NAMES[k]&&!FORM_ORDER.includes(k))];
- for(const sch of keys){const flat=emitSchedule(sch,showRaw);if(!flat.length)continue;const nroots=nest(flat);addSchedule(t,SCHED_NAMES[sch]||sch,nroots);_walkFC(nroots,[SCHED_NAMES[sch]||sch],sch);}
+ for(const sch of keys){const flat=emitSchedule(sch,showRaw);if(!flat.length)continue;const nroots=applyRollupNest(nest(flat),sch);addSchedule(t,SCHED_NAMES[sch]||sch,nroots);_walkFC(nroots,[SCHED_NAMES[sch]||sch],sch);}
  treeBuilt=true;markTree();renderFavShelf();}
 let lvl={'#tree':0,'#formbody':0};
 function applyLevel(L,root='#tree'){L=Math.max(0,L);lvl[root]=L;
@@ -1512,7 +1652,48 @@ const ROLLUP_RULES={
  // C18 review fix (salvaged adversarial review): RC-R I 48 summed standardized+advanced RWA (~2×) —
  // the BHCA/BHCW-class disease in RCFA/RCFW clothing; pin the standardized line.
  'RCRI':{'48':{codes:['RCFAA223']}},
+ // CYCLE-19 directive 3 (P0d): nested filed subtotals. Each {total,components} is the form's printed
+ // "(sum of items X through Y)" line; components are the EXPLICIT single-column, subset-excluded leaf
+ // tree-codes, PANEL-VERIFIED filed==Σcomp at 2026-03-31 (ratio ~1.0000, no ≈2× fingerprint). Their
+ // items are nested under the total by ROLLUP_NEST (below) so the total renders as a filed-first/
+ // derived-fill PARENT. Deferred (own follow-up): RC-A 5 (0.9884/6-of-8 real gap), RC-P 7.c (sparse),
+ // RC-D 12 (intermediate-subtotal component cleanup; note the enumeration mis-said 3541 — real is 3545).
+ 'RCD':{'15':{total:'COMB3548',components:['COMB3546','COMBF624','COMB3547']}},
+ 'RCF':{'7':{total:'COMB2160',components:['COMBB556','COMB2148','COMBHT80','COMB1752','COMBK201','COMBK202','COMBK270','COMB2168']}},
+ 'RCG':{'5':{total:'COMB2930',components:['COMB3645','COMB3646','COMB3049','COMBB557','COMB2938']}},
+ 'RCM':{'2.d':{total:'COMB2143',components:['COMB3164','COMB3163','COMBJF76']},
+        '3.g':{total:'COMB2150',components:['COMB5508','COMB5509','COMB5510','COMB5511','COMB5512','RCFN5513']}},
+ 'RIA':{'3':{total:'RIADB508',components:['RIAD3217','RIADB507']}},
+ 'RCEII':{'6':{total:'RCFN2200',components:['RCFNB553','RCFNB554','RCFN2625','RCFN2650','RCFNB555']}},
+ 'RCT':{'22':{total:'RIAD4070',components:['RIADB904','RIADB905','RIADB906','RIADB907','RIADA479','RIADJ315','RIADJ316','RIADA480','RIADB909','RIADB910']}},
 };
+// CYCLE-19 directive 3: render-time nesting config — component item numbers to reparent under each
+// filed total (total-as-parent). Done in the ENGINE at buildTree (applyRollupNest), NOT in the
+// generated hierarchy JSON, so it is STABLE across a build_hierarchy.py regeneration (the JSON stays
+// flat as generated; the engine reparents on load). Item numbers verified against the hierarchy.
+const ROLLUP_NEST={
+ 'RCD':{'15':['13.a','13.b','14']},
+ 'RCF':{'7':['1','2','3','4','5.a','5.b','5.c','6']},
+ 'RCG':{'5':['1.a','1.b','2','3','4']},
+ 'RCM':{'2.d':['2.a','2.b','2.c'],'3.g':['3.a','3.b','3.c','3.d','3.e','3.f']},
+ 'RIA':{'3':['1','2']},
+ 'RCEII':{'6':['1','2','3','4','5']},
+ 'RCT':{'22':['14','15','16','17','18','19','20','21']},
+};
+function applyRollupNest(roots,sch){
+ const cfg=ROLLUP_NEST[sch];if(!cfg)return roots;
+ const collectByNum=num=>{const res=[];(function w(arr){for(const n of arr){if(n.num===num)res.push(n);if(n.children)w(n.children);}})(roots);return res;};
+ const detachAll=set=>{(function w(arr){for(let i=arr.length-1;i>=0;i--){if(set.has(arr[i]))arr.splice(i,1);else if(arr[i].children&&arr[i].children.length)w(arr[i].children);}})(roots);};
+ for(const totItem in cfg){
+   const tot=collectByNum(totItem).find(n=>n.code&&!n.header);
+   const moved=[];
+   if(tot)for(const ci of cfg[totItem])for(const cn of collectByNum(ci))if(cn!==tot&&!moved.includes(cn))moved.push(cn);
+   if(!tot||!moved.length)continue;
+   detachAll(new Set(moved));
+   for(const m of moved)tot.children.push(m);
+   tot._nestTotal=true;
+ }
+ return roots;}
 // C18 unit guard (PCTC-analog for counts): cells denominated in NUMBERS (of accounts/funds/issues),
 // not $ thousands, never join a $ Σ. RC-T cols C/D are "Number of ..." per form ink (f031 p83).
 // COMBB897 (col D of the total row) lacks the "Number of" phrasing in its MDRM caption — ink governs.
@@ -1571,10 +1752,14 @@ function subDefFor(nd){
  const sch=nd.sch||'';const r=(ROLLUP_RULES[sch]||{})[nd.num]||null;
  if(r&&r.nosum)return {nosum:r.nosum};
  const codes=descCodes(nd);
- if(!codes.length)return null;
+ if(!codes.length&&!(r&&r.components))return null;
  const rl=fullCap('SUB:'+nd.code)||nd.caption||nd.code;
  if(r&&r.total){
-   const comps=codes.filter(t=>t!==r.total);
+   // C19-D3 nested filed totals: an EXPLICIT r.components list (form-ink-adjudicated, panel-verified
+   // filed==Σ, single-column, subset-excluded) wins over the descCodes subtree walk — the walk can
+   // pull in unintended sub-lines of a nested component (the ~2× class). Filed-first: charts the filed
+   // total (reported); derived-fill Σ's the components only where the filed line is absent.
+   const comps=(r.components||codes).filter(t=>t!==r.total);
    return {def:{type:'hybrid_sum',lbl:rl,parts:[{reported:r.total,components:comps}]},label:rl,filed:r.total};
  }
  return {def:{type:'sum',lbl:rl,plus:codes},label:rl};
@@ -1767,7 +1952,7 @@ async function recompute(){
  const out=[];let ci=0;
  for(const m of measures)for(const e of active){if(mySeq!==_rcSeq)return;const blocked=isRawPct(m.code)&&isAggScope(e.id);
    const rows=blocked?[]:await seriesFor(e.id,m.code);if(mySeq!==_rcSeq)return;
-   const mlbl=fullCap(m.code)||m.label;
+   const mlbl=dispFullCap(m.code)||m.label;
    const label=`${e.label} · ${mlbl}`+(blocked?' (n/a — % cell, not summable across entities)':'');
    /* C7-8: sid = stable series identifier (entity id + measure code), independent of the rendered
       label text — two series can legitimately share a label (same caption via different code
@@ -2170,8 +2355,13 @@ function pane(series,pct,unit,win,stacked,staticOpts){const so=staticOpts||null;
      for(const it of Q.items)mk+=`<circle class="reveal" cx="${xc.toFixed(1)}" cy="${it.cy.toFixed(1)}" r="4" fill="${it.color}" stroke="${dotC}" stroke-width="1.5"></circle>`;
      bands+=`<g class="qband" data-q="${Q.q}"><rect class="hit" x="${left.toFixed(1)}" y="0" width="${(right-left).toFixed(1)}" height="${H}"></rect>${mk}</g>`;});
  }
- const want=Math.min(8,n),ix=[...new Set(Array.from({length:want},(_,k)=>Math.round(k*(n-1)/Math.max(1,want-1))))];
- const lb=ix.map(i=>{const a=i===0?'start':(i===n-1?'end':'middle');return `<text x="${X(i)}" y="${H-pad+18}" font-size="11" fill="${aC}" text-anchor="${a}">${win[i]}</text>`;}).join('');
+ // C19 display cycle (P0e): compact "YYYY Qn" x-labels + WIDTH-ADAPTIVE tick density — cap the tick
+ // count by the real plot pixel width (W is the measured container px, so.pxW/window._chartW) so
+ // labels never collide from 1280px through ultrawide (was a fixed 8 ticks + full "2021-03-31" dates
+ // that overlapped on narrow/report-grid charts). Display-only: axis labels change, values untouched.
+ const _qlab=q=>{const s=String(q),y=s.slice(0,4),mo=s.slice(5,7);return y+' '+({'03':'Q1','06':'Q2','09':'Q3','12':'Q4'}[mo]||mo);};
+ const want=Math.max(2,Math.min(8,n,Math.floor((W-2*pad)/58))),ix=[...new Set(Array.from({length:want},(_,k)=>Math.round(k*(n-1)/Math.max(1,want-1))))];
+ const lb=ix.map(i=>{const a=i===0?'start':(i===n-1?'end':'middle');return `<text x="${X(i)}" y="${H-pad+18}" font-size="11" fill="${aC}" text-anchor="${a}">${_qlab(win[i])}</text>`;}).join('');
  slbls=''; // labels moved to #lbl-overlay overlay
  // Static-export legend: swatch + series name row(s) below the plot area, inline-styled only (no
  // CSS classes) so it renders correctly with zero dependency on the destination document's <style>.
@@ -2202,7 +2392,7 @@ window.addChart=addChart;window.removeChart=removeChart;window.setChartTarget=se
 function renderExtraChartsArea(){const area=document.getElementById('extracharts-area');if(!area)return;area.innerHTML=_extraCharts.map(chart=>`<div class="extra-chart" id="ec-${chart.id}" style="margin-top:14px;border-top:1px solid var(--head,#eef2f7);padding-top:8px"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px"><b style="font-size:13px;color:var(--muted,#9aa3b2)">Chart ${chart.id+1}</b><button class="sec" style="font-size:12px;padding:1px 6px" onclick="removeChart(${chart.id})">✕</button><button class="sec ec-target-btn" id="ec-tgt-${chart.id}" style="font-size:12px;padding:1px 6px" onclick="setChartTarget(${chart.id})">▶ Add items</button><span id="ec-mchips-${chart.id}"></span><label style="font-size:12px;cursor:pointer;user-select:none"><input type="checkbox" data-cid="${chart.id}" data-tfm="normByAssets"${chart.transforms.normByAssets?' checked':''}> ÷ ${NORM_DEN_LABELS[window._normDenCd||'COMB2170']||'assets'}</label><label style="font-size:12px;cursor:pointer;user-select:none"><input type="checkbox" data-cid="${chart.id}" data-tfm="stacked"${chart.transforms.stacked?' checked':''}> ◫ stack</label><label style="font-size:12px;cursor:pointer;user-select:none"><input type="checkbox" data-cid="${chart.id}" data-tfm="idx"${chart.transforms.idx?' checked':''}> ⊡ idx</label><label style="font-size:12px;cursor:pointer;user-select:none"><input type="checkbox" data-cid="${chart.id}" data-tfm="qoqdelta"${chart.transforms.qoqdelta?' checked':''}> QoQ Δ</label><label style="font-size:12px;cursor:pointer;user-select:none"><input type="checkbox" data-cid="${chart.id}" data-tfm="yoydelta"${chart.transforms.yoydelta?' checked':''}> YoY Δ</label><label style="font-size:12px;cursor:pointer;user-select:none"><input type="checkbox" data-cid="${chart.id}" data-tfm="roll4q"${chart.transforms.roll4q?' checked':''}> 4Q avg</label><label style="font-size:12px;cursor:pointer;user-select:none"><input type="checkbox" data-cid="${chart.id}" data-tfm="sharemode"${chart.transforms.sharemode?' checked':''}> Share %</label><label style="font-size:12px;cursor:pointer;user-select:none" title="show series-name legend for this chart"><input type="checkbox" data-cid="${chart.id}" data-tfm="inlineLbls"${chart.transforms.inlineLbls?' checked':''}> ⌯ Labels</label></div><div id="ec-panes-${chart.id}"><p class="muted" style="font-size:13px">Click ▶ Add items, then a line item on the left.</p></div><div id="ec-legend-${chart.id}" class="ec-legend" style="display:none"></div></div>`).join('');_extraCharts.forEach(c=>renderExtraChartChips(c));drawExtraCharts();}
 function renderExtraChartChips(chart){const c=document.getElementById('ec-mchips-'+chart.id);if(!c)return;c.innerHTML=chart.measures.map((m,i)=>`<span class="chip" style="font-size:12px"><b>${m.label}</b> <span class="muted">${m.pct?'%':'$'}</span><span class="x" data-ci="${chart.id}" data-i="${i}">✕</span></span>`).join('');c.querySelectorAll('.x').forEach(x=>x.onclick=()=>{const ch=_extraCharts.find(c=>c.id===+x.dataset.ci);if(ch){ch.measures.splice(+x.dataset.i,1);renderExtraChartChips(ch);recomputeExtraCharts().then(()=>drawExtraCharts());}});}
 function renderEcLegend(chart){const el=document.getElementById('ec-legend-'+chart.id);if(!el)return;if(!chart.transforms.inlineLbls||!chart.lastSeries.length){el.style.display='none';return;}el.innerHTML=chart.lastSeries.map(s=>`<span style="display:inline-flex;align-items:center;gap:5px;padding:2px 0"><span style="flex-shrink:0;width:10px;height:10px;border-radius:50%;background:${s.color}"></span><span style="color:${s.color};font-weight:600;font-size:12px;overflow-wrap:anywhere;word-break:break-word" title="${_esc(s.label)}">${_esc(s.label)}</span></span>`).join('');el.style.display='flex';}
-async function recomputeExtraCharts(){for(const chart of _extraCharts){if(!chart.measures.length||!active.length){chart.lastSeries=[];continue;}const out=[];let ci=0;for(const m of chart.measures)for(const e of active){const rows=await seriesFor(e.id,m.code);const mlbl=fullCap(m.code)||m.label;const label=`${e.label} · ${mlbl}`;out.push({label,pct:m.pct,rows,color:COLORS[ci++%COLORS.length],eid:e.id});}chart.lastSeries=out;}}
+async function recomputeExtraCharts(){for(const chart of _extraCharts){if(!chart.measures.length||!active.length){chart.lastSeries=[];continue;}const out=[];let ci=0;for(const m of chart.measures)for(const e of active){const rows=await seriesFor(e.id,m.code);const mlbl=dispFullCap(m.code)||m.label;const label=`${e.label} · ${mlbl}`;out.push({label,pct:m.pct,rows,color:COLORS[ci++%COLORS.length],eid:e.id});}chart.lastSeries=out;}}
 function drawExtraCharts(){if(!_extraCharts.length)return;const win=Qall.slice(rangeSel.a,rangeSel.b+1),ws=new Set(win);for(const chart of _extraCharts)drawExtraChart(chart,win,ws);applyChartSize();}
 function drawExtraChart(chart,win,ws){const host=document.getElementById('ec-panes-'+chart.id);if(!host)return;if(!chart.lastSeries.length){host.innerHTML='<p class="muted" style="font-size:13px">Click ▶ Add items, then a line item on the left.</p>';return;}const _m=measures;measures=chart.measures;let html='';try{const normOn=!!chart.transforms.normByAssets;const stackedOn=!!chart.transforms.stacked;const _ecNdLbl=NORM_DEN_LABELS[window._normDenCd||'COMB2170']||'assets';const workSeries=normOn?chart.lastSeries.map(s=>{if(s.pct)return s;const am=_assetRows.get(s.eid)||{};const norm=s.rows.map(([q,v])=>{const a=am[q];return[q,v!=null&&a&&a!==0?100*v/a:null];});return{...s,rows:norm,pct:true,_normLabel:s.label+' / '+_ecNdLbl+' %'};}).map(s=>s._normLabel?{...s,label:s._normLabel}:s):chart.lastSeries;const hasDol=workSeries.some(s=>!s.pct),hasPct=workSeries.some(s=>s.pct);if(hasDol&&hasPct){const lF=workSeries.filter(s=>!s.pct),rF=workSeries.filter(s=>s.pct);html+=paneDual(lF.map(s=>({...s,rows:s.rows.filter(r=>ws.has(r[0]))})),rF.map(s=>({...s,rows:s.rows.filter(r=>ws.has(r[0]))})),win);}else{const groups=[['$ thousands',workSeries.filter(s=>!s.pct)],['percent',workSeries.filter(s=>s.pct)]];for(const[unit,arr]of groups){if(!arr.length)continue;const w=arr.map(s=>({...s,rows:s.rows.filter(r=>ws.has(r[0]))}));html+=pane(w,unit==='percent',unit,win,stackedOn&&unit==='$ thousands')+seriesBeginNote(w,win);}}if(chart.transforms.idx){const dol=chart.lastSeries.filter(s=>!s.pct);if(dol.length){const w=dol.map(s=>{const rw=s.rows.filter(r=>ws.has(r[0]));let bb;if(chart._idxBase){bb=rw.find(r=>r[0]===chart._idxBase&&r[1]!=null&&r[1]!==0)||rw.find(r=>r[1]!=null&&r[1]!==0);}else{bb=rw.find(r=>r[1]!=null&&r[1]!==0);}const b=bb&&bb[1];return{...s,rows:b?rw.map(([q,v])=>[q,v==null?null:100*v/b]):[]};});const baseLbl=chart._idxBase?` (base: ${chart._idxBase})`:'';html+=`<div class="idx-pane"><div style="font-size:12px;color:var(--muted,#9aa3b2);padding:2px 14px">Index to 100${baseLbl} — click chart to rebase${chart._idxBase?` · <a href="#" id="ec-idxbasereset" style="color:var(--muted,#9aa3b2)">reset</a>`:''}`;html+=pane(w,false,'index',win);html+=seriesBeginNote(w,win)+`</div>`;}}const ecQoqOn=!!chart.transforms.qoqdelta;if(ecQoqOn){const dol=chart.lastSeries.filter(s=>!s.pct);if(dol.length){const w=deltaSeries(dol,ws,prevQtr);html+=pane(w,false,'$ thousands',win)+seriesBeginNote(w,win);}const pctm=chart.lastSeries.filter(s=>s.pct);if(pctm.length){const w=deltaSeriesPP(pctm,ws,prevQtr,'QoQ Δ');html+=pane(w,true,'pp',win)+seriesBeginNote(w,win);}}
 if(chart.transforms.yoydelta){const dol=chart.lastSeries.filter(s=>!s.pct);if(dol.length){const w=deltaSeries(dol,ws,yoyQtr);html+=pane(w,false,'$ thousands',win)+seriesBeginNote(w,win);}const pctm=chart.lastSeries.filter(s=>s.pct);if(pctm.length){const w=deltaSeriesPP(pctm,ws,yoyQtr,'YoY Δ');html+=pane(w,true,'pp',win)+seriesBeginNote(w,win);}}
@@ -2261,8 +2451,10 @@ function paneDual(dol,pct,win){const _pinned=window._chartW>40&&window._chartH>4
    paths+=`<path d="${p}" fill="none" stroke="${s.color}" stroke-width="2"></path>`;
    if(lastCx!=null){const pts2=s.label.split(' \xb7 ');const nE=active.length,nM=measures.length;const sl=(nE>1&&nM===1?pts2[0]:(nE===1&&nM>1?short(pts2.slice(1).join(' \xb7 ')):short(s.label))).slice(0,34);_el.push({x:+lastCx+5,y:+lastCy+4,sl:sl,color:s.color});}}};
  render(dol,Y0,f0);render(pct,Y1,f1);
- const want=Math.min(8,n),ix=[...new Set(Array.from({length:want},(_,k)=>Math.round(k*(n-1)/Math.max(1,want-1))))];
- const lb=ix.map(i=>`<text x="${X(i)}" y="${H-pad+18}" font-size="10" fill="${aC}" text-anchor="${i===0?'start':(i===n-1?'end':'middle')}">${win[i]}</text>`).join('');
+ // C19 display cycle (P0e): compact quarter labels + width-adaptive tick density (report/pinned chart).
+ const _qlab=q=>{const s=String(q),y=s.slice(0,4),mo=s.slice(5,7);return y+' '+({'03':'Q1','06':'Q2','09':'Q3','12':'Q4'}[mo]||mo);};
+ const want=Math.max(2,Math.min(8,n,Math.floor((W-2*pad)/58))),ix=[...new Set(Array.from({length:want},(_,k)=>Math.round(k*(n-1)/Math.max(1,want-1))))];
+ const lb=ix.map(i=>`<text x="${X(i)}" y="${H-pad+18}" font-size="10" fill="${aC}" text-anchor="${i===0?'start':(i===n-1?'end':'middle')}">${_qlab(win[i])}</text>`).join('');
  slbls=''; // labels moved to #lbl-overlay overlay
  // Hover crosshair bands — parity with pane() so dual-axis gets the identical tracking line + markers.
  const _bi=Object.keys(byQ).map(Number).sort((a,b)=>a-b);let bands='';
@@ -2558,8 +2750,8 @@ async function buildReport(entityId,nm,latestQ,qtrs){
  const eq=getV(['RCFD3210','RCON3210']);
  const ni=getV(['RIAD4340']),nii=getV(['RIAD4074']),niinc=getV(['RIAD4079']),niexp=getV(['RIAD4093']);
  const coff=getV(['RIAD4635']),rec=getV(['RIAD4605']),alll=getV(['RCFD3123','RCON3123']);
- const npl30=getV(['RCFD1406','RCON1406']),npl90=getV(['RCFD1407','RCON1407']),nona=getV(['RCFD1403','RCON1403']);
- const npl=(npl30!=null||npl90!=null||nona!=null)?((npl30||0)+(npl90||0)+(nona||0)):null;
+ const npl90=getV(['RCFD1407','RCON1407']),nona=getV(['RCFD1403','RCON1403']);
+ const npl=(npl90!=null||nona!=null)?((npl90||0)+(nona||0)):null; // AQ-B2-1: standard NPL = 90+PD + nonaccrual (1406 excluded)
  const noncur=(npl90!=null||nona!=null)?((npl90||0)+(nona||0)):null;
  // OPEN-C (2026-07-02 probe): CET1/Tier1/Total RBC are now COMPUTED from live $ components, not
  // read as a reported ratio field — the reported-ratio codes (P793/7206/7274/7205, the old C7-8
@@ -2653,13 +2845,19 @@ async function buildReport(entityId,nm,latestQ,qtrs){
        // D_EFF exists too (plus:['4093'],den:['4074','4079'], no annualize) — IDENTICAL formula/scale
        // to this file's local eff=100*niexp/(nii+niinc) two lines above. Efficiency card was wrongly
        // assumed badge-less; it now gets the same size-independent treatment as ROA/NIM/NCO.
-       effStats=await peerStats('D_EFF',eff);
+       effStats=await peerStats('D_EFF',eff),
+       // AQ-B2 UI (2026-07-16): NPL joins the ratio-percentile pattern (cycle-8 D-5 built the
+       // correct ratio-based badge on 002; Call/Y-9C's identical card carried pc:null since the
+       // mislabeled raw-$ badge was removed in cycle 3). D_NPL post-AQ-B2-1 is (1403+1407)/2122 —
+       // the EXACT formula of the local nplRat above, same null semantics (charter-11 exact-match
+       // invariant, same as 002's documented one). betterWhen:'lower' inversion via pctileBar.
+       nplStats=await peerStats('D_NPL',nplRat);
  const prevQ=qtrs.length>=2?qtrs[qtrs.length-2]:null,yoyQ=qtrs.length>=5?qtrs[qtrs.length-5]:null;
  const pctD=(a,b)=>(a!=null&&b!=null&&b!==0)?100*(a-b)/b:null;
  const aQoQ=pctD(assets,prevQ?getV(['RCFD2170','RCON2170'],prevQ):null);
  const aYoY=pctD(assets,yoyQ?getV(['RCFD2170','RCON2170'],yoyQ):null);
  const lPrev=prevQ?getV(['RCFD2122','RCON2122'],prevQ):null;
- const nplPrev=prevQ?((getV(['RCFD1403','RCON1403'],prevQ)||0)+(getV(['RCFD1406','RCON1406'],prevQ)||0)+(getV(['RCFD1407','RCON1407'],prevQ)||0)):null;
+ const nplPrev=prevQ&&(getV(['RCFD1403','RCON1403'],prevQ)!=null||getV(['RCFD1407','RCON1407'],prevQ)!=null)?((getV(['RCFD1403','RCON1403'],prevQ)||0)+(getV(['RCFD1407','RCON1407'],prevQ)||0)):null; // AQ-B2-1/-2: 2-comp standard NPL, null when no data
  const nplRatPrev=lPrev&&nplPrev!=null&&lPrev>0?100*nplPrev/lPrev:null;
  const nplQoQ=pctD(nplRat,nplRatPrev);
  const fA=v=>v==null?'—':v>=1e9?'$'+(v/1e9).toFixed(1)+'T':v>=1e6?'$'+(v/1e6).toFixed(1)+'B':'$'+Math.round(v/1e3)+'M';
@@ -2685,10 +2883,9 @@ async function buildReport(entityId,nm,latestQ,qtrs){
  const hdr=`<div style="border:1px solid var(--border,#ccc);border-radius:6px;padding:14px 18px;margin-bottom:14px;background:var(--head,#f7f8fc);color:var(--fg,#111)"><div style="font-size:20px;font-weight:700;color:var(--fg,#111)">${nm} <span title="All figures below use the combined convention: RCFD/RCON/RCFN filing variants coalesced into one value per code" style="font-size:11px;font-weight:600;color:#1b7f3b;background:#eaf6ee;border:1px solid #bfe3c9;border-radius:10px;padding:2px 8px;vertical-align:middle">Combined (RCFD+RCON+RCFN coalesced)</span></div><div class="muted" style="font-size:13px;margin-top:3px">RSSD ${eid} · Commercial Bank · FFIEC 031/041/051</div><div style="font-size:14px;margin-top:7px;color:var(--fg,#111)">As of ${latestQ}${assets!=null?' &nbsp;·&nbsp; Total assets: '+fA(assets):''}${rnk?' &nbsp;·&nbsp; '+rnk:''}</div></div>`;
  // per-quarter helpers for sparklines and trend charts
  const qnlQ=q=>({'03':1,'06':2,'09':3,'12':4}[String(q).slice(5,7)]||4);
- const annQ=(ncodes,dcodes,q)=>{const n=getV(ncodes,q),d=getV(dcodes,q);return n!=null&&d!=null&&d>0?100*n/d*(4/qnlQ(q)):null;};
- const ncoQ=q=>{const c=getV(['RIAD4635'],q),r=getV(['RIAD4605'],q),l=getV(['RCFD2122','RCON2122'],q);return c!=null&&r!=null&&l!=null&&l>0?100*(c-r)/l*(4/qnlQ(q)):null;};
- const effQ=q=>{const n=getV(['RIAD4074'],q),nc=getV(['RIAD4079'],q),x=getV(['RIAD4093'],q);return n!=null&&nc!=null&&x!=null&&(n+nc)>0?100*x/(n+nc):null;};
- const nplQ=q=>{const l=getV(['RCFD2122','RCON2122'],q);const np=(getV(['RCFD1403','RCON1403'],q)||0)+(getV(['RCFD1406','RCON1406'],q)||0)+(getV(['RCFD1407','RCON1407'],q)||0);return l&&l>0?100*np/l:null;};
+ function makeKPI(rv,C,qnlQ){const gsum=(ss,q)=>{const vs=ss.map(s=>rv(s,q));return vs.every(v=>v==null)?null:vs.map(v=>v||0).reduce((a,b)=>a+b);};return{annQ:(n,d,q)=>{const nv=rv(n,q),dv=rv(d,q);return nv!=null&&dv!=null&&dv>0?100*nv/dv*(4/qnlQ(q)):null;},ncoQ:q=>{const c=rv(C.nco.co,q),r=rv(C.nco.rec,q),l=rv(C.loans,q);return c!=null&&r!=null&&l!=null&&l>0?100*(c-r)/l*(4/qnlQ(q)):null;},effQ:q=>{const n=rv(C.eff.nii,q),nc=rv(C.eff.noninc,q),x=rv(C.eff.nonexp,q);return n!=null&&nc!=null&&x!=null&&(n+nc)>0?100*x/(n+nc):null;},nplQ:q=>{const l=rv(C.loans,q);const np=gsum(C.npl,q);return l&&l>0&&np!=null?100*np/l:null;},ncurQ:q=>{const l=rv(C.loans,q);const nc=gsum(C.ncur,q);return l&&l>0&&nc!=null?100*nc/l:null;}};}
+ const KPI_CFG={loans:['RCFD2122','RCON2122'],npl:[['RCFD1403','RCON1403'],['RCFD1407','RCON1407']],nco:{co:['RIAD4635'],rec:['RIAD4605']},eff:{nii:['RIAD4074'],noninc:['RIAD4079'],nonexp:['RIAD4093']}};
+ const {annQ,ncoQ,effQ,nplQ}=makeKPI(getV,KPI_CFG,qnlQ);
  // OPEN-C: per-quarter computed capital ratio (numerator $ codes ÷ RWA $ codes), mirrors the
  // latest-quarter cet1/tier1/totRbc computation above, for sparklines + the Capital Ratios trend chart.
  const capRatQ=(ncodes,q)=>{const n=getV(ncodes,q),d=getV(['RCFAA223','RCOAA223'],q);return n!=null&&d!=null&&d>0?100*n/d:null;};
@@ -2731,8 +2928,8 @@ async function buildReport(entityId,nm,latestQ,qtrs){
    info:{title:'Tier 1 RBC Ratio',formula:'(RCFA8274 ?? RCOA8274) ÷ (RCFAA223 ?? RCOAA223) × 100  [computed — Tier 1 capital ÷ risk-weighted assets]',terms:[kvV(['RCFA8274','RCOA8274'],tier1Num),kvV(['RCFAA223','RCOAA223'],rwa)],asof:latestQ,note:'Computed from as-reported $ components (RC-R I item 26 ÷ item 33), not a reported ratio field — the legacy reported-ratio codes (7205/7206/7274) died panel-wide after 2014-12-31. No percentile badge: peerPctile only ranks a single raw code, and this is now a computed ratio.'}},
   {lbl:'Total RBC Ratio',val:fP(totRbc),betterWhen:'higher',notReported:totRbc==null,spk:sparkline(qtrs.map(q=>[q,capRatQ(['RCFA3792','RCOA3792'],q)]),true,COLORS[6]),qoq:null,yoy:null,pc:null,
    info:{title:'Total Risk-Based Capital Ratio',formula:'(RCFA3792 ?? RCOA3792) ÷ (RCFAA223 ?? RCOAA223) × 100  [computed — Total capital ÷ risk-weighted assets]',terms:[kvV(['RCFA3792','RCOA3792'],totCapNum),kvV(['RCFAA223','RCOAA223'],rwa)],asof:latestQ,note:'Computed from as-reported $ components (RC-R I item 30 ÷ item 33). Added alongside CET1/Tier1 since the same verified $ components make it available. No percentile badge, for the same reason as CET1/Tier1.'}},
-  {lbl:'NPL Ratio',val:fP(nplRat),betterWhen:'lower',spk:sparkline(qtrs.map(q=>[q,nplQ(q)]),true,COLORS[6]),qoq:nplQoQ,yoy:null,pc:null,
-   info:{title:'NPL Ratio',formula:'Σ(RCFD/RCON 1406+1407+1403) ÷ (RCFD2122 ?? RCON2122) × 100',terms:[kvV(['RCFD1406','RCON1406'],npl30),kvV(['RCFD1407','RCON1407'],npl90),kvV(['RCFD1403','RCON1403'],nona),kvV(['RCFD2122','RCON2122'],loans)],asof:latestQ}},
+  {lbl:'NPL Ratio',val:fP(nplRat),betterWhen:'lower',spk:sparkline(qtrs.map(q=>[q,nplQ(q)]),true,COLORS[6]),qoq:nplQoQ,yoy:null,pc:nplStats.pct,
+   info:{title:'NPL Ratio',formula:'Σ(RCFD/RCON 1407+1403) ÷ (RCFD2122 ?? RCON2122) × 100',terms:[kvV(['RCFD1407','RCON1407'],npl90),kvV(['RCFD1403','RCON1403'],nona),kvV(['RCFD2122','RCON2122'],loans)],asof:latestQ,note:'NPL = 90+ days past due + nonaccrual (excludes 30–89 day past-due).'}},
   {lbl:'NCO Rate (ann.)',val:fP(nco),betterWhen:'lower',spk:sparkline(qtrs.map(q=>[q,ncoQ(q)]),true,COLORS[7]),qoq:null,yoy:null,pc:ncoStats.pct,
    info:{title:'NCO Rate (annualized)',formula:'(RIAD4635 − RIAD4605) ÷ (RCFD2122 ?? RCON2122) × 100 × (4/N)',terms:[kvV(['RIAD4635'],coff),kvV(['RIAD4605'],rec),kvV(['RCFD2122','RCON2122'],loans)],asof:latestQ,note:`Annualization factor this quarter: 4/${qnl} (N=${qnl}). Percentile badge ranks the annualized NCO rate % itself (D_NCO_LOANS), not the raw gross charge-off dollar amount.`}},
  ];

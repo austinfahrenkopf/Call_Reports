@@ -20,6 +20,7 @@ NOTE: delete the cdr_parquet/ folder before re-running if the schema changed.
 from __future__ import annotations
 import argparse, csv, io, os, re, zipfile
 import pandas as pd
+from cdr_merge_lib import merge_roster, merge_captions, guard_no_shrink  # AQ-C16-5: merge-don't-replace on incremental runs
 
 ZIPDIR="cdr_zips"; OUTDIR="cdr_parquet"
 ROSTER="ffiec_call_roster.csv"; CAP="ffiec_call_captions.csv"
@@ -32,13 +33,14 @@ os.makedirs(OUTDIR, exist_ok=True)
 zips=sorted(f for f in os.listdir(ZIPDIR) if f.lower().endswith(".zip"))
 print(f"{len(zips)} quarter zips; types {sorted(TYPES)}")
 
-roster={}; captions={}
+roster={}; captions={}; parsed_qends=[]; skipped_any=False
 for z in zips:
     m=re.search(r"(\d{8})", z)
     if not m: continue
     ymd=m.group(1); qend=f"{ymd[:4]}-{ymd[4:6]}-{ymd[6:]}"
     outpq=os.path.join(OUTDIR, f"call_{ymd}.parquet")
-    if os.path.exists(outpq): print(f"  {qend}: exists, skip"); continue
+    if os.path.exists(outpq): print(f"  {qend}: exists, skip"); skipped_any=True; continue
+    parsed_qends.append(qend)
     try: zf=zipfile.ZipFile(os.path.join(ZIPDIR,z))
     except Exception as e: print(f"  {z}: bad zip {e}"); continue
     names=zf.namelist()
@@ -106,9 +108,21 @@ for z in zips:
     out.to_parquet(outpq, index=False)
     print(f"  {qend}: filers={len(keep)} rows={len(out):,} -> {outpq}")
 
-pd.DataFrame([(k,v[0],v[1],v[2],v[3],v[4]) for k,v in sorted(roster.items())],
-    columns=["id_rssd","institution_name","entity_type","first_quarter","last_quarter","n_quarters"]
-    ).to_csv(ROSTER, index=False)
-pd.DataFrame([(s,c,cap) for c,(s,cap) in sorted(captions.items())],
-    columns=["schedule","mdrm","caption"]).to_csv(CAP, index=False)
+# AQ-C16-5 (2026-07-16): on an INCREMENTAL run (quarters skipped because their parquet exists),
+# the run dicts cover only the newly parsed quarters — writing them verbatim would collapse the
+# roster/caption history. Merge with the existing CSVs instead (old rows baseline, shrink guard
+# fails loud). From-scratch runs (nothing skipped / no existing CSVs) are byte-identical to the
+# old behavior: merge_* pass the run dicts straight through.
+_old_roster = pd.read_csv(ROSTER, dtype=str).to_dict("records") if (skipped_any and os.path.exists(ROSTER)) else None
+_old_caps   = pd.read_csv(CAP,    dtype=str).to_dict("records") if (skipped_any and os.path.exists(CAP))    else None
+if _old_roster is not None:
+    print(f"incremental run: merging {len(roster)} run-roster rows into {len(_old_roster)} existing "
+          f"(parsed {len(parsed_qends)} quarter(s), skipped the rest)")
+_ro = pd.DataFrame(merge_roster(_old_roster, roster, parsed_qends),
+    columns=["id_rssd","institution_name","entity_type","first_quarter","last_quarter","n_quarters"])
+_ca = pd.DataFrame(merge_captions(_old_caps, captions), columns=["schedule","mdrm","caption"])
+guard_no_shrink(ROSTER, len(_ro), "roster")   # AQ-C16-5 write-site guard: never overwrite history with less
+guard_no_shrink(CAP,    len(_ca), "captions")
+_ro.to_csv(ROSTER, index=False)
+_ca.to_csv(CAP, index=False)
 print(f"\ndone. per-quarter parquet in {OUTDIR}/ ; {ROSTER} ; {CAP}")
