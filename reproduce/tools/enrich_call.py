@@ -12,16 +12,24 @@ Setup:  pip install requests pandas pyarrow
 Run:    python enrich_call.py
 """
 from __future__ import annotations
-import csv, io, zipfile
+import csv, io, os, zipfile
 import requests, pandas as pd
 
 URL="https://www.federalreserve.gov/apps/mdrm/pdf/MDRM.zip"; UA={"User-Agent":"Mozilla/5.0 (research)"}
+CACHE="MDRM.zip"   # AQ-C16-15: a local copy is reused (offline/repeatable), mirroring build_fry9c_dictionary.py
 SEG_IN="ffiec_call_segments_long.parquet"; SEG_OUT="ffiec_call_segments.parquet"
 CAP="ffiec_call_captions.csv"; DICT="ffiec_call_dictionary.csv"
 
-print("downloading Fed MDRM dictionary ...")
-r=requests.get(URL,headers=UA,timeout=120); r.raise_for_status()
-zf=zipfile.ZipFile(io.BytesIO(r.content))
+def _mdrm_bytes():
+    if os.path.exists(CACHE):
+        print("using local", CACHE)
+        return open(CACHE,"rb").read()
+    print("downloading Fed MDRM dictionary ...")
+    r=requests.get(URL,headers=UA,timeout=120); r.raise_for_status()
+    tmp=CACHE+".tmp"; open(tmp,"wb").write(r.content); os.replace(tmp,CACHE)  # atomic cache write (offline reruns)
+    return r.content
+
+zf=zipfile.ZipFile(io.BytesIO(_mdrm_bytes()))
 member=max((m for m in zf.namelist() if m.lower().endswith(".csv")), key=lambda m:zf.getinfo(m).file_size)
 rows=list(csv.reader(io.StringIO(zf.read(member).decode("latin-1",errors="replace"))))
 hi=next(i for i,row in enumerate(rows) if any(c.strip().lower()=="mnemonic" for c in row))

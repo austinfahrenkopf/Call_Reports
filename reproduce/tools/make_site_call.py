@@ -267,7 +267,7 @@ body.dark .erow.on{background:#16361f}
  body.dark svg{background:#0f1825;border-color:#2a3547}
  body.dark .up{color:#3fb950}body.dark .dn{color:#f85149}
  body.dark a{color:#6cb6ff}
- #theme{float:right;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);padding:4px 10px;font-size:13px}
+ #setbtn{float:right;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);padding:4px 10px;font-size:13px}
  .credit{margin:20px 2px 10px;font-size:13px;color:#9aa3b2}.credit a{color:inherit;text-decoration:underline}
 .fav{cursor:pointer;color:#d69e2e;font-size:13px;flex:none;padding:0 3px;opacity:.4;transition:opacity .1s}.fav.on{opacity:1}.fav:hover{opacity:1}
 .pane-toggle{font-size:13px;padding:3px 8px;margin-bottom:4px}
@@ -356,8 +356,20 @@ body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td
 }
 </style></head><body class="dark">
 <div id="pbar"></div><div id="formulatip" style="display:none"></div><div id="whytip" style="display:none"></div>
-<header><button id="theme">☀ Light</button><h1>FFIEC Call Report Dashboard</h1>
+<header><button id="setbtn" title="Settings — theme, raw codes, display toggles">⚙ Settings</button><h1>FFIEC Call Report Dashboard</h1>
 <p>U.S. commercial banks (031/041/051) · banks + ALL / type / size buckets + peer groups · 1976 Q1&ndash;present · $ thousands<span id="datacur"></span></p></header>
+<!-- §P0g item 2 (2026-07-19): ⚙ settings popover — consolidates the three scattered control homes
+     (theme was top-right, raw-codes under the tree legend, display toggles in the bottom bar).
+     Control IDs, handlers and label text move VERBATIM: every suite pin is by-id (c7 P43/P45 JS
+     clicks, mr p19 label-text read), none positional, so the moves are lockstep-free by inventory
+     (_verify/evidence/s2_settings_recent_20260719.md). -->
+<div id="setpop" style="display:none;position:fixed;z-index:9999;min-width:240px;padding:10px 14px;border:1px solid var(--border,#ccc);border-radius:8px;background:var(--head,#f7f8fc);color:var(--fg,#111);box-shadow:0 4px 18px rgba(0,0,0,.3);font-size:13px;line-height:1.7">
+ <div style="font-weight:700;margin-bottom:6px">Settings</div>
+ <div style="margin-bottom:6px"><button id="theme" class="sec">☀ Light</button> <span class="muted" style="font-size:11px">color theme</span></div>
+ <div><label title="Shows the individual filing-variant codes (RCFD domestic-consolidated / RCON domestic-only / RCFN foreign-office) nested under each combined row"><input type="checkbox" id="showraw"> Show raw filing codes</label></div>
+ <div><label class="muted" title="show end-of-line series labels in a draggable overlay"><input type="checkbox" id="inlinelbls"> inline labels</label></div>
+ <div><label id="linkcharts-lbl" style="cursor:pointer;user-select:none;display:none"><input type="checkbox" id="linkcharts"> ⛓ Link charts</label></div>
+</div>
 <div class="app">
  <div class="rail">
   <div class="railtabs"><button id="tabItems" class="tab on">Line items</button><button id="tabEnts" class="tab">Entities</button>
@@ -380,10 +392,7 @@ body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td
       <div>★ Ratios &amp; Subtotals = curated derived measures — hover a row for its formula</div>
       <div><span style="opacity:.45">Greyed row</span> = no public data for this item</div>
       <div><span class="lg-meta">Italic violet</span> = filing-metadata code (administrative, not a financial position — hover explains)</div>
-     </div></details>
-    <div class="railctl">
-     <label title="Shows the individual filing-variant codes (RCFD domestic-consolidated / RCON domestic-only / RCFN foreign-office) nested under each combined row"><input type="checkbox" id="showraw"> Show raw filing codes</label>
-    </div></div>
+     </div></details></div><!-- showraw moved to the ⚙ settings popover (§P0g item 2) -->
    <div id="tree"><p class="muted" style="padding:10px">Loading…</p></div>
   </div>
   <div id="panelEnts" style="display:none">
@@ -404,6 +413,7 @@ body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td
   <div id="status">Loading data engine…</div>
   <button id="loadold" class="sec" style="display:none" title="Load pre-2001 historical series (~lazy HTTP range-loaded)">📅 Older data</button>
   <div id="downloads" class="muted" style="margin-bottom:8px"></div>
+  <div id="recentents" class="muted" style="display:none;font-size:12px;margin:0 0 6px"></div>
   <div class="row">
    <div><label>Entity <span class="muted" style="cursor:help;border:1px solid var(--border,#ccc);border-radius:50%;padding:0 5px;font-size:12px" title="Type a bank name or RSSD ID. Also accepts: ALL (all filers), 031 / 041 / 051 (charter-type buckets), SIZE_… (asset-size buckets), or a ★ saved peer group name.">(?)</span></label>
     <input id="ent" list="entlist" autocomplete="off" placeholder="Search bank name or RSSD ID…"><datalist id="entlist"></datalist></div>
@@ -468,11 +478,6 @@ body:not(.dark) .lgon-row td{background:#e8f5e9!important}body.dark .lgon-row td
     <label class="muted" title="rebase each $ series to 100 at the start of the range"><input type="checkbox" id="idx"> index to 100</label>
     <label class="muted" title="render $ series as stacked areas (additive measures only — disabled for % / ratio series)"><input type="checkbox" id="stackedmode"> ◫ Stacked</label>
     <span style="white-space:nowrap"><label class="muted" title="Divide each $ series by the selected denominator, producing a % ratio"><input type="checkbox" id="normbyassets"> ÷ (ratio to…)</label> <select id="normden" style="font-size:12px;padding:1px 3px;border:1px solid var(--border,#ccc);border-radius:3px;background:var(--bg2,#f7f9fb);color:var(--fg,#14213d);max-width:90px"><option value="COMB2170">assets</option><option value="COMB2122">loans</option><option value="COMB2200">deposits</option><option value="COMB3210">equity</option></select></span>
-   </span>
-   <span class="ctl-cluster">
-    <span class="ctl-cap">Display</span>
-    <label class="muted" title="show end-of-line series labels in a draggable overlay"><input type="checkbox" id="inlinelbls"> inline labels</label>
-    <label id="linkcharts-lbl" style="cursor:pointer;user-select:none;display:none"><input type="checkbox" id="linkcharts"> ⛓ Link charts</label>
    </span>
    <span class="ctl-cluster">
     <span class="ctl-cap">Range</span>
@@ -596,7 +601,10 @@ const DERIV={
  'D_NONDEP':{type:'ratio',lbl:'Funding ▸ Non-deposit liabilities / Assets (%)',plus:['2948'],minus:['2200'],den:['2170']},
  'D_BROKERED':{type:'ratio',lbl:'Funding ▸ Brokered deposits / Deposits (%)',plus:['2365'],den:['2200']},
  'D_NPL':{type:'ratio',lbl:'Credit ▸ NPL % (90+ PD + nonaccrual / loans)',plus:['1407','1403'],den:['2122']},
- 'D_NONCUR_PCT':{type:'ratio',lbl:'Credit ▸ Noncurrent loan ratio % (90++nonaccrual / loans)',plus:['1407','1403'],den:['2122']},
+ // S4 synonym tidy (waived NPL-review P2-1): formula-identical to D_NPL post-AQ-B2-1. lgHide keeps
+ // it OUT of the league + quick-add dropdowns; the def stays (old links restore) and the ★ shelf
+ // tree row stays (search value).
+ 'D_NONCUR_PCT':{type:'ratio',lbl:'Credit ▸ Noncurrent loan ratio % (90++nonaccrual / loans)',plus:['1407','1403'],den:['2122'],lgHide:true},
  'D_RESLOANS':{type:'ratio',lbl:'Credit ▸ Reserves / Loans (%)',plus:['3123'],den:['2122']},
  'D_RESNPL':{type:'ratio',lbl:'Credit ▸ Reserve coverage % (reserves / noncurrent)',plus:['3123'],den:['1407','1403']},
  'D_NCO_LOANS':{type:'ratio',lbl:'Credit ▸ NCO rate % (annualized, (charge-offs−recoveries)/loans)',plus:['4635'],minus:['4605'],den:['2122'],annualize:true},
@@ -609,10 +617,34 @@ const DERIV={
  'D_UTIL':{type:'ratio',lbl:'Undrawn ▸ Loan utilization % (loans/(loans+unused))',plus:['2122'],den:['2122',...UNUSED]},
  'S_NONCUR':{type:'sum',lbl:'Subtotal ▸ Noncurrent loans $ (90++nonaccrual)',plus:['1407','1403']},
  'S_PASTDUE':{type:'sum',lbl:'Subtotal ▸ Past due + nonaccrual $ (RC-N item 9)',plus:['1406','1407','1403']},
- 'D_NPL_CI':{type:'ratio',lbl:'Loan quality ▸ C&I delinquency % (30+ PD + nonaccrual / C&I loans)',plus:['1250','1252','1253','1254','1255','1256'],den:['1763','1764']},
+ // AQ-B2-6 Phase B (S4 2026-07-19, ink RC-N p47): 4.a is 1251/1252/1253, 4.b is 1254/1255/1256.
+ // The shipped '1250' was a TRANSCRIPTION ERROR — RCFD1250 is "loans secured by REAL ESTATE to
+ // non-U.S. addressees — NONACCRUAL" (RC-N Memo 3), an unrelated code (JPM: 1250=415,000 vs true
+ // 1251=841,000). ⚠ 041/051 filers file the SINGLE-ROW family 1606/1607/1608 instead — it cannot
+ // be flat-added here (6,144 entity-quarters carry BOTH families ⇒ double-count) and den 1763+1764
+ // already covers all filers. ⚠⚠ S4 review P1 correction (HISTORICAL — fixed by S5-E below): under
+ // the S4 bare-base numerator the CDR's ZERO-FILLED RCON1254/1255/1256 counted as numerator-seen,
+ // so 93 of 104 041/051 filers rendered a FALSE 0.00% and 3 more a wrong nonzero value — 96 books
+ // corrected (the AQ-B2-1 disease class; review-audited split). The S5-E census
+ // corrected S4's "52,865 dropped historical rows" figure: the literal-RCFD group bypasses only
+ // 393 nonzero RCON rows (268 entity-quarters, 2001→2026), every one of which the 1606-family
+ // covers — no honest-absence is created. Hand-check: JPM 852218 @2026-03-31 = 1.5989%.
+ // S5-E (owner contract AQ-S4-1, signed 2026-07-19): alternative-group numerator. Group A = the 031
+ // multi-column C&I family as LITERAL RCFD tokens (RCFD125x = exactly the 50 031 filers; RCON1251
+ // has 0 rows ever, and the CDR ZERO-FILLS RCON1254-56 for 041/051 filers — a bare-base group would
+ // capture those zero-fills and re-create the false-0.00% class). Group B = the 041/051 single-row
+ // family 1606/1607/1608 (same 30-89/90+/nonaccrual composition). den 1763+1764 already spans both
+ // cohorts — do NOT add 1766. Census 2026-07-19 (review-audited): cohorts 50/104, 6,144 both-
+ // family pairs, 93 false-0.00% + 3 wrong-nonzero = 96 books corrected; JPM 1.5989% unchanged;
+ // BANK:595270 0.00%→2.9749%. ⚠ Aggregate scopes (ALL/SIZE_*/filing-type) render honest-absent
+ // for this measure — see the seriesFor ALT guard (S5-E review P1).
+ 'D_NPL_CI':{type:'ratio',lbl:'Loan quality ▸ C&I delinquency % (30+ PD + nonaccrual / C&I loans)',plus:['ALT:RCFD1251+RCFD1252+RCFD1253+RCFD1254+RCFD1255+RCFD1256|1606+1607+1608'],den:['1763','1764']},
  'D_NPL_CC':{type:'ratio',lbl:'Loan quality ▸ Credit card delinquency % (30+ PD + nonaccrual / CC loans)',plus:['B575','B576','B577'],den:['B538']},
  'D_NPL_AUTO':{type:'ratio',lbl:'Loan quality ▸ Auto delinquency % (30+ PD + nonaccrual / auto loans)',plus:['K213','K214','K215'],den:['K137']},
- 'D_NPL_CONS':{type:'ratio',lbl:'Loan quality ▸ Other consumer delinquency % (30+ PD + nonaccrual / other consumer)',plus:['B578','B579','B580'],den:['K207']},
+ // AQ-B2-6 Phase B (S4 2026-07-19): B578/B579/B580 ENDED 2010-12-31 (the numerator was dead —
+ // nulls for 15 years); current form 5.c = K216/K217/K218 (2011-03→present). Era-stitch is clean:
+ // 0 coexisting entity-quarters across the whole panel. Hand-check: BANK:3394278 @2026-03-31 = 2.8366%.
+ 'D_NPL_CONS':{type:'ratio',lbl:'Loan quality ▸ Other consumer delinquency % (30+ PD + nonaccrual / other consumer)',plus:['B578','B579','B580','K216','K217','K218'],den:['K207']},
  'D_NPL_AG':{type:'ratio',lbl:'Loan quality ▸ Agricultural delinquency % (30+ PD + nonaccrual / ag loans)',plus:['1594','1597','1583'],den:['1590']},
  'D_NPL_RES':{type:'ratio',lbl:'Loan quality ▸ 1-4 family RE delinquency % (30+ PD + nonaccrual / residential loans)',plus:['5398','5399','5400','C236','C237','C229','C238','C239','C230'],den:['1797','5367','5368']},
  'D_NPL_CONSTR':{type:'ratio',lbl:'Loan quality ▸ Construction & land delinquency % (30+ PD + nonaccrual / construction loans)',plus:['F172','F173','F174','F176','F175','F177'],den:['F158','F159']},
@@ -732,16 +764,20 @@ function whyDescribe(code,label){
  const d=DERIV[code]||DYN[code]||USERCALC[code];
  if(!d)return null;
  const cap=c=>fullCap(c)||c;
+ // S5-E: ALT tokens expand into per-group member terms so the info panel never shows a raw 'ALT:' string
+ const expandTerm=(c,role)=>c.startsWith('ALT:')?c.slice(4).split('|').flatMap((g,i)=>g.split('+').map(m=>({code:m,cap:cap(m),role:role+(i?` (alt group ${i+1} — used only where group ${i} is absent)`:' (alt group 1 — preferred where present)')}))):[{code:c,cap:cap(c),role}];
+ const altNote=toks=>toks.some(c=>c.startsWith('ALT:'))?' Alternative-group formula: the form collects this line as DIFFERENT item families depending on the filer\'s report form; per filer and quarter the FIRST group with any value present supplies the number (later groups are ignored), so the two families are never summed together.':'';
  if(d.type==='ratio'){
-  const numTxt=d.minus&&d.minus.length?`(Σ${d.plus.join('+')} − Σ${d.minus.join('+')})`:`Σ(${d.plus.join('+')})`;
-  const formula=`${numTxt} ÷ Σ(${d.den.join('+')}) × 100${d.annualize?' × (4/N)':''}`;
-  const terms=[...d.plus.map(c=>({code:c,cap:cap(c),role:'numerator +'})),...(d.minus||[]).map(c=>({code:c,cap:cap(c),role:'numerator −'})),...d.den.map(c=>({code:c,cap:cap(c),role:'denominator'}))];
-  return {title:label||d.lbl||code,formula,terms,note:d.annualize?'Annualized: value × (4 / quarter-number-in-year), consistent with the "ann." KPI convention.':null};
+  const numTxt=d.minus&&d.minus.length?`(Σ${d.plus.map(tokText).join('+')} − Σ${d.minus.map(tokText).join('+')})`:`Σ(${d.plus.map(tokText).join('+')})`;
+  const formula=`${numTxt} ÷ Σ(${d.den.map(tokText).join('+')}) × 100${d.annualize?' × (4/N)':''}`;
+  const terms=[...d.plus.flatMap(c=>expandTerm(c,'numerator +')),...(d.minus||[]).flatMap(c=>expandTerm(c,'numerator −')),...d.den.flatMap(c=>expandTerm(c,'denominator'))];
+  const note=(d.annualize?'Annualized: value × (4 / quarter-number-in-year), consistent with the "ann." KPI convention.':'')+altNote([...d.plus,...(d.minus||[]),...(d.den||[])]);
+  return {title:label||d.lbl||code,formula,terms,note:note||null};
  }
  if(d.type==='sum'){
-  const formula=`Σ(${d.plus.join(' + ')})`;
-  const terms=d.plus.map(c=>({code:c,cap:cap(c),role:'component'}));
-  return {title:label||d.lbl||code,formula,terms,note:null};
+  const formula=`Σ(${d.plus.map(tokText).join(' + ')})`;
+  const terms=d.plus.flatMap(c=>expandTerm(c,'component'));
+  return {title:label||d.lbl||code,formula,terms,note:altNote(d.plus)||null};
  }
  if(d.type==='hybrid_ratio'||d.type==='hybrid_sum'){
   const reportedCodes=d.parts.map(p=>p.reported);
@@ -910,12 +946,23 @@ function coalesce(map,base){return map['COMB'+base]??map['RCFD'+base]??map['RCON
 // materialized COMB row, else coalesce(RCFD,RCON) · full 8-char prefixed code → exactly that code ·
 // bare 4-char base (curated DERIV entries keep the pre-C18 convention) → the legacy 9-prefix coalesce.
 const _TOKPREF=/^(RCFD|RCON|RCFN|RCFA|RCFW|RCOA|RCOW|RIAD)/;
-function tokCodes(t){if(t.startsWith('COMB'))return['COMB'+t.slice(4),'RCFD'+t.slice(4),'RCON'+t.slice(4)];
+// S5-E alternative-group token (owner contract AQ-S4-1, signed 2026-07-19): 'ALT:g1|g2|…' where each
+// group is '+'-joined member tokens (members resolve by the EXISTING rules below). Semantics: the
+// FIRST group, in declared order, with ANY member value present for this (entity,quarter) supplies
+// the group sum; later groups are ignored; all groups absent → null. Kills the two proven
+// flat-sum-inexpressible cases: D_NPL_CI 031-vs-041/051 families (the CDR zero-fill false-0.00%
+// class — group A is LITERAL RCFD tokens so 041/051 zero-filled RCON rows can't capture the filer)
+// and RC-A 5 item 1 (RCFD0022 | RCON0020+0080, 031 filers carry both forms).
+function tokCodes(t){if(t.startsWith('ALT:'))return t.slice(4).split('|').flatMap(g=>g.split('+').flatMap(tokCodes));
+ if(t.startsWith('COMB'))return['COMB'+t.slice(4),'RCFD'+t.slice(4),'RCON'+t.slice(4)];
  if(_TOKPREF.test(t)&&t.length===8)return[t];
  return ['COMB','RCFD','RCON','RIAD','RCFA','RCFW','RCOA','RCOW','RCFN'].map(p=>p+t);}
-function tokVal(mp,t){if(t.startsWith('COMB')){const b=t.slice(4);const a=mp['COMB'+b];if(a!=null)return a;const c=mp['RCFD'+b];if(c!=null)return c;const e=mp['RCON'+b];return e??null;}
+function tokVal(mp,t){if(t.startsWith('ALT:')){for(const g of t.slice(4).split('|')){let s=0,seen=false;for(const m of g.split('+')){const v=tokVal(mp,m);if(v!=null){s+=v;seen=true;}}if(seen)return s;}return null;}
+ if(t.startsWith('COMB')){const b=t.slice(4);const a=mp['COMB'+b];if(a!=null)return a;const c=mp['RCFD'+b];if(c!=null)return c;const e=mp['RCON'+b];return e??null;}
  if(_TOKPREF.test(t)&&t.length===8)return mp[t]??null;
  return coalesce(mp,t);}
+// Human-readable rendering of any token for info-panel formula text ('ALT:' → "first present of …").
+function tokText(t){return t.startsWith('ALT:')?'['+t.slice(4).split('|').map(g=>g.split('+').join('+')).join(' else ')+']':t;}
 // C18 seam honesty: per hybrid measure, the quarters whose charted value used derived component
 // fill (the filed line was absent for at least one in-scope filer) — computed, never hardcoded.
 window._fillQ={};
@@ -1018,6 +1065,17 @@ const isRawPct=m=>PCTC.has(m)&&!DERIV[m];
 async function seriesFor(id,m){const ids=expand(id);if(!ids.length)return [];
  // HIGH-2: raw capital-ratio codes must not be summed across a multi-entity aggregate.
  if(isRawPct(m)&&isAggScope(id))return [];
+ // S5-E review P1: ALT alternative-group tokens carry per-FILER semantics (first-present-of by
+ // report form). The served pseudo-entity aggregates (ALL/031/041/051/SIZE_*) mix BOTH forms'
+ // code families in one row map, so first-present-of there discards a whole cohort's family
+ // (measured @2026-03-31: ALL numerator understated ~30%, SIZE_<1B false 0.00%) — and the
+ // aggregates were already wrong pre-S5E (they never included the 1606-family at all). Honest-
+ // absent beats wrong: ALT-bearing measures render no data on aggregate scopes until a panel-side
+ // ALT-resolved aggregate lands (owner contract — see ANALYST_QA AQ-S5-1). PEER: scopes are fine
+ // (they expand to BANK: ids and resolve per-filer before summing).
+ {const _dA=DERIV[m]||DYN[m]||USERCALC[m];
+  if(_dA&&!id.startsWith('PEER:')&&isAggScope(id)&&
+     [...(_dA.plus||[]),...(_dA.minus||[]),...(_dA.den||[])].some(t=>String(t).startsWith('ALT:')))return [];}
  const _sk=`${id}::${m}`;if(_seriesCache.has(_sk)){if(_fillQCache.has(_sk))window._fillQ[m]=_fillQCache.get(_sk);return _seriesCache.get(_sk);}
  if(_inflight.has(_sk))return _inflight.get(_sk);
  const _p=(async()=>{
@@ -1089,7 +1147,7 @@ async function init(){try{
    chip.style.cssText='cursor:pointer;margin-left:8px;font-size:11px;font-weight:600;padding:2px 8px;border:1px solid var(--border,#ccc);border-radius:10px;background:var(--head,#f7f8fc);color:var(--fg,#111);white-space:nowrap;vertical-align:middle';
    chip.innerHTML=`Data: ${yy} Q${qn} <span style="opacity:.7">ⓘ</span>`;
    const about=`<div>Quarterly Call Report filings (FFIEC 031/041/051) for every U.S. commercial bank, from the FFIEC CDR public bulk data.</div>`;
-   chip.onclick=e=>{e.stopPropagation();let p=document.getElementById('datapop');if(p){p.remove();return;}
+   chip.onclick=e=>{e.stopPropagation();{const sp=document.getElementById('setpop');if(sp)sp.style.display='none';}let p=document.getElementById('datapop');if(p){p.remove();return;}
     p=document.createElement('div');p.id='datapop';
     p.style.cssText='position:fixed;z-index:9999;max-width:420px;padding:12px 16px;border:1px solid var(--border,#ccc);border-radius:8px;background:var(--head,#f7f8fc);color:var(--fg,#111);box-shadow:0 4px 18px rgba(0,0,0,.3);font-size:12.5px;line-height:1.55';
     const r=chip.getBoundingClientRect();p.style.top=(r.bottom+6)+'px';p.style.left=Math.max(8,Math.min(r.left,innerWidth-436))+'px';
@@ -1144,6 +1202,12 @@ async function init(){try{
  if(localStorage.getItem('ffiec_theme')==='light')document.body.classList.remove('dark');
  const setThemeLbl=()=>document.getElementById('theme').textContent=DK()?'☀ Light':'🌙 Dark';setThemeLbl();
  document.getElementById('theme').onclick=()=>{const d=document.body.classList.toggle('dark');localStorage.setItem('ffiec_theme',d?'dark':'light');setThemeLbl();draw();};
+ // §P0g item 2 (2026-07-19): ⚙ opens the settings popover (anchored to the button; outside-click
+ // closes — the datapop pattern, but toggled not recreated: the popover holds live controls).
+ {const sb=document.getElementById('setbtn'),sp=document.getElementById('setpop');
+  sb.onclick=e=>{e.stopPropagation();{const dp=document.getElementById('datapop');if(dp)dp.remove();}if(sp.style.display==='none'){const r=sb.getBoundingClientRect();sp.style.top=(r.bottom+6)+'px';sp.style.left=Math.max(8,Math.min(r.left,innerWidth-264))+'px';sp.style.display='block';}else sp.style.display='none';};
+  document.addEventListener('click',ev=>{if(sp.style.display!=='none'&&!sp.contains(ev.target)&&ev.target!==sb)sp.style.display='none';});}
+ renderRecentEnts();
  (function(){const app=document.querySelector('.app'),rail=document.querySelector('.rail'),head=rail.querySelector('.railtabs');
   document.getElementById('popout').onclick=(ev)=>{ev.stopPropagation();const f=rail.classList.toggle('floating');app.classList.toggle('popped',f);
     document.getElementById('popout').textContent=f?'⧈ Dock':'⧉ Pop out';};
@@ -1177,7 +1241,7 @@ async function init(){try{
  document.getElementById('kbdbtn').onclick=()=>document.getElementById('kbdmodal').style.display='flex';
  document.getElementById('clrents').onclick=()=>{active=[];renderChips();scheduleRecompute();};
  document.getElementById('clrmeas').onclick=()=>{measures=[];entSortField='__none__';markTree();renderMeasures();scheduleRecompute();saveMeasures();};
- document.getElementById('deriv-grpadd-btn').onclick=()=>{const cat=document.getElementById('deriv-grpadd').value;if(!cat)return;let added=0;for(const [code,d] of Object.entries(DERIV)){const lbl=d.lbl||'';const parts=lbl.split(' ▸ ');if(parts[0]!==cat)continue;if(measures.length>=20){showToast('Measure limit is 20 — remove some first.','warn');break;}if(!measures.find(m=>m.code===code)){const shortLbl=parts.slice(1).join(' ▸ ')||lbl;measures.push({code,label:shortLbl,pct:true});added++;}}if(!added){showToast('No new measures found for that category.','warn');return;}entSortField='__none__';markTree();renderMeasures();scheduleRecompute();saveMeasures();};
+ document.getElementById('deriv-grpadd-btn').onclick=()=>{const cat=document.getElementById('deriv-grpadd').value;if(!cat)return;let added=0;for(const [code,d] of Object.entries(DERIV)){const lbl=d.lbl||'';const parts=lbl.split(' ▸ ');if(parts[0]!==cat||d.lgHide)continue;if(measures.length>=20){showToast('Measure limit is 20 — remove some first.','warn');break;}if(!measures.find(m=>m.code===code)){const shortLbl=parts.slice(1).join(' ▸ ')||lbl;measures.push({code,label:shortLbl,pct:true});added++;}}if(!added){showToast('No new measures found for that category.','warn');return;}entSortField='__none__';markTree();renderMeasures();scheduleRecompute();saveMeasures();};
  document.getElementById('calcbtn').onclick=()=>{const d=document.getElementById('calcdiv');const show=d.style.display==='none';d.style.display=show?'block':'none';if(show)refreshCalcPicklist();};
  document.getElementById('calc-codesearch').oninput=function(){const srchInp=this;const q=srchInp.value.trim();const el=document.getElementById('calc-coderes');if(!q){el.style.display='none';el.innerHTML='';return;}const res=searchHier(q);el.innerHTML='';if(!res.length){const nm=document.createElement('div');nm.style.cssText='padding:4px 6px;color:var(--muted,#9aa3b2)';nm.textContent='No matches';el.appendChild(nm);el.style.display='block';return;}for(const r of res){const d=document.createElement('div');d.className='calc-cr';d.style.cssText='padding:2px 6px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';d.title=r.c;const rawCode=r.m;const b=document.createElement('b');b.textContent=rawCode;d.appendChild(b);d.appendChild(document.createTextNode(' — '+r.c));d.onclick=()=>{const inp=document.getElementById('calcformula');const p=inp.selectionStart,txt=inp.value;inp.value=txt.slice(0,p)+rawCode+txt.slice(inp.selectionEnd);inp.focus();inp.setSelectionRange(p+rawCode.length,p+rawCode.length);el.style.display='none';srchInp.value='';};el.appendChild(d);}el.style.display='block';};
  document.getElementById('calcadd').onclick=()=>{
@@ -1305,7 +1369,26 @@ document.getElementById('reflineset').onclick=()=>{const v=parseFloat(document.g
 function rebuildEntList(){const dl=document.getElementById('entlist');dl.innerHTML='';
  for(const n in peers){const o=document.createElement('option');o.value='★ '+n;dl.appendChild(o);}
  for(const e of (window._ents||[])){const o=document.createElement('option');o.value=e.lbl;dl.appendChild(o);}}
-function renderChips(){const c=document.getElementById('chips');if(!active.length){c.innerHTML='<span class="muted">none</span>';const cl=document.getElementById('crosslinks');if(cl)cl.innerHTML='';return;}
+// §P0g item 3 (2026-07-19): recent-banks quick-pick. localStorage MRU of the last 5 BANK: entities
+// (never ALL/aggregates/peers), recorded at renderChips so every add path counts (#add, rail click,
+// cmdk, hash restore). Rendering on load is PASSIVE — nothing touches `active` at boot (the c7
+// localStorage lesson: fresh load must not auto-apply). Chip click mirrors #add: push-if-absent.
+const RECENT_ENTS_KEY='ffiec_call_recent_ents';
+function loadRecentEnts(){try{const a=JSON.parse(localStorage.getItem(RECENT_ENTS_KEY)||'[]');return Array.isArray(a)?a.filter(r=>r&&r.id&&r.label):[];}catch(_){return[];}}
+function recordRecentEnts(){let rec=loadRecentEnts(),ch=false;
+ for(const a of active){if(!a.id||!String(a.id).startsWith('BANK:'))continue;
+  if(rec.length&&rec[0].id===a.id)continue;
+  rec=[{id:a.id,label:a.label},...rec.filter(r=>r.id!==a.id)].slice(0,5);ch=true;}
+ if(ch){try{localStorage.setItem(RECENT_ENTS_KEY,JSON.stringify(rec));}catch(_){}renderRecentEnts();}}
+function renderRecentEnts(){const el=document.getElementById('recentents');if(!el)return;const rec=loadRecentEnts();
+ if(!rec.length){el.style.display='none';el.innerHTML='';return;}
+ el.style.display='';el.textContent='Recent: ';
+ for(const r of rec){const b=document.createElement('button');b.className='sec';
+  b.style.cssText='margin:0 4px 2px 0;padding:1px 8px;font-size:12px;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;cursor:pointer';
+  b.textContent=r.label;b.title='Add '+r.label+' to chart';
+  b.onclick=()=>{if(!active.find(a=>a.id===r.id))active.push({id:r.id,label:r.label});renderChips();scheduleRecompute();};
+  el.appendChild(b);}}
+function renderChips(){recordRecentEnts();const c=document.getElementById('chips');if(!active.length){c.innerHTML='<span class="muted">none</span>';const cl=document.getElementById('crosslinks');if(cl)cl.innerHTML='';return;}
  c.innerHTML=active.map((a,i)=>`<span class="chip"><span class="sw" style="background:${COLORS[i%COLORS.length]}"></span><b>${a.label}</b><span class="x" data-i="${i}">✕</span></span>`).join('');
  c.querySelectorAll('.x').forEach(x=>x.onclick=()=>{active.splice(+x.dataset.i,1);renderChips();scheduleRecompute();});
  // cross-dashboard links for BANK: entities
@@ -1490,7 +1573,7 @@ function rowEl(nd,has,dispCap){
    sig.title='Filed total ('+_nsd.filed+'); quarters where the filed line is absent are reconstructed from '+_nsd.def.parts[0].components.length+' component code(s)';
    d.appendChild(sig);
  } else d.onclick=()=>toggleMeasure(nd.code,dispFullCap(nd.code)||lab,nd.pct||PCTC.has(nd.code));// C14-A: %-axis; C19-D2: chip label = normalized display caption (mirror Y-9C onclick)
- if(nd.derived&&DERIV[nd.code]){const dr=DERIV[nd.code];const ab=a=>{if(!a||!a.length)return '?';return a.length<=3?a.join(' + '):a.slice(0,2).join(' + ')+` + …(${a.length})`;};let fml;if(dr.type==='ratio'){const nStr=dr.minus&&dr.minus.length?`(${ab(dr.plus)} − ${ab(dr.minus)})`:ab(dr.plus);fml=`${nStr} ÷ ${ab(dr.den)} × 100${dr.annualize?' × (4/N)':''}`;}else{fml=`${ab(dr.plus)}`;}d.dataset.formula=fml;d.title='Click to chart · hover for formula';}
+ if(nd.derived&&DERIV[nd.code]){const dr=DERIV[nd.code];const ab=a=>{if(!a||!a.length)return '?';a=a.map(tokText);return a.length<=3?a.join(' + '):a.slice(0,2).join(' + ')+` + …(${a.length})`;};let fml;if(dr.type==='ratio'){const nStr=dr.minus&&dr.minus.length?`(${ab(dr.plus)} − ${ab(dr.minus)})`:ab(dr.plus);fml=`${nStr} ÷ ${ab(dr.den)} × 100${dr.annualize?' × (4/N)':''}`;}else{fml=`${ab(dr.plus)}`;}d.dataset.formula=fml;d.title='Click to chart · hover for formula';}
  if(!nd.derived){const fstar=document.createElement('span');fstar.className='fav'+(loadFavs().has(nd.code)?' on':'');fstar.textContent='★';fstar.title='Add to favorites';
    fstar.onclick=ev=>{ev.stopPropagation();const f=loadFavs();if(f.has(nd.code)){f.delete(nd.code);fstar.classList.remove('on');}else{f.add(nd.code);fstar.classList.add('on');}saveFavs(f);renderFavShelf();};
    const caret=d.querySelector('.caret');if(caret)caret.after(fstar);else d.prepend(fstar);}
@@ -1570,17 +1653,30 @@ const META_CODES={};
 const NA_ROWS={
  'RC':[{before:'19',num:'17–18',cap:'Not applicable',note:'Form ink p17: "17. and 18. Not applicable" printed between items 16 and 19.'},
        {before:'23',num:'22',cap:'Not applicable',note:'Form ink p17: "22. Not applicable" printed between item 21 and the Equity Capital section (pre-2009 this number carried the liabilities-side minority-interest line, RCFD3000 — now item 27.b).'}],
- 'RCCI':[{before:'6',num:'5',cap:'Not applicable',note:'Form ink p25: "5. Not applicable" printed between items 4.b and 6.'}],
+ // S5-C (owner contract, signed 2026-07-19): the 13 memoranda-level NA placeholders from the C18
+ // review journal — every entry re-adjudicated on RENDERED ink this session (page cited per note).
+ 'RI':[{before:'M.7',num:'M.6',cap:'Not applicable',note:'Form ink p7: "6. Not applicable" printed between Memorandum items 5 and 7.'},
+       {before:'M.13',num:'M.12',cap:'Not applicable',note:'Form ink p8: "12. Not applicable" printed between Memorandum items 11 and 13.'},
+       {before:'M.15',num:'M.14',cap:'Not applicable',note:'Form ink p8: "14. Not applicable" printed between Memorandum items 13.b.(1) and 15.'}],
+ 'RIBII':[{before:'M.5',num:'M.4',cap:'Not applicable',note:'Form ink p11: "4. Not applicable" printed between Memorandum items 3 and 5.'}],
+ 'RCN':[{before:'M.5',num:'M.4',cap:'Not applicable',note:'Form ink p50: "4. Not applicable" printed between Memorandum items 3 and 5 (the FR Y-9C twin HC-N M.4 carries the same placeholder).'}],
+ 'RCM':[{before:'9',num:'8',cap:'Internet website addresses and physical office trade names — text items, not collected',note:'Form ink p45: item 8 — 8.a primary website URL (TEXT4087), 8.b URLs of all other public-facing websites (TE01N528–TE10N528), 8.c trade names other than legal title (TE01N529–TE06N529). TEXT-class items: URL/name text is not part of the numeric panel this dashboard ingests; the item is shown for numbering completeness (AQ-C18-3, owner contract S5-B — a real form item, not a "Not applicable" gap).'}],
+ 'RCCI':[{before:'6',num:'5',cap:'Not applicable',note:'Form ink p25: "5. Not applicable" printed between items 4.b and 6.'},
+         {before:'M.8',num:'M.7',cap:'Not applicable',note:'Form ink p27: "7. Not applicable" printed between Memorandum items 6 and 8.'},
+         {before:'M.12',num:'M.11',cap:'Not applicable',note:'Form ink p28: "11. Not applicable" printed between Memorandum items 10.e and 12.'}],
  'RCCII':[{before:'3',num:'1–2',cap:'Not applicable',note:'Form ink p30: "1. and 2. Not applicable" printed under the Loans to Small Businesses heading.'},
           {before:'7',num:'5–6',cap:'Not applicable',note:'Form ink p30: "5. and 6. Not applicable" printed under the Agricultural Loans to Small Farms heading.'}],
  'RCD':[{before:'9',num:'7–8',cap:'Not applicable',note:'Form ink p31: "7. and 8. Not applicable" printed between items 6.d and 9.'},
-        {before:'11',num:'10',cap:'Not applicable',note:'Form ink p31: "10. Not applicable" printed between items 9 and 11.'}],
+        {before:'11',num:'10',cap:'Not applicable',note:'Form ink p31: "10. Not applicable" printed between items 9 and 11.'},
+        {before:'M.7',num:'M.6',cap:'Not applicable',note:'Form ink p32: "6. Not applicable" printed between Memorandum items 5.f and 7.'}],
  'RCH':[{before:'3',num:'1–2',cap:'Not applicable',note:'Form ink p37: "1. and 2. Not applicable" printed before item 3.'},
         {before:'17',num:'16',cap:'Not applicable',note:'Form ink p37: "16. Not applicable" printed between items 15 and 17.'}],
  'RCL':[{before:'6',num:'5',cap:'Not applicable',note:'Form ink p40: "5. Not applicable" printed between items 4 and 6.'}],
  'RCRI':[{before:'44',num:'43',cap:'Not applicable',note:'Form ink p64: "43. Not applicable" printed between items 42.b and 44.'}],
- 'RCS':[{before:'9',num:'7–8',cap:'Not applicable',note:'Form ink p81: "7. and 8. Not applicable" printed under item 6.'}],
- 'RIBI':[{before:'3',num:'2',cap:'Not applicable',note:'Form ink p10: "2. Not applicable" printed before item 3.'}],
+ 'RCS':[{before:'9',num:'7–8',cap:'Not applicable',note:'Form ink p81: "7. and 8. Not applicable" printed under item 6.'},
+        {before:'M.2',num:'M.1',cap:'Not applicable',note:'Form ink p82: "1. Not applicable" printed directly under the Memoranda heading, before Memorandum item 2.a.'}],
+ 'RIBI':[{before:'3',num:'2',cap:'Not applicable',note:'Form ink p10: "2. Not applicable" printed before item 3.'},
+         {before:'M.4',num:'M.3',cap:'Not applicable',note:'Form ink p10: "3. Not applicable" printed between Memorandum items 2 and 4.'}],
  'RID':[{before:'12',num:'11',cap:'Not applicable',note:'Form ink p13: "11. Not applicable" printed between items 10 and 12.'}],
 };
 const META_HOVER={
@@ -1757,9 +1853,22 @@ const ROLLUP_RULES={
  // "(sum of items X through Y)" line; components are the EXPLICIT single-column, subset-excluded leaf
  // tree-codes, PANEL-VERIFIED filed==Σcomp at 2026-03-31 (ratio ~1.0000, no ≈2× fingerprint). Their
  // items are nested under the total by ROLLUP_NEST (below) so the total renders as a filed-first/
- // derived-fill PARENT. Deferred (own follow-up): RC-A 5 (0.9884/6-of-8 real gap), RC-P 7.c (sparse),
- // RC-D 12 (intermediate-subtotal component cleanup; note the enumeration mis-said 3541 — real is 3545).
- 'RCD':{'15':{total:'COMB3548',components:['COMB3546','COMBF624','COMB3547']}},
+ // derived-fill PARENT. S4 (2026-07-19) closes the cycle-19 deferrals: RC-D 12 nested with the
+ // CORRECT total 3545 (ink p31: "sum of items 1 through 11", 17 single-column leaves, items 7/8/10
+ // printed Not applicable; panel Σ/filed=1.000000 n=76 @2026-03-31 — the old enumeration's 3541 is
+ // item 9); RC-P 7.c nested on the fry9c HC-P 7 precedent (M288 filed-first; 7.a/7.b = L191/L192
+ // are 0-filer confidential ⇒ fill can never fire). S5-E (owner contract AQ-S4-1, signed
+ // 2026-07-19): RC-A 5 now NESTED via the ALT: alternative-group token — item 1 = first-present-of
+ // {RCFD0022 (031 form)} else {RCON0020+RCON0080 (041/051 form)}. 031 filers carry BOTH item-1
+ // forms, so any flat token-sum is wrong in one direction or the other (measured @2026-03-31:
+ // adding every item-1 code over-counts cohort A to 1.0538; the cycle-19 bare-base variant
+ // under-filled to 0.9925) — that is why cycle-19 and S4 deferred this nest. Census 2026-07-19:
+ // both cohorts tie 1.000000 under the ALT rule (50 A / 104 B).
+ // Evidence: _verify/evidence/s4_subtotals_synonyms_20260719.md + s5_contracts_execution_20260719.md.
+ 'RCA':{'5':{total:'COMB0010',components:['ALT:RCFD0022|RCON0020+RCON0080','COMB0082','COMB0070','COMB0090']}},
+ 'RCD':{'12':{total:'COMB3545',components:['COMB3531','COMB3532','COMB3533','COMBG379','COMBG380','COMBG381','COMBK197','COMBK198','COMBHT62','COMBG386','COMBHT63','COMBHT64','COMBF614','COMBHT65','COMBF618','COMB3541','COMB3543']},
+        '15':{total:'COMB3548',components:['COMB3546','COMBF624','COMB3547']}},
+ 'RCP':{'7.c':{total:'COMBM288',components:['COMBL191','COMBL192']}},
  'RCF':{'7':{total:'COMB2160',components:['COMBB556','COMB2148','COMBHT80','COMB1752','COMBK201','COMBK202','COMBK270','COMB2168']}},
  'RCG':{'5':{total:'COMB2930',components:['COMB3645','COMB3646','COMB3049','COMBB557','COMB2938']}},
  'RCM':{'2.d':{total:'COMB2143',components:['COMB3164','COMB3163','COMBJF76']},
@@ -1773,7 +1882,13 @@ const ROLLUP_RULES={
 // generated hierarchy JSON, so it is STABLE across a build_hierarchy.py regeneration (the JSON stays
 // flat as generated; the engine reparents on load). Item numbers verified against the hierarchy.
 const ROLLUP_NEST={
- 'RCD':{'15':['13.a','13.b','14']},
+ // ('5' moves the mdrm-less "Other debt securities" header WITH its 5.a/5.b children — listing the
+ // leaves alone strands the header childless at schedule root; S4 review P3)
+ // (RC-A: items 1.a/1.b are depth-2 children of item 1 and ride with it — do not list separately)
+ 'RCA':{'5':['1','2','3','4']},
+ 'RCD':{'12':['1','2','3','4.a','4.b','4.c','4.d','4.e','5','6.a.(1)','6.a.(2)','6.b','6.c','6.d','9','11'],
+        '15':['13.a','13.b','14']},
+ 'RCP':{'7.c':['7.a','7.b']},
  'RCF':{'7':['1','2','3','4','5.a','5.b','5.c','6']},
  'RCG':{'5':['1.a','1.b','2','3','4']},
  'RCM':{'2.d':['2.a','2.b','2.c'],'3.g':['3.a','3.b','3.c','3.d','3.e','3.f']},
@@ -2601,7 +2716,8 @@ function buildLGMEAS(){
   {code:'COMB3210',label:'Total equity',pct:false,better:'neutral'},
  ];
  const seen=new Set(seed.map(m=>m.code));const out=[...seed];
- for(const[k,d] of Object.entries(DERIV)){if(seen.has(k)||!d.lbl)continue;seen.add(k);
+ // S4: d.lgHide = league/quick-add dropdown suppression for formula-identical synonyms (defs stay)
+ for(const[k,d] of Object.entries(DERIV)){if(seen.has(k)||!d.lbl||d.lgHide)continue;seen.add(k);
   const lbl=d.lbl||k;const parts=lbl.split(' ▸ ');const shortLbl=parts.length>1?parts.slice(1).join(' ▸ '):lbl;
   /* C13-LEAGUE-POLARITY: LG_POLARITY is the single source of truth (covers every DERIV key with an
      explicit 'lower'/'higher'/'neutral', per spec's "explicit key->polarity map" requirement) — every
@@ -2843,7 +2959,7 @@ async function buildReport(entityId,nm,latestQ,qtrs){
  const data=(await conn.query(`SELECT mdrm,quarter_end,value FROM t WHERE entity_id='${entityId}' AND quarter_end IN (${qList}) AND mdrm IN (${cList})`)).toArray();
  const V={};for(const r of data)(V[r.mdrm]=V[r.mdrm]||{})[r.quarter_end]=Number(r.value);
  const getV=(codes,q)=>{for(const c of codes){const v=V[c]?.[q??latestQ];if(v!=null)return v;}return null;};
- const qnlFor=q=>({'03':1,'06':2,'09':3,'12':4}[String(q).slice(5,7)]||4);
+ const qnlFor=__DECLONE_KPI_QNLQ__;
  const qnl=qnlFor(latestQ);
  const assets=getV(['RCFD2170','RCON2170']);
  const loans=getV(['RCFD2122','RCON2122']);
