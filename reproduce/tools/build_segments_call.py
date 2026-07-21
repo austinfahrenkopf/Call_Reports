@@ -87,9 +87,15 @@ FROM bank
 print("   bank-quarters:", con.execute("SELECT count(*) FROM bucket").fetchone()[0])
 
 print("2) heavy join -> compact sums ...")
+# AQ-S6R-4 (dress-rehearsal finding): parallel DOUBLE summation is order-dependent, so two
+# runs on identical inputs drifted <=2.33e-10 on 2,609 aggregate cells — display-invisible but
+# poison for bit-compare tooling. DECIMAL addition is EXACT and order-independent: sum in
+# DECIMAL(38,6) here and through the roll-ups, cast back to DOUBLE only at the output column.
+# (The synth/COMB stages need no cast: <=2-element sums are commutative-safe; max/coalesce are
+# order-independent.)
 con.execute("""
 CREATE TEMP TABLE agg AS
-SELECT t.quarter_end, t.mdrm, b.ft, b.szb, sum(t.value) AS val
+SELECT t.quarter_end, t.mdrm, b.ft, b.szb, sum(CAST(t.value AS DECIMAL(38,6))) AS val
 FROM t JOIN bucket b USING (quarter_end, id_rssd)
 GROUP BY t.quarter_end, t.mdrm, b.ft, b.szb
 """)
@@ -98,9 +104,9 @@ print("   compact rows:", con.execute("SELECT count(*) FROM agg").fetchone()[0])
 print("3) roll-ups + filer counts ...")
 df = con.execute("""
 WITH
- a_all AS (SELECT 'ALL' AS segment,'all' AS segment_type, quarter_end, mdrm, sum(val) AS value FROM agg GROUP BY quarter_end,mdrm),
- a_ft  AS (SELECT ft AS segment,'filing_type' AS segment_type, quarter_end, mdrm, sum(val) AS value FROM agg GROUP BY ft,quarter_end,mdrm),
- a_sz  AS (SELECT szb AS segment,'size_bucket' AS segment_type, quarter_end, mdrm, sum(val) AS value FROM agg GROUP BY szb,quarter_end,mdrm),
+ a_all AS (SELECT 'ALL' AS segment,'all' AS segment_type, quarter_end, mdrm, CAST(sum(val) AS DOUBLE) AS value FROM agg GROUP BY quarter_end,mdrm),
+ a_ft  AS (SELECT ft AS segment,'filing_type' AS segment_type, quarter_end, mdrm, CAST(sum(val) AS DOUBLE) AS value FROM agg GROUP BY ft,quarter_end,mdrm),
+ a_sz  AS (SELECT szb AS segment,'size_bucket' AS segment_type, quarter_end, mdrm, CAST(sum(val) AS DOUBLE) AS value FROM agg GROUP BY szb,quarter_end,mdrm),
  vals  AS (SELECT * FROM a_all UNION ALL SELECT * FROM a_ft UNION ALL SELECT * FROM a_sz),
  nf    AS (
    SELECT 'ALL' AS segment, quarter_end, count(*) AS n FROM bucket GROUP BY quarter_end

@@ -41,6 +41,78 @@ seg = seg.rename(columns={"segment":"entity_id","segment_type":"kind"})
 seg["entity_label"] = seg["entity_id"]
 seg = seg[["entity_id","entity_label","kind","quarter_end","mdrm","value","n_filers","schedule","description"]]
 
+# --- AQ-S5-1 (owner contract, signed mailbox [49], executed [51]): materialized ALT aggregates.
+# ALT alternative-group measures (D_NPL_CI) carry per-FILER first-present-of semantics that a
+# flat sum over the stored aggregate rows cannot express (the 031-vs-041/051 family split), so
+# the engines render aggregate scopes honest-absent for them. These pseudo-code rows ARE the
+# ALT-resolved aggregates: per filer-quarter, resolve each group with the ENGINE's own token
+# rules (8-char literal = exact code; bare 4-char = prefix-coalesce RCFD->RCON->RIAD->RCFA->
+# RCFW->RCOA->RCOW->RCFN, mirroring tokVal; group sum = sum of PRESENT members; the FIRST group
+# with any member present wins), then DECIMAL(38,6)-sum over each scope's membership (the same
+# ft/size-bucket rules as build_segments_call.py; replication-anchored against the stored RAW
+# aggregate rows to the dollar). RAW-code aggregate rows are UNTOUCHED — the pseudo codes ride
+# beside them under reserved non-MDRM names (collision-swept 2026-07-21). Rows exist only where
+# the family resolves (pre-1984 quarters produce nothing -> honest-absent, disclosed).
+# Rollback = drop the ALTD rows + revert the engines' ALT_AGG registry.
+print("materializing AQ-S5-1 ALT aggregates (ALTD1CI6 num / ALTD1CI7 den) ...")
+_co = lambda base: ("COALESCE(" + ",".join(
+    f"max(CASE WHEN mdrm='{p}{base}' THEN value END)" for p in
+    ("RCFD","RCON","RIAD","RCFA","RCFW","RCOA","RCOW","RCFN")) + ")")
+_lit6 = "('RCFD1251','RCFD1252','RCFD1253','RCFD1254','RCFD1255','RCFD1256')"
+alt = con.execute(f"""
+WITH fam AS (
+  SELECT quarter_end, id_rssd, any_value(entity_type) AS ft,
+    sum(CASE WHEN mdrm IN {_lit6} AND value IS NOT NULL THEN value END)  AS numA,
+    count(CASE WHEN mdrm IN {_lit6} AND value IS NOT NULL THEN 1 END)   AS numA_n,
+    {_co('1606')} AS t1606, {_co('1607')} AS t1607, {_co('1608')} AS t1608,
+    {_co('1763')} AS t1763, {_co('1764')} AS t1764, {_co('1766')} AS t1766,
+    COALESCE(max(CASE WHEN mdrm='RCFD2170' THEN value END),
+             max(CASE WHEN mdrm='RCON2170' THEN value END),
+             max(CASE WHEN mdrm='RIAD2170' THEN value END)) AS assets
+  FROM t
+  WHERE mdrm IN {_lit6} OR substr(mdrm,5,4) IN ('1606','1607','1608','1763','1764','1766','2170')
+  GROUP BY quarter_end, id_rssd),
+resolved AS (
+  SELECT quarter_end, id_rssd, ft,
+    CASE WHEN assets>=250000000 THEN 'SIZE_250B+'
+         WHEN assets>=50000000  THEN 'SIZE_50-250B'
+         WHEN assets>=10000000  THEN 'SIZE_10-50B'
+         WHEN assets>=1000000   THEN 'SIZE_1-10B'
+         ELSE 'SIZE_<1B' END AS szb,
+    CASE WHEN numA_n > 0 THEN numA
+         WHEN t1606 IS NOT NULL OR t1607 IS NOT NULL OR t1608 IS NOT NULL
+              THEN COALESCE(t1606,0)+COALESCE(t1607,0)+COALESCE(t1608,0) END AS num,
+    CASE WHEN t1763 IS NOT NULL OR t1764 IS NOT NULL
+              THEN COALESCE(t1763,0)+COALESCE(t1764,0)
+         WHEN t1766 IS NOT NULL THEN t1766 END AS den
+  FROM fam),
+scoped AS (
+  SELECT 'ALL' AS entity_id, 'all' AS kind, quarter_end, num, den FROM resolved
+  UNION ALL
+  SELECT ft, 'filing_type', quarter_end, num, den FROM resolved WHERE ft IS NOT NULL
+  UNION ALL
+  SELECT szb, 'size_bucket', quarter_end, num, den FROM resolved)
+SELECT entity_id, kind, quarter_end, 'ALTD1CI6' AS mdrm,
+       CAST(sum(CAST(num AS DECIMAL(38,6))) AS DOUBLE) AS value,
+       count(num) AS n_filers
+FROM scoped WHERE num IS NOT NULL GROUP BY entity_id, kind, quarter_end
+UNION ALL
+SELECT entity_id, kind, quarter_end, 'ALTD1CI7' AS mdrm,
+       CAST(sum(CAST(den AS DECIMAL(38,6))) AS DOUBLE) AS value,
+       count(den) AS n_filers
+FROM scoped WHERE den IS NOT NULL GROUP BY entity_id, kind, quarter_end
+""").df()
+alt["entity_label"] = alt["entity_id"]
+alt["schedule"] = ""
+alt["description"] = alt["mdrm"].map({
+    "ALTD1CI6": "Materialized ALT aggregate (AQ-S5-1): C&I delinquency NUMERATOR, per-filer "
+                "first-present-of [RCFD1251-56 | 1606+1607+1608], summed over the scope.",
+    "ALTD1CI7": "Materialized ALT aggregate (AQ-S5-1): C&I loans DENOMINATOR, per-filer "
+                "first-present-of [1763+1764 | 1766], summed over the scope."})
+alt = alt[["entity_id","entity_label","kind","quarter_end","mdrm","value","n_filers","schedule","description"]]
+print(f"  ALT aggregate rows: {len(alt):,} ({alt['quarter_end'].min()} - {alt['quarter_end'].max()})")
+seg = pd.concat([seg, alt], ignore_index=True)
+
 # --- individual large banks (assets >= T) ----------------------------------
 print(f"selecting individual banks with assets >= {T:,} $thousands ...")
 indiv = con.execute(f"""

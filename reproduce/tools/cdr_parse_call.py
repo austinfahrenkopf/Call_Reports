@@ -18,7 +18,7 @@ Run:    python cdr_parse_call.py                # 031,041,051
 NOTE: delete the cdr_parquet/ folder before re-running if the schema changed.
 """
 from __future__ import annotations
-import argparse, csv, io, os, re, zipfile
+import argparse, csv, io, os, re, sys, zipfile
 import pandas as pd
 from cdr_merge_lib import merge_roster, merge_captions, guard_no_shrink  # AQ-C16-5: merge-don't-replace on incremental runs
 
@@ -120,6 +120,26 @@ if _old_roster is not None:
           f"(parsed {len(parsed_qends)} quarter(s), skipped the rest)")
 _ro = pd.DataFrame(merge_roster(_old_roster, roster, parsed_qends),
     columns=["id_rssd","institution_name","entity_type","first_quarter","last_quarter","n_quarters"])
+# AQ-S6R-3 (dress-rehearsal finding): merge_roster's "n_quarters = old + run" double-counts when
+# a parsed quarter RE-covers one already inside the old span (delete-and-re-parse; observed +1
+# x4,336 in the S6R rehearsal — the lib's overlap WARN fired but only to stderr, and it still
+# wrote the corrupted count). The per-quarter parquets on disk are ground truth: recompute
+# first/last/n_quarters per filer from them, cheaply (2-column projection).
+try:
+    import duckdb as _dk
+    _facts = _dk.sql(
+        f"select cast(id_rssd as varchar) id_rssd, min(quarter_end) fq, max(quarter_end) lq, "
+        f"count(distinct quarter_end) nq from read_parquet('{OUTDIR}/*.parquet') group by 1").df()
+    _fmap = {r.id_rssd: (r.fq, r.lq, int(r.nq)) for r in _facts.itertuples()}
+    _hit = _ro["id_rssd"].astype(str).map(_fmap)
+    _has = _hit.notna()
+    _ro.loc[_has, "first_quarter"] = _hit[_has].map(lambda t: t[0])
+    _ro.loc[_has, "last_quarter"]  = _hit[_has].map(lambda t: t[1])
+    _ro.loc[_has, "n_quarters"]    = _hit[_has].map(lambda t: t[2])
+    print(f"roster quarter-facts recomputed from {OUTDIR}/ ground truth for {int(_has.sum())} filers (AQ-S6R-3)")
+except Exception as _e:
+    print(f"[cdr_parse] WARN: ground-truth n_quarters recompute failed ({_e}) — "
+          f"falling back to merge arithmetic; counts may double on re-parsed quarters", file=sys.stderr)
 _ca = pd.DataFrame(merge_captions(_old_caps, captions), columns=["schedule","mdrm","caption"])
 guard_no_shrink(ROSTER, len(_ro), "roster")   # AQ-C16-5 write-site guard: never overwrite history with less
 guard_no_shrink(CAP,    len(_ca), "captions")

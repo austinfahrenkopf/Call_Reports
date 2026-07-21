@@ -1,5 +1,12 @@
 # REPRODUCE_VERIFIED — clean-room rebuild record
 
+> **v1.0.9-staging docs pass (2026-07-20):** the kit tracks the staged v1.0.9 state — EMPTY_CODES
+> baseline is now **421** (cycle-14 ingest reconstruction; the 662 below is v1.0-era history),
+> `config/expected_items.json` is the overlay-merged 2026-07-20 regeneration (the Call form now
+> has ZERO missing codes), and `enrich_call.py` reuses a local `MDRM.zip` when present. The
+> clean-room record below remains the last full fresh-clone run (2026-07-02) and has not been
+> re-run since — treat its EMPTY/count specifics as v1.0-era history.
+
 > **v1.0 (2026-07-10):** this reproduce/ kit was refreshed to the `v1.0` release (this repo `ebde14d`;
 > siblings FFIEC_002 `3b4c49f` · FRY9C `b81083e`) — every code/data file in the kit matches the v1.0
 > build exactly (strict push-gate hash-verified at release; app/ EMPTY_CODES baseline now 662).

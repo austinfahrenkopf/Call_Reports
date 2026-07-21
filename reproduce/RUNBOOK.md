@@ -15,6 +15,17 @@ the header of `REPRODUCE_VERIFIED.md`; the last full clean-room run remains 2026
 RCFD2170=4,016,571,000 @ 2026-03-31 (JPMorgan Chase Bank NA RSSD 852218). EMPTY_CODES baseline:
 **662** (see CONTEXT.md for the 675→662 history).
 
+**Docs pass 2026-07-20 (staged for v1.0.9):** golden unchanged; **EMPTY_CODES baseline is now
+421** (the paragraph above is v1.0-era history: the cycle-14 raw→panel ingest reconstruction
+revived the %-formatted and dropped-prefix classes, 662→421 — the strict push gate and CI assert
+421). `config/expected_items.json` is now the **overlay-merged** manifest (regenerated
+2026-07-20; `expected_items = derived ∪ adjudicated` — never wholesale-replace it with a raw
+regeneration): the Call form has **zero missing codes** — every code with panel data is in the
+served hierarchy. `enrich_call.py` now uses a LOCAL `MDRM.zip` when present (offline refresh
+path; it only downloads when the cache is absent). `build_segments_call.py` sums in
+DECIMAL(38,6) (order-independent, bit-reproducible) — the first segments rebuild after this
+change re-banks the tool-parquet fingerprint (predicted, recorded).
+
 **Self-verify (v1.0, no rebuild needed):** from the repo root,
 `python reproduce/tools/check_hierarchy_manifest.py call` checks the served `app/` schedule tree against
 `reproduce/config/expected_hierarchy_call.json` (the hand-audited, form-PDF-derived manifest: item

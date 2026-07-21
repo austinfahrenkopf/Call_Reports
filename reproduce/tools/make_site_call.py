@@ -771,7 +771,8 @@ function whyDescribe(code,label){
   const numTxt=d.minus&&d.minus.length?`(Σ${d.plus.map(tokText).join('+')} − Σ${d.minus.map(tokText).join('+')})`:`Σ(${d.plus.map(tokText).join('+')})`;
   const formula=`${numTxt} ÷ Σ(${d.den.map(tokText).join('+')}) × 100${d.annualize?' × (4/N)':''}`;
   const terms=[...d.plus.flatMap(c=>expandTerm(c,'numerator +')),...(d.minus||[]).flatMap(c=>expandTerm(c,'numerator −')),...d.den.flatMap(c=>expandTerm(c,'denominator'))];
-  const note=(d.annualize?'Annualized: value × (4 / quarter-number-in-year), consistent with the "ann." KPI convention.':'')+altNote([...d.plus,...(d.minus||[]),...(d.den||[])]);
+  const note=(d.annualize?'Annualized: value × (4 / quarter-number-in-year), consistent with the "ann." KPI convention.':'')+altNote([...d.plus,...(d.minus||[]),...(d.den||[])])
+   +(ALT_AGG[code]?` Aggregate scopes (ALL / filing-type / size buckets) chart the panel-side MATERIALIZED first-present-of aggregate (${ALT_AGG[code].num}/${ALT_AGG[code].den}): each filer's item families are resolved individually first, then summed over the scope — never a flat sum of mixed-family stored rows (AQ-S5-1).`:'');
   return {title:label||d.lbl||code,formula,terms,note:note||null};
  }
  if(d.type==='sum'){
@@ -908,7 +909,7 @@ function hashToState(){
   try{const p=new URLSearchParams(location.hash.slice(1));
     const eStr=p.get('e');if(eStr){active=eStr.split(',').filter(Boolean).map(id=>({id,label:id2lbl.get(id)||id}));}
     const mStr=p.get('m');if(mStr){measures=[];for(const code of mStr.split(',').filter(Boolean)){
-      const d=DERIV[code];const lbl=d?d.lbl:(fullCap(code)||code);const pct=isPct(code)||PCTC.has(code);// C14A-HASHFIX: hash/link-restored raw %-codes (RC-R I ratios) render on the %-axis (was isPct only → "$0M"; mirror tree-click/browse/search)
+      const d=DERIV[code];const lbl=(d&&d.lbl)||fullCap(code)||code;const pct=isPct(code)||PCTC.has(code);// C14A-HASHFIX: hash/link-restored raw %-codes (RC-R I ratios) render on the %-axis (was isPct only → "$0M"; mirror tree-click/browse/search). S8/AQ-S8-2: lbl-less DERIV entries (COMB1406/1407/1403, COMBHK05, RCFN2200) fell through d?d.lbl: to an 'undefined' chip — fullCap fallback ×3.
       if(measures.length<20)measures.push({code,label:lbl,pct:!!pct});}}
     const q0=p.get('q0'),q1=p.get('q1');
     if(q0&&q1&&Qall.length){const a=Qall.indexOf(q0),b=Qall.indexOf(q1);
@@ -945,7 +946,7 @@ function coalesce(map,base){return map['COMB'+base]??map['RCFD'+base]??map['RCON
 // C18 token resolution for sum/hybrid definitions (see ROLLUP_RULES comment): COMB<base> → the
 // materialized COMB row, else coalesce(RCFD,RCON) · full 8-char prefixed code → exactly that code ·
 // bare 4-char base (curated DERIV entries keep the pre-C18 convention) → the legacy 9-prefix coalesce.
-const _TOKPREF=/^(RCFD|RCON|RCFN|RCFA|RCFW|RCOA|RCOW|RIAD)/;
+const _TOKPREF=/^(RCFD|RCON|RCFN|RCFA|RCFW|RCOA|RCOW|RIAD|ALTD)/; // ALTD = AQ-S5-1 reserved pseudo-codes (Call-only fact: materialized ALT aggregates ride the panel under ALTD*)
 // S5-E alternative-group token (owner contract AQ-S4-1, signed 2026-07-19): 'ALT:g1|g2|…' where each
 // group is '+'-joined member tokens (members resolve by the EXISTING rules below). Semantics: the
 // FIRST group, in declared order, with ANY member value present for this (entity,quarter) supplies
@@ -963,6 +964,13 @@ function tokVal(mp,t){if(t.startsWith('ALT:')){for(const g of t.slice(4).split('
  return coalesce(mp,t);}
 // Human-readable rendering of any token for info-panel formula text ('ALT:' → "first present of …").
 function tokText(t){return t.startsWith('ALT:')?'['+t.slice(4).split('|').map(g=>g.split('+').join('+')).join(' else ')+']':t;}
+// AQ-S5-1 (owner contract signed [49], executed [51]): aggregate-scope consumption registry for
+// ALT measures — the panel-side MATERIALIZED first-present-of pseudo-pair per measure (built by
+// build_tool_dataset.py with the exact tokVal semantics, replication-anchored). A registered
+// measure's aggregate scopes chart num/den from these rows; UNREGISTERED ALT measures keep the
+// honest-absent guard (never a wrong flat sum). Empty registry on forms with no ALT aggregate
+// materialization (clone-parity ×3).
+const ALT_AGG={'D_NPL_CI':{num:'ALTD1CI6',den:'ALTD1CI7'}};
 // C18 seam honesty: per hybrid measure, the quarters whose charted value used derived component
 // fill (the filed line was absent for at least one in-scope filer) — computed, never hardcoded.
 window._fillQ={};
@@ -1074,12 +1082,15 @@ async function seriesFor(id,m){const ids=expand(id);if(!ids.length)return [];
  // ALT-resolved aggregate lands (owner contract — see ANALYST_QA AQ-S5-1). PEER: scopes are fine
  // (they expand to BANK: ids and resolve per-filer before summing).
  {const _dA=DERIV[m]||DYN[m]||USERCALC[m];
-  if(_dA&&!id.startsWith('PEER:')&&isAggScope(id)&&
+  if(_dA&&!id.startsWith('PEER:')&&isAggScope(id)&&!ALT_AGG[m]&&
      [...(_dA.plus||[]),...(_dA.minus||[]),...(_dA.den||[])].some(t=>String(t).startsWith('ALT:')))return [];}
  const _sk=`${id}::${m}`;if(_seriesCache.has(_sk)){if(_fillQCache.has(_sk))window._fillQ[m]=_fillQCache.get(_sk);return _seriesCache.get(_sk);}
  if(_inflight.has(_sk))return _inflight.get(_sk);
  const _p=(async()=>{
  let d=DERIV[m]||DYN[m]||USERCALC[m];
+ // AQ-S5-1: a REGISTERED ALT measure on an aggregate scope consumes the materialized pseudo-pair
+ // (per-filer first-present-of resolved panel-side; den>0 guard rides the ratio path below).
+ if(d&&ALT_AGG[m]&&!id.startsWith('PEER:')&&isAggScope(id))d={...d,plus:[ALT_AGG[m].num],minus:[],den:[ALT_AGG[m].den]};
  if(!d && m && m.startsWith('COMB')) d={type:'sum',plus:[m.slice(4)],minus:[],den:[]};
  if(d?.type==='expr'){
    const vSer={};
